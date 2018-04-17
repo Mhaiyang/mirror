@@ -9,11 +9,11 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 
-from config import Config
-import utils
-import model as modellib
-import visualize
-from model import log
+from mrcnn.config import Config
+import mrcnn.utils
+import mrcnn.utils as modellib
+import mrcnn.visualize
+from mrcnn.model import log
 from keras.utils import plot_model
 
 import mirror
