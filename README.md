@@ -1,7 +1,7 @@
 # Mirror Project
 
 ## Task 1 : Mirror Detector
-![mirror_detector](assets/girl.png =600)
+![mirror_detector](assets/girl.png =600x400)
 
 ## Environment
 python3.5    tensorflow1.8.0    keras2.1.6
