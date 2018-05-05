@@ -1,7 +1,7 @@
 import numpy as np
 from PIL import Image
-from config import Config
-import utils
+from mrcnn.config import Config
+import mrcnn.utils as utils
 import yaml
 
 
@@ -40,6 +40,9 @@ class MirrorConfig(Config):
 
     # use small validation steps since the epoch is small
     VALIDATION_STEPS = 5
+
+    # skip detection with <x% confidence
+    DETECTION_MIN_CONFIDENCE = 0.9
 
 
 

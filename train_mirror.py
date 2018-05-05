@@ -10,9 +10,9 @@ import matplotlib
 import matplotlib.pyplot as plt
 
 from mrcnn.config import Config
-import mrcnn.utils
-import mrcnn.utils as modellib
-import mrcnn.visualize
+import mrcnn.utils as utils
+import mrcnn.model as modellib
+import mrcnn.visualize as visualize
 from mrcnn.model import log
 from keras.utils import plot_model
 
