@@ -5,8 +5,11 @@
 
 ## Environment
 python3.5    tensorflow1.8.0    keras2.1.6
+
 CPU : Intel(R) Core(TM) i7-7700K CPU @ 4.20GHz
+
 GPU : NVIDIA GTX 1080Ti
+
 Docker Image : tf1.8.0-keras2.1.6-gpu:9.0-cudnn7-devel-ubuntu16.04
 
 'sudo pip3 install -r requirements.txt'
