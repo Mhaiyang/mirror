@@ -3,6 +3,9 @@
 ## Task 1 : Mirror Detector
 ![mirror_detector](assets/demo.png)
 
+## Change Log
+
+
 ## Environment
 python3.5    tensorflow1.8.0    keras2.1.6
 
@@ -15,7 +18,7 @@ Docker Image : tf1.8.0-keras2.1.6-gpu:9.0-cudnn7-devel-ubuntu16.04
 'sudo pip3 install -r requirements.txt'
 
 ## Usage
-'python train_mirror.py'
+`python train_mirror.py`
 
 ## TODO
 - [x] Collecting images containing mirrors
