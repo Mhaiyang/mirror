@@ -4,7 +4,8 @@
 ![mirror_detector](assets/demo.png)
 
 ## Change Log
-2018.5.5    Create project
+2018/05/06    add move.py
+2018/05/05    Create project
 
 ## Environment
 python3.5    tensorflow1.8.0    keras2.1.6
@@ -22,7 +23,7 @@ Docker Image : tf1.8.0-keras2.1.6-gpu:9.0-cudnn7-devel-ubuntu16.04
 
 ## TODO
 - [x] Collecting images containing mirrors
-- [ ] Data preprocessing : Rename --> Resize --> label mirror --> json_to_dataset --> transform(16 to 8)
+- [ ] Data preprocessing : Rename --> Resize --> label mirror --> move.py --> json_to_dataset --> transform(16 to 8)
 - [ ] mirror.py
 - [ ] train_mirror.py (Training head and all.)
 - [ ] Using tensorboard to keep watch on training
