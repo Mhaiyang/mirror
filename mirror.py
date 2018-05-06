@@ -63,7 +63,6 @@ class MirrorDataset(utils.Dataset):
             temp = yaml.load(f.read())
             labels = temp['label_names']
             del labels[0]
-            print(labels)
         return labels
 
     def draw_mask(self, num_obj, mask, image, image_id):
@@ -73,19 +72,21 @@ class MirrorDataset(utils.Dataset):
             for i in range(info['width']):
                 for j in range(info['height']):
                     at_pixel = image.getpixel((i, j))
-                    if at_pixel == index +1:
+                    if at_pixel == index + 1:
                         mask[j, i, index] = 1   # [row column channel]
         return mask
 
-    def load_mirror(self, count, height, width, img_folder, mask_folder, imglist):
+    def load_mirror(self, count, img_folder, mask_folder, imglist):
         self.add_class("Mirror", 1, "mirror")
         # self.add_class("Mirror", 2, "reflection")
         for i in range(count):
             filestr = imglist[i].split(".")[0]  # 0011 for example
             mask_path = mask_folder + "/" + filestr + "_json/label8.png"
             yaml_path = mask_folder + "/" + filestr + "_json/info.yaml"
+            img = Image.open(mask_path)
+            width, height = img.size
             self.add_image("Mirror", image_id=i, path=img_folder + "/" + imglist[i],
-                           height=height, width=width, mask_path=mask_path, yaml_path=yaml_path)
+                           width=width, height=height, mask_path=mask_path, yaml_path=yaml_path)
 
 
     def load_mask(self, image_id):
@@ -93,7 +94,6 @@ class MirrorDataset(utils.Dataset):
         info = self.image_info[image_id]
         count = 1
         img = Image.open(info['mask_path'])
-        # width, height = img.size
         num_obj = self.get_obj_index(img)
         mask = np.zeros([info['height'], info['width'], num_obj], dtype=np.uint8)
         mask = self.draw_mask(num_obj, mask, img, image_id)

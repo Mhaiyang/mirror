@@ -26,9 +26,6 @@ MODEL_DIR = os.path.join(ROOT_DIR, "logs")
 
 # Local path to trained weights file
 COCO_MODEL_PATH = os.path.join(ROOT_DIR, "mask_rcnn_coco.h5")
-# Download COCO trained weights from Releases if needed
-if not os.path.exists(COCO_MODEL_PATH):
-    utils.download_trained_weights(COCO_MODEL_PATH)
     
 config = mirror.MirrorConfig()
 config.display()
@@ -36,21 +33,29 @@ config.display()
 iter_num = 0
 
 # Configuration
-dataset_root_path = "/home/taylor/Mask_RCNN/dataset/"
-img_folder = dataset_root_path + "image"
-mask_folder = dataset_root_path + "mask"
-imglist = os.listdir(img_folder)
-count = len(imglist)
-print(count)
+dataset_root_path = os.path.abspath(os.path.join(ROOT_DIR, "./data"))
+train_folder = dataset_root_path + "/train"
+val_folder = dataset_root_path + "/val"
+train_image_folder = train_folder + "/image"
+train_mask_folder = train_folder + "/json"
+val_image_folder = val_folder + "/image"
+val_mask_folder = val_folder + "/json"
+train_imglist = os.listdir(train_image_folder)
+train_count = len(train_imglist)
+val_imglist = os.listdir(val_image_folder)
+val_count = len(val_imglist)
+print("Train Image Count : {} \nValidation Image Count : {}".format(train_count, val_count))
 
 # Training dataset
 dataset_train = mirror.MirrorDataset()
-dataset_train.load_shapes(count, 200, 300, img_folder, mask_folder, imglist, dataset_root_path)
+dataset_train.load_mirror(train_count, train_image_folder,
+                          train_mask_folder, train_imglist)     # add class and add image.
 dataset_train.prepare()
 
 # Validation dataset
 dataset_val = mirror.MirrorDataset()
-dataset_val.load_shapes(count, 200, 300, img_folder, mask_folder, imglist, dataset_root_path)
+dataset_val.load_mirror(val_count, val_image_folder,
+                        val_mask_folder, val_imglist)      # add class and add image
 dataset_val.prepare()
 
 # Load and display random samples
@@ -85,18 +90,15 @@ elif init_with == "last":
 # 1. Train the head branches
 model.train(dataset_train, dataset_val,
             learning_rate=config.LEARNING_RATE,
-            epochs=20,
+            epochs=100,
             layers='heads')
+model_path = os.path.join(MODEL_DIR, "mask_rcnn_mirror_heads.h5")
+model.keras_model.save_weights(model_path)
 
 # 2. Fine tune all layers
-# model.train(dataset_train, dataset_val,
-#             learning_rate=config.LEARNING_RATE / 10,
-#             epochs=2,
-#             layers="all")
-
-
-# Save weights
-# Typically not needed because callbacks save after every epoch
-# Uncomment to save manually
-# model_path = os.path.join(MODEL_DIR, "mask_rcnn_mirror.h5")
-# model.keras_model.save_weights(model_path)
+model.train(dataset_train, dataset_val,
+            learning_rate=config.LEARNING_RATE / 10,
+            epochs=10,
+            layers="all")
+model_path = os.path.join(MODEL_DIR, "mask_rcnn_mirror_all.h5")
+model.keras_model.save_weights(model_path)
