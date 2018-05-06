@@ -4,7 +4,7 @@
 ![mirror_detector](assets/demo.png)
 
 ## Change Log
-2018/5/6    add move.py, transform label.png to label8.png, mirror.py is ok
+2018/5/6    add move.py, transform label.png to label8.png, mirror.py is ok, train network is ok.
 
 2018/5/5    Create project
 
