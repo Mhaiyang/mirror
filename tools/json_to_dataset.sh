@@ -1,7 +1,7 @@
 #!/bin/bash
-image="/home/taylor/Mask_RCNN/dataset/mask/00"
+image="/home/taylor/mirror/data/test/json/000"
 format=".json"
-for((i=10;i<40;i++))
+for((i=0;i<10;i++))
     do
         num=${i}
         labelme_json_to_dataset ${image}${num}${format}

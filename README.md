@@ -19,6 +19,21 @@ Docker Image : tf1.8.0-keras2.1.6-gpu:9.0-cudnn7-devel-ubuntu16.04
 
 'sudo pip3 install -r requirements.txt'
 
+#### labelme tool
+*python2*
+
+sudo apt-get install python-pyqt5  
+
+sudo pip install labelme
+
+Modify app.py:
+
+```
+import sys
+reload(sys)
+sys.setdefaultencoding('utf-8')
+```
+
 ## Usage
 `python train_mirror.py`
 
