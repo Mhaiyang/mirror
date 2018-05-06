@@ -39,7 +39,7 @@ sys.setdefaultencoding('utf-8')
 
 ## TODO
 - [x] Collecting images containing mirrors
-- [ ] Data preprocessing : Rename --> Resize --> label mirror --> move.py --> json_to_dataset --> transform(16 to 8)(label8.png and label_names.txt)
+- [x] Data preprocessing : Rename --> Resize --> label mirror --> move.py --> json_to_dataset --> transform(16 to 8)(label8.png and label_names.txt)
 - [ ] mirror.py
 - [ ] train_mirror.py (Training head and all.)
 - [ ] Using tensorboard to keep watch on training
