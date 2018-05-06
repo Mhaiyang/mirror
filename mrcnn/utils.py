@@ -269,8 +269,8 @@ class Dataset(object):
 
     def add_image(self, source, image_id, path, **kwargs):
         image_info = {
-            "id": image_id,
             "source": source,
+            "id": image_id,
             "path": path,
         }
         image_info.update(kwargs)
