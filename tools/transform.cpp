@@ -8,8 +8,8 @@ int main(void){
     char buff1[100];
     char buff2[100];
     for(int i=0;i<10;i++){
-        sprintf(buff1,"/home/taylor/Mask_RCNN/dataset/mask/000%d_json/label.png",i);
-        sprintf(buff2,"/home/taylor/Mask_RCNN/dataset/mask/000%d_json/label8.png",i);
+        sprintf(buff1,"/home/taylor/mirror/data/test/json/000%d_json/label.png",i);
+        sprintf(buff2,"/home/taylor/mirror/data/test/json/000%d_json/label8.png",i);
         //sprintf(buff1,"/media/lj/FA68-10A6/test_drug/disp/disp_%d.png",i);
         //sprintf(buff2,"/media/lj/FA68-10A6/test_drug/disp_8/disp_%d.png",i);
         Mat src;
