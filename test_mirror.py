@@ -1,7 +1,9 @@
-# # Mask R-CNN Demo
-#
-# A quick intro to using the pre-trained model to detect and segment objects.
+"""
+  @Time    : 2018-05-07
+  @Author  : TaylorMei
+  @Email   : mhy845879017@gmail.com
 
+"""
 
 import os
 import sys
@@ -12,10 +14,10 @@ import skimage.io
 import matplotlib
 import matplotlib.pyplot as plt
 
-import utils
-import model as modellib
-import visualize
-from config import Config
+import mrcnn.utils
+import mrcnn.model as modellib
+import mrcnn.visualize as visualize
+from mrcnn.config import Config
 
 # Root directory of the project
 ROOT_DIR = os.getcwd()
@@ -24,21 +26,17 @@ ROOT_DIR = os.getcwd()
 MODEL_DIR = os.path.join(ROOT_DIR, "logs")
 
 # Local path to trained weights file
-MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mirror20180329T0020", "mask_rcnn_mirror_0020.h5")
-# Download COCO trained weights from Releases if needed
-if not os.path.exists(MIRROR_MODEL_PATH):
-    print("{} does not exist!".format(MIRROR_MODEL_PATH))
-    exit()
+MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mask_rcnn_mirror_heads.h5")
 
 # Directory of images to run detection on
-IMAGE_DIR = os.path.join(ROOT_DIR, "dataset", "test")
-OUTPUT_PATH = os.path.join(ROOT_DIR, 'dataset', 'output')
+IMAGE_DIR = os.path.join(ROOT_DIR, "data", "test", "image")
+OUTPUT_PATH = os.path.join(ROOT_DIR, 'data', 'test', "output")
 
 
 ## Configurations
 class MirrorConfig(Config):
     """Derives from the base Config class and overrides values specific to the Mirror dataset"""
-    NAME = "mirror"
+    NAME = "Mirror"
     IMAGES_PER_GPU = 1
     NUM_CLASSES = 1 + 1 # Mirror has only one (mirror) class
     DETECTION_MIN_CONFIDENCE = 0.9
@@ -70,14 +68,12 @@ class_names = ['BG', 'Mirror']
 
 
 # ## Run Object Detection
-
-# Load a random image from the images folder
 imglist = os.listdir(IMAGE_DIR)
-print(len(imglist))
+print("Total {} test images".format(len(imglist)))
 for imgname in imglist:
     image = skimage.io.imread(os.path.join(IMAGE_DIR, imgname))
     # Run detection
-    results = model.detect([image], verbose=1)
+    results = model.detect(imgname, [image], verbose=1)
     # Visualize results
     r = results[0]
     visualize.display_instances(imgname, OUTPUT_PATH, image, r['rois'], r['masks'], r['class_ids'],

@@ -59,11 +59,11 @@ dataset_val.load_mirror(val_count, val_image_folder,
 dataset_val.prepare()
 
 # Load and display random samples
-image_ids = np.random.choice(dataset_train.image_ids, 4)
-for image_id in image_ids:
-    image = dataset_train.load_image(image_id)
-    mask, class_ids = dataset_train.load_mask(image_id)
-    visualize.display_top_masks(image, mask, class_ids, dataset_train.class_names)
+# image_ids = np.random.choice(dataset_train.image_ids, 4)
+# for image_id in image_ids:
+#     image = dataset_train.load_image(image_id)
+#     mask, class_ids = dataset_train.load_mask(image_id)
+#     visualize.display_top_masks(image, mask, class_ids, dataset_train.class_names)
 
 ### Create Model  ###
 model = modellib.MaskRCNN(mode="training", config=config,
@@ -90,7 +90,7 @@ elif init_with == "last":
 # 1. Train the head branches
 model.train(dataset_train, dataset_val,
             learning_rate=config.LEARNING_RATE,
-            epochs=100,
+            epochs=500,
             layers='heads')
 model_path = os.path.join(MODEL_DIR, "mask_rcnn_mirror_heads.h5")
 model.keras_model.save_weights(model_path)
@@ -98,7 +98,7 @@ model.keras_model.save_weights(model_path)
 # 2. Fine tune all layers
 model.train(dataset_train, dataset_val,
             learning_rate=config.LEARNING_RATE / 10,
-            epochs=10,
+            epochs=20,
             layers="all")
 model_path = os.path.join(MODEL_DIR, "mask_rcnn_mirror_all.h5")
 model.keras_model.save_weights(model_path)

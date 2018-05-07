@@ -4,12 +4,20 @@
 ![mirror_detector](assets/demo.png)
 
 ## Change Log
+2018/5/7    test_mirror.py is ok, add author information template.
+
 2018/5/6    add move.py, transform label.png to label8.png, mirror.py is ok, train network is ok.
 
-2018/5/5    Create project
+2018/5/5    Create project.
 
 ## Environment
-python3.5    tensorflow1.8.0    keras2.1.6
+python3.5    
+
+My Computer: tf 1.3.0 keras 2.1.3
+
+Server:
+
+tensorflow1.8.0    keras2.1.6
 
 CPU : Intel(R) Core(TM) i7-7700K CPU @ 4.20GHz
 
@@ -43,7 +51,7 @@ sys.setdefaultencoding('utf-8')
 - [x] mirror.py (what the occlusion?)
 - [x] train_mirror.py (Training head and all.)
 - [x] Using tensorboard to keep watch on training
-- [ ] test_mirror.py (Including save test results.)
+- [x] test_mirror.py (Including save test results.)
 - [ ] Next task ...
 
 ## License
