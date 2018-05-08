@@ -98,7 +98,7 @@ model.keras_model.save_weights(model_path)
 # 2. Fine tune all layers
 model.train(dataset_train, dataset_val,
             learning_rate=config.LEARNING_RATE / 10,
-            epochs=20,
+            epochs=520,
             layers="all")
 model_path = os.path.join(MODEL_DIR, "mask_rcnn_mirror_all.h5")
 model.keras_model.save_weights(model_path)

@@ -4,6 +4,9 @@
 ![mirror_detector](assets/demo.png)
 
 ## Change Log
+2018/5/8    training on the server. **But there still have an error when validaition batch size is two. one is ok.**
+            Saving new image _tf1.7.0-keras2.1.6-gpu:9.0-cudnn7.0.5-devel-ubuntu16.04_
+
 2018/5/7    test_mirror.py is ok, add author information template.
 
 2018/5/6    add move.py, transform label.png to label8.png, mirror.py is ok, train network is ok.
@@ -17,13 +20,13 @@ My Computer: tf 1.3.0 keras 2.1.3
 
 Server:
 
-tensorflow1.8.0    keras2.1.6
+tensorflow1.7.0    keras2.1.6   numpy1.14.3
 
 CPU : Intel(R) Core(TM) i7-7700K CPU @ 4.20GHz
 
 GPU : NVIDIA GTX 1080Ti
 
-Docker Image : tf1.8.0-keras2.1.6-gpu:9.0-cudnn7-devel-ubuntu16.04
+Docker Image : tf1.7.0-keras2.1.6-gpu:9.0-cudnn7.0.5-devel-ubuntu16.04
 
 'sudo pip3 install -r requirements.txt'
 

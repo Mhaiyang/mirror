@@ -34,13 +34,13 @@ class MirrorConfig(Config):
 
     # Reduce training ROIs per image because the images are small and have
     # few objects. Aim to allow ROI sampling to pick 33% positive ROIs.
-    TRAIN_ROIS_PER_IMAGE = 10
+    TRAIN_ROIS_PER_IMAGE = 5
 
     # Use a small epoch since the data is simple
-    STEPS_PER_EPOCH = 56
+    STEPS_PER_EPOCH = 112
 
     # use small validation steps since the epoch is small
-    VALIDATION_STEPS = 5
+    VALIDATION_STEPS = 37
 
     # skip detection with <x% confidence
     DETECTION_MIN_CONFIDENCE = 0.9
