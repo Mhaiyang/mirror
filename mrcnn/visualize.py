@@ -1,10 +1,8 @@
 """
-Mask R-CNN
-Display and Visualization Functions.
+  @Time    : 2018-5-8
+  @Author  : TaylorMei
+  @Email   : mhy845879017@gmail.com
 
-Copyright (c) 2017 Matterport, Inc.
-Licensed under the MIT License (see LICENSE for details)
-Written by Waleed Abdulla
 """
 
 import os
@@ -81,9 +79,9 @@ def apply_mask(image, mask, color, alpha=0.5):
     return image
 
 
-def display_instances(image, boxes, masks, class_ids, class_names,
+def display_instances_and_save_image(imgname, OUTPUT_PATH, image, boxes, masks, class_ids, class_names,
                       scores=None, title="",
-                      figsize=(16, 16), ax=None,
+                      figsize=(32, 32), ax=None,
                       show_mask=True, show_bbox=True,
                       colors=None, captions=None):
     """
@@ -116,8 +114,8 @@ def display_instances(image, boxes, masks, class_ids, class_names,
 
     # Show area outside image boundaries.
     height, width = image.shape[:2]
-    ax.set_ylim(height + 10, -10)
-    ax.set_xlim(-10, width + 10)
+    ax.set_ylim(height + 1 , -1)
+    ax.set_xlim(-1, width + 1)
     ax.axis('off')
     ax.set_title(title)
 
@@ -165,7 +163,11 @@ def display_instances(image, boxes, masks, class_ids, class_names,
             p = Polygon(verts, facecolor="none", edgecolor=color)
             ax.add_patch(p)
     ax.imshow(masked_image.astype(np.uint8))
+    # # TaylorMei want to save image.
+    # skimage.io.imsave(os.path.join(OUTPUT_PATH, imgname), masked_image.astype(np.uint8))
     if auto_show:
+        # TaylorMei want to save fig
+        plt.savefig(os.path.join(OUTPUT_PATH, imgname[:-4] + "_output.jpg"), bbox_inches='tight')
         plt.show()
 
 
