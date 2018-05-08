@@ -57,6 +57,9 @@ sys.setdefaultencoding('utf-8')
 - [x] test_mirror.py (Including save test results.)
 - [ ] Next task ...
 
+## Loss
+![loss](assets/loss.png)
+
 ## License
 * For academic and non-commercial use only.
 * For commercial use, please contact [mhy845879017@gmail.com](https://www.google.com/gmail/).

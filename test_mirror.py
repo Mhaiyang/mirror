@@ -76,6 +76,6 @@ for imgname in imglist:
     results = model.detect(imgname, [image], verbose=1)
     # Visualize results
     r = results[0]
-    visualize.display_instances(imgname, OUTPUT_PATH, image, r['rois'], r['masks'], r['class_ids'],
+    visualize.display_instances_and_save_image(imgname, OUTPUT_PATH, image, r['rois'], r['masks'], r['class_ids'],
                                 class_names, r['scores'])
 
