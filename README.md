@@ -26,7 +26,7 @@ CPU : Intel(R) Core(TM) i7-7700K CPU @ 4.20GHz
 
 GPU : NVIDIA GTX 1080Ti
 
-Docker Image : tf1.7.0-keras2.1.6-gpu:9.0-cudnn7.0.5-devel-ubuntu16.04
+Docker Image : _tf1.7.0-keras2.1.6-gpu:9.0-cudnn7.0.5-devel-ubuntu16.04_
 
 'sudo pip3 install -r requirements.txt'
 
