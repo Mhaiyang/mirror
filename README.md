@@ -4,6 +4,8 @@
 ![mirror_detector](assets/demo.png)
 
 ## Change Log
+2018/5/9    test model on server, begin to make presentation.
+
 2018/5/8    training on the server. **But there still have an error when validaition batch size is two. one is ok.**
             Saving new image _tf1.7.0-keras2.1.6-gpu:9.0-cudnn7.0.5-devel-ubuntu16.04_
 
