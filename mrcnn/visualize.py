@@ -168,7 +168,7 @@ def display_instances_and_save_image(imgname, OUTPUT_PATH, image, boxes, masks, 
     if auto_show:
         # TaylorMei want to save fig
         plt.savefig(os.path.join(OUTPUT_PATH, imgname[:-4] + "_output.jpg"), bbox_inches='tight')
-        plt.show()
+        # plt.show()
 
 
 def display_differences(image,

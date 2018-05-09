@@ -2430,7 +2430,7 @@ class MaskRCNN():
 
         return boxes, class_ids, scores, full_masks
 
-    def detect(self, images, verbose=0):
+    def detect(self, imgname, images, verbose=0):
         """Runs the detection pipeline.
 
         images: List of images, potentially of different sizes.
@@ -2446,7 +2446,7 @@ class MaskRCNN():
             images) == self.config.BATCH_SIZE, "len(images) must be equal to BATCH_SIZE"
 
         if verbose:
-            log("Processing {} images".format(len(images)))
+            log("Processing {} images : {}".format(len(images), imgname))
             for image in images:
                 log("image", image)
 
