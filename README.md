@@ -4,6 +4,8 @@
 ![mirror_detector](assets/demo.png)
 
 ## Change Log
+2018/6/4    train:593  val:51  test:50
+
 2018/5/9    test model on server, begin to make presentation.
 
 2018/5/8    training on the server. **But there still have an error when validaition batch size is two. one is ok.**
