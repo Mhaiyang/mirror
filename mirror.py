@@ -37,10 +37,10 @@ class MirrorConfig(Config):
     TRAIN_ROIS_PER_IMAGE = 5
 
     # Use a small epoch since the data is simple
-    STEPS_PER_EPOCH = 112
+    STEPS_PER_EPOCH = 593
 
     # use small validation steps since the epoch is small
-    VALIDATION_STEPS = 37
+    VALIDATION_STEPS = 51
 
     # skip detection with <x% confidence
     DETECTION_MIN_CONFIDENCE = 0.9

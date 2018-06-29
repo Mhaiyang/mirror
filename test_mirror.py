@@ -26,7 +26,7 @@ ROOT_DIR = os.getcwd()
 MODEL_DIR = os.path.join(ROOT_DIR, "logs")
 
 # Local path to trained weights file
-MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mask_rcnn_mirror_heads.h5")
+MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mirror20180605T2258", "mask_rcnn_mirror_0100.h5")
 
 # Directory of images to run detection on
 IMAGE_DIR = os.path.join(ROOT_DIR, "data", "test", "image")

@@ -1,7 +1,5 @@
 # Mirror Project
 
-## Task 1 : Mirror Detector
-![mirror_detector](assets/demo.png)
 
 ## Change Log
 2018/6/4    train:593  val:51  test:50
