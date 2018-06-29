@@ -57,7 +57,8 @@ sys.setdefaultencoding('utf-8')
 - [x] train_mirror.py (Training head and all.)
 - [x] Using tensorboard to keep watch on training
 - [x] test_mirror.py (Including save test results.)
-- [ ] After a long pause, restart the project at June 29th.
+      
+     **After a long pause, restart the project at June 29th.**
 - [ ] Adding evaluation code.(AP, mAP, AP-box, etc.)
 - [ ] Data augmentation.(flipping(left-right and top-down), rotation(90, 180 and 270))
 - [ ] Determine Baseline (Refined network based on our dataset) and Begin to improve the architecture of network.(Such as PANet.)
