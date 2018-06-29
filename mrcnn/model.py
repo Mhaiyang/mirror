@@ -2066,10 +2066,10 @@ class MaskRCNN():
         return dir_name, checkpoint
 
     def load_weights(self, filepath, by_name=False, exclude=None):
-        """Modified version of the correspoding Keras function with
+        """Modified version of the corresponding Keras function with
         the addition of multi-GPU support and the ability to exclude
         some layers from loading.
-        exlude: list of layer names to excluce
+        exclude: list of layer names to exclude
         """
         import h5py
         from keras.engine import topology
@@ -2294,8 +2294,8 @@ class MaskRCNN():
         callbacks = [
             keras.callbacks.TensorBoard(log_dir=self.log_dir,
                                         histogram_freq=0, write_graph=True, write_images=False),
-            # keras.callbacks.ModelCheckpoint(self.checkpoint_path,
-            #                                 verbose=0, save_weights_only=True),
+            keras.callbacks.ModelCheckpoint(self.checkpoint_path,
+                                            verbose=0, save_weights_only=True),
         ]
 
         # Train
@@ -2341,6 +2341,7 @@ class MaskRCNN():
         molded_images = []
         image_metas = []
         windows = []
+        # Actually only need handle one image.
         for image in images:
             # Resize image
             # TODO: move resizing to mold_image()
@@ -2451,6 +2452,7 @@ class MaskRCNN():
                 log("image", image)
 
         # Mold inputs to format expected by the neural network
+        # images is a list which has only one image.
         molded_images, image_metas, windows = self.mold_inputs(images)
 
         # Validate image sizes

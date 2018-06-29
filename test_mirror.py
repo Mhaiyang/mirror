@@ -38,7 +38,7 @@ class MirrorConfig(Config):
     """Derives from the base Config class and overrides values specific to the Mirror dataset"""
     NAME = "Mirror"
     IMAGES_PER_GPU = 1
-    NUM_CLASSES = 1 + 1 # Mirror has only one (mirror) class
+    NUM_CLASSES = 1 + 1 # Mirror has only one class (mirror).
     DETECTION_MIN_CONFIDENCE = 0.9
 
 
@@ -48,6 +48,7 @@ class InferenceConfig(MirrorConfig):
     GPU_COUNT = 1
     IMAGES_PER_GPU = 1
 
+
 config = InferenceConfig()
 config.display()
 
@@ -55,13 +56,13 @@ config.display()
 # ## Create Model and Load Trained Weights
 
 # Create model object in inference mode.
-model = modellib.MaskRCNN(mode="inference", model_dir=MODEL_DIR, config=config)
+model = modellib.MaskRCNN(mode="inference", config=config, model_dir=MODEL_DIR)
 
 # Load weights trained on MS-COCO
 model.load_weights(MIRROR_MODEL_PATH, by_name=True)
 
 
-# MIRROR Class names
+# MIRROR Class Names
 # Index of the class in the list is its ID. For example, to get ID of
 # the teddy bear class, use: class_names.index('teddy bear')
 class_names = ['BG', 'Mirror']
@@ -75,6 +76,8 @@ for imgname in imglist:
     # Run detection
     results = model.detect(imgname, [image], verbose=1)
     # Visualize results
+    # As detect function returns a list of dict, one dict per image,
+    # and each call detect function only feed one image, r =results[0]
     r = results[0]
     visualize.display_instances_and_save_image(imgname, OUTPUT_PATH, image, r['rois'], r['masks'], r['class_ids'],
                                 class_names, r['scores'])
