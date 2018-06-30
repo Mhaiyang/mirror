@@ -93,7 +93,7 @@ model.train(dataset_train, dataset_val,
             epochs=100,
             layers='heads')
 model_path = os.path.join(MODEL_DIR, "mask_rcnn_mirror_heads.h5")
-# model.keras_model.save_weights(model_path)
+model.keras_model.save_weights(model_path)
 
 # # 2. Fine tune all layers
 # model.train(dataset_train, dataset_val,
