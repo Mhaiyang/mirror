@@ -657,7 +657,6 @@ def trim_zeros(x):
     assert len(x.shape) == 2
     return x[~np.all(x == 0, axis=1)]
 
-
 def compute_matches(gt_boxes, gt_class_ids, gt_masks,
                     pred_boxes, pred_class_ids, pred_scores, pred_masks,
                     iou_threshold=0.5, score_threshold=0.0):
@@ -865,6 +864,7 @@ def norm_boxes(boxes, shape):
 
     Returns:
         [N, (y1, x1, y2, x2)] in normalized coordinates
+        The range of number is [0, 1]
     """
     h, w = shape
     scale = np.array([h - 1, w - 1, h - 1, w - 1])

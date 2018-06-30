@@ -2348,8 +2348,8 @@ class MaskRCNN():
             molded_image, window, scale, padding, crop = utils.resize_image(
                 image,
                 min_dim=self.config.IMAGE_MIN_DIM,
-                min_scale=self.config.IMAGE_MIN_SCALE,
                 max_dim=self.config.IMAGE_MAX_DIM,
+                min_scale=self.config.IMAGE_MIN_SCALE,
                 mode=self.config.IMAGE_RESIZE_MODE)
             molded_image = mold_image(molded_image, self.config)
             # Build image_meta
@@ -2693,7 +2693,7 @@ def compose_image_meta(image_id, original_image_shape, image_shape,
         [image_id] +                  # size=1
         list(original_image_shape) +  # size=3
         list(image_shape) +           # size=3
-        list(window) +                # size=4 (y1, x1, y2, x2) in image cooredinates
+        list(window) +                # size=4 (y1, x1, y2, x2) in image coordinates.
         [scale] +                     # size=1
         list(active_class_ids)        # size=num_classes
     )
