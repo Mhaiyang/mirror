@@ -29,7 +29,7 @@ class MirrorConfig(Config):
     IMAGE_MAX_DIM = 320
 
     BACKBONE_STRIDES = [4, 8, 16, 32, 64]
-    RPN_ANCHOR_SCALES = (64, 32, 24, 16, 8)  # anchor side in pixels
+    RPN_ANCHOR_SCALES = (8, 16, 16, 8, 4)  # anchor side in pixels
     RPN_ANCHOR_RATIOS = [0.5, 1, 2]
 
     # Reduce training ROIs per image because the images are small and have

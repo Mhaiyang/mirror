@@ -9,3 +9,5 @@
 2.change resize_image mode.(square to pad64?)
 
 3.Apply all anchor scales on each feature level.
+
+4. Try path augmentation of PANet. (model.py --> class msak rcnn --> build.)

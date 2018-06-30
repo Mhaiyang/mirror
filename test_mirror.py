@@ -39,7 +39,7 @@ class MirrorConfig(Config):
     NAME = "Mirror"
     IMAGES_PER_GPU = 1
     NUM_CLASSES = 1 + 1 # Mirror has only one class (mirror).
-    DETECTION_MIN_CONFIDENCE = 0.9
+    DETECTION_MIN_CONFIDENCE = 0.8
 
 
 class InferenceConfig(MirrorConfig):
