@@ -450,7 +450,7 @@ def resize_image(image, min_dim=None, max_dim=None, min_scale=None, mode="square
     if scale != 1:
         image = skimage.transform.resize(
             image, (round(h * scale), round(w * scale)),
-            order=1, mode="constant", preserve_range=True)
+            order=3, mode="constant", preserve_range=True)
 
     # Need padding or cropping?
     if mode == "square":

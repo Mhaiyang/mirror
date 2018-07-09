@@ -1825,7 +1825,7 @@ class MaskRCNN():
             mode: Either "training" or "inference". The inputs and
                 outputs of the model differ accordingly.
         """
-        assert mode in ['training', 'inference']
+        assert mode in ['training', 'inference'], "Mode must be 'training' or 'inference'!"
 
         # Image size must be dividable by 2 multiple times
         h, w = config.IMAGE_SHAPE[:2]
@@ -1868,6 +1868,7 @@ class MaskRCNN():
                 input_gt_masks = KL.Input(
                     shape=[config.IMAGE_SHAPE[0], config.IMAGE_SHAPE[1], None],
                     name="input_gt_masks", dtype=bool)
+
         elif mode == "inference":
             # Anchors in normalized coordinates
             input_anchors = KL.Input(shape=[None, 4], name="input_anchors")
@@ -1875,7 +1876,7 @@ class MaskRCNN():
         # Build the shared convolutional layers.
         # Bottom-up Layers
         # Returns a list of the last layers of each stage, 5 in total.
-        # Don't create the thead (stage 5), so we pick the 4th item in the list.
+        # Don't create the head (stage 5), so we pick the 4th item in the list.
         _, C2, C3, C4, C5 = resnet_graph(input_image, config.BACKBONE,
                                          stage5=True, train_bn=config.TRAIN_BN)
         # Top-down Layers
@@ -1891,6 +1892,7 @@ class MaskRCNN():
             KL.UpSampling2D(size=(2, 2), name="fpn_p3upsampled")(P3),
             KL.Conv2D(256, (1, 1), name='fpn_c2p2')(C2)])
         # Attach 3x3 conv to all P layers to get the final feature maps.
+        # TODO: Try path augmentation of PANet.
         P2 = KL.Conv2D(256, (3, 3), padding="SAME", name="fpn_p2")(P2)
         P3 = KL.Conv2D(256, (3, 3), padding="SAME", name="fpn_p3")(P3)
         P4 = KL.Conv2D(256, (3, 3), padding="SAME", name="fpn_p4")(P4)
@@ -1911,6 +1913,7 @@ class MaskRCNN():
             anchors = np.broadcast_to(anchors, (config.BATCH_SIZE,) + anchors.shape)
             # A hack to get around Keras's bad support for constants
             anchors = KL.Lambda(lambda x: tf.Variable(anchors), name="anchors")(input_image)
+
         else:
             anchors = input_anchors
 
@@ -1926,7 +1929,9 @@ class MaskRCNN():
         # of outputs across levels.
         # e.g. [[a1, b1, c1], [a2, b2, c2]] => [[a1, a2], [b1, b2], [c1, c2]]
         output_names = ["rpn_class_logits", "rpn_class", "rpn_bbox"]
+        # unzip layer_outputs.
         outputs = list(zip(*layer_outputs))
+        # zip the value of logits, class and bbox with corresponding name.
         outputs = [KL.Concatenate(axis=1, name=n)(list(o))
                    for o, n in zip(outputs, output_names)]
 
@@ -2006,6 +2011,7 @@ class MaskRCNN():
                        rpn_rois, output_rois,
                        rpn_class_loss, rpn_bbox_loss, class_loss, bbox_loss, mask_loss]
             model = KM.Model(inputs, outputs, name='mask_rcnn')
+
         else:
             # Network Heads
             # Proposal classifier and BBox regressor heads
@@ -2291,12 +2297,16 @@ class MaskRCNN():
                                        batch_size=self.config.BATCH_SIZE)
 
         # Callbacks
-        callbacks = [
-            keras.callbacks.TensorBoard(log_dir=self.log_dir,
-                                        histogram_freq=0, write_graph=True, write_images=False),
-            keras.callbacks.ModelCheckpoint(self.checkpoint_path,
-                                            verbose=0, save_weights_only=True),
-        ]
+        # if self.epoch % 10 == 0:
+        callbacks = [keras.callbacks.TensorBoard(log_dir=self.log_dir,
+                                                     histogram_freq=0, write_graph=True, write_images=False),
+                         # keras.callbacks.ModelCheckpoint(self.checkpoint_path,
+                         #                                 verbose=0, save_weights_only=True)
+                     ]
+        # else:
+        #     callbacks = [keras.callbacks.TensorBoard(log_dir=self.log_dir,
+        #                                              histogram_freq=0, write_graph=True, write_images=False)]
+
 
         # Train
         log("\nStarting at epoch {}. LR={}\n".format(self.epoch, learning_rate))
@@ -2465,6 +2475,7 @@ class MaskRCNN():
         # Anchors
         anchors = self.get_anchors(image_shape)
         # Duplicate across the batch dimension because Keras requires it
+        # Each batch has the same anchors.
         # TODO: can this be optimized to avoid duplicating the anchors?
         anchors = np.broadcast_to(anchors, (self.config.BATCH_SIZE,) + anchors.shape)
 

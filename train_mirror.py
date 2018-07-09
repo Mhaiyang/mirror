@@ -90,7 +90,7 @@ elif init_with == "last":
 # 1. Train the head branches
 model.train(dataset_train, dataset_val,
             learning_rate=config.LEARNING_RATE,
-            epochs=100,
+            epochs=50,
             layers='heads')
 model_path = os.path.join(MODEL_DIR, "mask_rcnn_mirror_heads.h5")
 model.keras_model.save_weights(model_path)

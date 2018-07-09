@@ -18,17 +18,29 @@
 ## Environment
 python3.5    
 
-My Computer: tf 1.3.0 keras 2.1.3
+**My Computer:**
 
-Server:
-
-tensorflow1.7.0    keras2.1.6   numpy1.14.3
-
-CPU : Intel(R) Core(TM) i7-7700K CPU @ 4.20GHz
+CPU : Intel(R) Core(TM) i7-8700 @ 3.20GHz x 12
 
 GPU : NVIDIA GTX 1080Ti
 
-Docker Image : _tf1.7.0-keras2.1.6-gpu:9.0-cudnn7.0.5-devel-ubuntu16.04_
+ubuntu16.04
+
+CUDA : 9.0.176
+
+cudnn : 7.1.4
+
+tensorflow1.7.0    keras2.1.6   numpy1.14.3
+
+**Server:**
+
+tensorflow1.7.0    keras2.1.6   numpy1.14.3
+
+CPU : Intel(R) Core(TM) i7-7700K @ 4.20GHz
+
+GPU : NVIDIA GTX 1080Ti
+
+Docker Image : tf1.7.0-keras2.1.6-gpu:9.0-cudnn7.0.5-devel-ubuntu16.04_
 
 'sudo pip3 install -r requirements.txt'
 

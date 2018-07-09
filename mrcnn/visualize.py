@@ -114,7 +114,7 @@ def display_instances_and_save_image(imgname, OUTPUT_PATH, image, boxes, masks, 
 
     # Show area outside image boundaries.
     height, width = image.shape[:2]
-    ax.set_ylim(height + 1 , -1)
+    ax.set_ylim(height + 1, -1)
     ax.set_xlim(-1, width + 1)
     ax.axis('off')
     ax.set_title(title)
