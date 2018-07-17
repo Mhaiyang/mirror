@@ -93,7 +93,7 @@ for imgname in imglist:
     ###########################################################################
     ################  Quantitative Evaluation for Single Image ################
     ###########################################################################
-    gt_box = a
+    gt_box = c
     gt_class_id = b
     gt_mask = c
     pred_box = r['rois']
