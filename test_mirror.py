@@ -14,7 +14,7 @@ import skimage.io
 import matplotlib
 import matplotlib.pyplot as plt
 
-import mrcnn.utils
+import mrcnn.utils as utils
 import mrcnn.model as modellib
 import mrcnn.visualize as visualize
 from mrcnn.config import Config
@@ -26,7 +26,7 @@ ROOT_DIR = os.getcwd()
 MODEL_DIR = os.path.join(ROOT_DIR, "logs")
 
 # Local path to trained weights file
-MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mirror20180605T2258", "mask_rcnn_mirror_0100.h5")
+MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mask_rcnn_mirror_heads.h5")
 
 # Directory of images to run detection on
 IMAGE_DIR = os.path.join(ROOT_DIR, "data", "test", "image")
@@ -39,6 +39,7 @@ class MirrorConfig(Config):
     NAME = "Mirror"
     IMAGES_PER_GPU = 1
     NUM_CLASSES = 1 + 1 # Mirror has only one class (mirror).
+    RPN_ANCHOR_SCALES = (8, 16, 16, 8, 4)  # anchor side in pixels
     DETECTION_MIN_CONFIDENCE = 0.8
 
 
@@ -47,6 +48,8 @@ class InferenceConfig(MirrorConfig):
     # one image at a time. Batch size = GPU_COUNT * IMAGES_PER_GPU
     GPU_COUNT = 1
     IMAGES_PER_GPU = 1
+
+    iou_threshold = 0.5
 
 
 config = InferenceConfig()
@@ -72,6 +75,11 @@ class_names = ['BG', 'Mirror']
 imglist = os.listdir(IMAGE_DIR)
 print("Total {} test images".format(len(imglist)))
 for imgname in imglist:
+
+    i = 0
+    mAPs = []
+    mAPs_range = []
+
     image = skimage.io.imread(os.path.join(IMAGE_DIR, imgname))
     # Run detection
     results = model.detect(imgname, [image], verbose=1)
@@ -81,4 +89,41 @@ for imgname in imglist:
     r = results[0]
     visualize.display_instances_and_save_image(imgname, OUTPUT_PATH, image, r['rois'], r['masks'], r['class_ids'],
                                 class_names, r['scores'])
+
+    ###########################################################################
+    ################  Quantitative Evaluation for Single Image ################
+    ###########################################################################
+    gt_box = a
+    gt_class_id = b
+    gt_mask = c
+    pred_box = r['rois']
+    pred_class_id = r['class_ids']
+    pred_score = r['scores']
+    pred_mask = r['masks']
+
+    # mAP for a certain IoU threshold
+    mAP, precisions, recalls, overlaps = utils.compute_ap(gt_box, gt_class_id, gt_mask,
+                                                    pred_box, pred_class_id, pred_score, pred_mask,
+                                                    iou_threshold = InferenceConfig.iou_threshold)
+    mAPs[i] = mAP
+    print("mAP is : {}".format(mAP))
+
+    # mAP over range of IoU thresholds
+    AP = utils.compute_ap_range(gt_box, gt_class_id, gt_mask,
+                                pred_box, pred_class_id, pred_score, pred_mask,
+                                iou_thresholds=None, verbose=1)
+    mAPs_range[i] = AP
+    print("mAP over range of IoU thresholds is : {}".format(AP))
+
+    ###########################################################################
+    ################  Quantitative Evaluation for All Image ################
+    ###########################################################################
+    mean_mAP = sum(mAPs)/len(mAPs)
+    mean_mAP_range = sum(mAPs_range)/len(mAPs_range)
+    print("For test data set, \n mean_mAP is : {} \n mean_mAP_range is : {}"
+          .format(mean_mAP, mean_mAP_range))
+
+
+
+
 
