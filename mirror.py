@@ -1,3 +1,4 @@
+import os
 import numpy as np
 from PIL import Image
 from mrcnn.config import Config
@@ -24,23 +25,23 @@ class MirrorConfig(Config):
 
     # Use small images for faster training. Set the limits of the small side
     # the large side, and that determines the image shape.
-    IMAGE_RESIZE_MODE = "square"
-    IMAGE_MIN_DIM = 200
-    IMAGE_MAX_DIM = 320
+    IMAGE_RESIZE_MODE = "pad64"
+    IMAGE_MIN_DIM = 1024
+    IMAGE_MAX_DIM = 1280
 
     BACKBONE_STRIDES = [4, 8, 16, 32, 64]
-    RPN_ANCHOR_SCALES = (8, 16, 16, 8, 4)  # anchor side in pixels
+    RPN_ANCHOR_SCALES = (16, 32, 64, 32, 16)  # anchor side in pixels
     RPN_ANCHOR_RATIOS = [0.5, 1, 2]
 
     # Reduce training ROIs per image because the images are small and have
     # few objects. Aim to allow ROI sampling to pick 33% positive ROIs.
-    TRAIN_ROIS_PER_IMAGE = 5
+    TRAIN_ROIS_PER_IMAGE = 10
 
     # Use a small epoch since the data is simple
-    STEPS_PER_EPOCH = 593
+    STEPS_PER_EPOCH = 1000
 
     # use small validation steps since the epoch is small
-    VALIDATION_STEPS = 51
+    VALIDATION_STEPS = 94
 
     # skip detection with <x% confidence
     DETECTION_MIN_CONFIDENCE = 0.9
@@ -83,6 +84,9 @@ class MirrorDataset(utils.Dataset):
             filestr = imglist[i].split(".")[0]  # 0011 for example
             mask_path = mask_folder + "/" + filestr + "_json/label8.png"
             yaml_path = mask_folder + "/" + filestr + "_json/info.yaml"
+            if not os.path.exists(yaml_path):
+                print("{} is incorrect".format(filestr))
+                continue
             img = Image.open(mask_path)
             width, height = img.size
             self.add_image("Mirror", image_id=i, path=img_folder + "/" + imglist[i],

@@ -30,16 +30,14 @@ COCO_MODEL_PATH = os.path.join(ROOT_DIR, "mask_rcnn_coco.h5")
 config = mirror.MirrorConfig()
 config.display()
 
-iter_num = 0
-
 # Configuration
 dataset_root_path = os.path.abspath(os.path.join(ROOT_DIR, "./data"))
 train_folder = dataset_root_path + "/train"
 val_folder = dataset_root_path + "/val"
 train_image_folder = train_folder + "/image"
-train_mask_folder = train_folder + "/json"
+train_mask_folder = train_folder + "/mask"
 val_image_folder = val_folder + "/image"
-val_mask_folder = val_folder + "/json"
+val_mask_folder = val_folder + "/mask"
 train_imglist = os.listdir(train_image_folder)
 train_count = len(train_imglist)
 val_imglist = os.listdir(val_image_folder)

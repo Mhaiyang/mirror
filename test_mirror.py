@@ -39,8 +39,8 @@ class MirrorConfig(Config):
     NAME = "Mirror"
     IMAGES_PER_GPU = 1
     NUM_CLASSES = 1 + 1 # Mirror has only one class (mirror).
-    RPN_ANCHOR_SCALES = (8, 16, 16, 8, 4)  # anchor side in pixels
-    DETECTION_MIN_CONFIDENCE = 0.8
+    RPN_ANCHOR_SCALES = (16, 32, 128, 32, 16)  # anchor side in pixels
+    DETECTION_MIN_CONFIDENCE = 0.5
 
 
 class InferenceConfig(MirrorConfig):
@@ -93,35 +93,35 @@ for imgname in imglist:
     ###########################################################################
     ################  Quantitative Evaluation for Single Image ################
     ###########################################################################
-    gt_box = c
-    gt_class_id = b
-    gt_mask = c
-    pred_box = r['rois']
-    pred_class_id = r['class_ids']
-    pred_score = r['scores']
-    pred_mask = r['masks']
-
-    # mAP for a certain IoU threshold
-    mAP, precisions, recalls, overlaps = utils.compute_ap(gt_box, gt_class_id, gt_mask,
-                                                    pred_box, pred_class_id, pred_score, pred_mask,
-                                                    iou_threshold = InferenceConfig.iou_threshold)
-    mAPs[i] = mAP
-    print("mAP is : {}".format(mAP))
-
-    # mAP over range of IoU thresholds
-    AP = utils.compute_ap_range(gt_box, gt_class_id, gt_mask,
-                                pred_box, pred_class_id, pred_score, pred_mask,
-                                iou_thresholds=None, verbose=1)
-    mAPs_range[i] = AP
-    print("mAP over range of IoU thresholds is : {}".format(AP))
-
-    ###########################################################################
-    ################  Quantitative Evaluation for All Image ################
-    ###########################################################################
-    mean_mAP = sum(mAPs)/len(mAPs)
-    mean_mAP_range = sum(mAPs_range)/len(mAPs_range)
-    print("For test data set, \n mean_mAP is : {} \n mean_mAP_range is : {}"
-          .format(mean_mAP, mean_mAP_range))
+    # gt_box = c
+    # gt_class_id = b
+    # gt_mask = c
+    # pred_box = r['rois']
+    # pred_class_id = r['class_ids']
+    # pred_score = r['scores']
+    # pred_mask = r['masks']
+    #
+    # # mAP for a certain IoU threshold
+    # mAP, precisions, recalls, overlaps = utils.compute_ap(gt_box, gt_class_id, gt_mask,
+    #                                                 pred_box, pred_class_id, pred_score, pred_mask,
+    #                                                 iou_threshold = InferenceConfig.iou_threshold)
+    # mAPs[i] = mAP
+    # print("mAP is : {}".format(mAP))
+    #
+    # # mAP over range of IoU thresholds
+    # AP = utils.compute_ap_range(gt_box, gt_class_id, gt_mask,
+    #                             pred_box, pred_class_id, pred_score, pred_mask,
+    #                             iou_thresholds=None, verbose=1)
+    # mAPs_range[i] = AP
+    # print("mAP over range of IoU thresholds is : {}".format(AP))
+    #
+    # ###########################################################################
+    # ################  Quantitative Evaluation for All Image ################
+    # ###########################################################################
+    # mean_mAP = sum(mAPs)/len(mAPs)
+    # mean_mAP_range = sum(mAPs_range)/len(mAPs_range)
+    # print("For test data set, \n mean_mAP is : {} \n mean_mAP_range is : {}"
+    #       .format(mean_mAP, mean_mAP_range))
 
 
 
