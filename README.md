@@ -2,7 +2,7 @@
 
 
 ## Change Log
-2018/7/18   Trained with new dataset on my own computer. However, some images have incorrect mask. Furthermore, inference time is too slow due to unknown reason.
+2018/7/18   Trained model with new dataset on my own computer. However, some images have incorrect mask. Furthermore, inference time is too slow due to unknown reason.
 
 2018/6/4    train:593  val:51  test:50
 
