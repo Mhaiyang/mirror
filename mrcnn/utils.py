@@ -285,11 +285,8 @@ class Dataset(object):
         """
         return ""
 
-    def prepare(self, class_map=None):
+    def prepare(self, mode="train"):
         """Prepares the Dataset class for use.
-
-        TODO: class map is not supported yet. When done, it should handle mapping
-              classes from different datasets to the same class ID.
         """
 
         def clean_name(name):
@@ -302,6 +299,7 @@ class Dataset(object):
         self.class_names = [clean_name(c["name"]) for c in self.class_info]
         self.num_images = len(self.image_info)
         self._image_ids = np.arange(self.num_images)
+        print("{} num_classes: {}, num_images: {}".format(mode, self.num_classes, self.num_images))
 
         # Mapping from source class and image IDs to internal IDs
         self.class_from_source_map = {"{}.{}".format(info['source'], info['id']): id
@@ -446,7 +444,7 @@ def resize_image(image, min_dim=None, max_dim=None, min_scale=None, mode="square
         if round(image_max * scale) > max_dim:
             scale = max_dim / image_max
 
-    # Resize image using bilinear interpolation
+    # Resize image using bicubic interpolation
     if scale != 1:
         image = skimage.transform.resize(
             image, (round(h * scale), round(w * scale)),

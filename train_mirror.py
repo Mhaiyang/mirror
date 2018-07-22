@@ -48,13 +48,13 @@ print("Train Image Count : {} \nValidation Image Count : {}".format(train_count,
 dataset_train = mirror.MirrorDataset()
 dataset_train.load_mirror(train_count, train_image_folder,
                           train_mask_folder, train_imglist)     # add class and add image.
-dataset_train.prepare()
+dataset_train.prepare("train")
 
 # Validation dataset
 dataset_val = mirror.MirrorDataset()
 dataset_val.load_mirror(val_count, val_image_folder,
                         val_mask_folder, val_imglist)      # add class and add image
-dataset_val.prepare()
+dataset_val.prepare("validation")
 
 # Load and display random samples
 # image_ids = np.random.choice(dataset_train.image_ids, 4)
@@ -93,10 +93,10 @@ model.train(dataset_train, dataset_val,
 model_path = os.path.join(MODEL_DIR, "mask_rcnn_mirror_heads.h5")
 model.keras_model.save_weights(model_path)
 
-# # 2. Fine tune all layers
-# model.train(dataset_train, dataset_val,
-#             learning_rate=config.LEARNING_RATE / 10,
-#             epochs=120,
-#             layers="all")
-# model_path = os.path.join(MODEL_DIR, "mask_rcnn_mirror_all.h5")
-# model.keras_model.save_weights(model_path)
+# 2. Fine tune all layers
+model.train(dataset_train, dataset_val,
+            learning_rate=config.LEARNING_RATE / 10,
+            epochs=80,
+            layers="all")
+model_path = os.path.join(MODEL_DIR, "mask_rcnn_mirror_all.h5")
+model.keras_model.save_weights(model_path)

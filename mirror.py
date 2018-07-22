@@ -30,18 +30,18 @@ class MirrorConfig(Config):
     IMAGE_MAX_DIM = 1280
 
     BACKBONE_STRIDES = [4, 8, 16, 32, 64]
-    RPN_ANCHOR_SCALES = (16, 32, 64, 32, 16)  # anchor side in pixels
+    RPN_ANCHOR_SCALES = (256, 128, 64, 32, 16)  # anchor side in pixels
     RPN_ANCHOR_RATIOS = [0.5, 1, 2]
 
     # Reduce training ROIs per image because the images are small and have
     # few objects. Aim to allow ROI sampling to pick 33% positive ROIs.
-    TRAIN_ROIS_PER_IMAGE = 10
+    TRAIN_ROIS_PER_IMAGE = 100
 
     # Use a small epoch since the data is simple
     STEPS_PER_EPOCH = 1000
 
     # use small validation steps since the epoch is small
-    VALIDATION_STEPS = 94
+    VALIDATION_STEPS = 93
 
     # skip detection with <x% confidence
     DETECTION_MIN_CONFIDENCE = 0.9
@@ -74,17 +74,17 @@ class MirrorDataset(utils.Dataset):
                 for j in range(info['height']):
                     at_pixel = image.getpixel((i, j))
                     if at_pixel == index + 1:
-                        mask[j, i, index] = 1   # [row column channel]
+                        mask[j, i, index] = 1   # [row column channel] i.e. [h, w, c]
         return mask
 
     def load_mirror(self, count, img_folder, mask_folder, imglist):
         self.add_class("Mirror", 1, "mirror")
         # self.add_class("Mirror", 2, "reflection")
         for i in range(count):
-            filestr = imglist[i].split(".")[0]  # 0011 for example
+            filestr = imglist[i].split(".")[0]  # 10.jpg for example
             mask_path = mask_folder + "/" + filestr + "_json/label8.png"
             yaml_path = mask_folder + "/" + filestr + "_json/info.yaml"
-            if not os.path.exists(yaml_path):
+            if not os.path.exists(mask_path):
                 print("{} is incorrect".format(filestr))
                 continue
             img = Image.open(mask_path)

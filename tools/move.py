@@ -13,13 +13,14 @@ if not os.path.exists(destination_path + "val/"):
     os.mkdir(destination_path + "val/mask/")
 if not os.path.exists(destination_path + "test/"):
     os.mkdir(destination_path + "test/")
-    os.mkdir(destination_path + "test/image")
-    os.mkdir(destination_path + "test/mask")
+    os.mkdir(destination_path + "test/image/")
+    os.mkdir(destination_path + "test/mask/")
+    os.mkdir(destination_path + "test/output/")
 
 list = os.listdir(source_path + "mask")
 print("Total {} images will be processed!".format(len(list)))
 
-train_order, val_order, test_order = 1945, 88, 129
+train_order, val_order, test_order = 1941, 87, 129
 
 for i, name in enumerate(list):
     # The ratio of train:validation:test is equal to 0.9:0.004:0.006
@@ -34,6 +35,7 @@ for i, name in enumerate(list):
         old_image = source_path + "image/" + order + ".jpg"
         new_image = destination_path + "train/" + "image/" + str(train_order) + ".jpg"
         shutil.copy(old_image, new_image)
+        print("{} Processing Train {}.jpg".format(train_order, order))
         train_order += 1
     # Validation data
     elif i < len(list)*0.94:
@@ -46,6 +48,7 @@ for i, name in enumerate(list):
         old_image = source_path + "image/" + order + ".jpg"
         new_image = destination_path + "val/" + "image/" + str(val_order) + ".jpg"
         shutil.copy(old_image, new_image)
+        print("{} Processing Val {}.jpg".format(val_order, order))
         val_order += 1
     # Test data
     else:
@@ -58,6 +61,7 @@ for i, name in enumerate(list):
         old_image = source_path + "image/" + order + ".jpg"
         new_image = destination_path + "test/" + "image/" + str(test_order) + ".jpg"
         shutil.copy(old_image, new_image)
+        print("{} Processing Test {}.jpg".format(test_order, order))
         test_order += 1
 print("Train count: {} \nValidation count: {}\nTest count: {}".format(train_order-1, val_order-1, test_order-1))
 

@@ -18,6 +18,8 @@ import mrcnn.utils as utils
 import mrcnn.model as modellib
 import mrcnn.visualize as visualize
 from mrcnn.config import Config
+from PIL import Image
+
 
 # Root directory of the project
 ROOT_DIR = os.getcwd()
@@ -26,11 +28,13 @@ ROOT_DIR = os.getcwd()
 MODEL_DIR = os.path.join(ROOT_DIR, "logs")
 
 # Local path to trained weights file
-MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mask_rcnn_mirror_heads.h5")
+MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mask_rcnn_mirror_all.h5")
 
 # Directory of images to run detection on
 IMAGE_DIR = os.path.join(ROOT_DIR, "data", "test", "image")
-OUTPUT_PATH = os.path.join(ROOT_DIR, 'data', 'test', "output")
+OUTPUT_PATH = os.path.join(ROOT_DIR, 'data', 'test', "output_all")
+if not os.path.exists(OUTPUT_PATH):
+    os.mkdir(OUTPUT_PATH)
 
 
 ## Configurations
@@ -39,8 +43,8 @@ class MirrorConfig(Config):
     NAME = "Mirror"
     IMAGES_PER_GPU = 1
     NUM_CLASSES = 1 + 1 # Mirror has only one class (mirror).
-    RPN_ANCHOR_SCALES = (16, 32, 128, 32, 16)  # anchor side in pixels
-    DETECTION_MIN_CONFIDENCE = 0.5
+    RPN_ANCHOR_SCALES = (256, 128, 64, 32, 16)  # anchor side in pixels
+    DETECTION_MIN_CONFIDENCE = 0.7
 
 
 class InferenceConfig(MirrorConfig):
@@ -49,7 +53,7 @@ class InferenceConfig(MirrorConfig):
     GPU_COUNT = 1
     IMAGES_PER_GPU = 1
 
-    iou_threshold = 0.5
+    # iou_threshold = 0.5
 
 
 config = InferenceConfig()
@@ -70,15 +74,38 @@ model.load_weights(MIRROR_MODEL_PATH, by_name=True)
 # the teddy bear class, use: class_names.index('teddy bear')
 class_names = ['BG', 'Mirror']
 
+## Written by TaylorMei
+# def get_mask(imgname):
+#     '''Get mask by specified image name'''
+#     filestr = imgname.split(".")[0]
+#     mask_folder = os.path.join(ROOT_DIR, "data", "test", "mask")
+#     mask_path = mask_folder + "/" +filestr + "_json/label8.png"
+#     if not os.path.exists(mask_path):
+#         print("{} has no label8.png")
+#     mask = Image.open(mask_path)
+#     width, height = mask.size
+#     num_obj = np.max(mask)
+#
+#     gt_mask = np.zeros([height, width, num_obj], dtype=np.uint8)
+#     for index in range(num_obj):
+#         """j is row and i is colum"""
+#         for i in range(width):
+#             for j in range(height):
+#                 at_pixel = image.getpixel((i,j))
+#                 if at_pixel == index + 1:
+#                     gt_mask[j, i, index] = 1
+#     return gt_mask
+
 
 # ## Run Object Detection
 imglist = os.listdir(IMAGE_DIR)
 print("Total {} test images".format(len(imglist)))
-for imgname in imglist:
 
-    i = 0
-    mAPs = []
-    mAPs_range = []
+# i = 0
+# mAPs = []
+# mAPs_range = []
+
+for imgname in imglist:
 
     image = skimage.io.imread(os.path.join(IMAGE_DIR, imgname))
     # Run detection
@@ -90,38 +117,40 @@ for imgname in imglist:
     visualize.display_instances_and_save_image(imgname, OUTPUT_PATH, image, r['rois'], r['masks'], r['class_ids'],
                                 class_names, r['scores'])
 
-    ###########################################################################
-    ################  Quantitative Evaluation for Single Image ################
-    ###########################################################################
-    # gt_box = c
-    # gt_class_id = b
-    # gt_mask = c
-    # pred_box = r['rois']
-    # pred_class_id = r['class_ids']
-    # pred_score = r['scores']
-    # pred_mask = r['masks']
-    #
-    # # mAP for a certain IoU threshold
-    # mAP, precisions, recalls, overlaps = utils.compute_ap(gt_box, gt_class_id, gt_mask,
-    #                                                 pred_box, pred_class_id, pred_score, pred_mask,
-    #                                                 iou_threshold = InferenceConfig.iou_threshold)
-    # mAPs[i] = mAP
-    # print("mAP is : {}".format(mAP))
-    #
-    # # mAP over range of IoU thresholds
-    # AP = utils.compute_ap_range(gt_box, gt_class_id, gt_mask,
-    #                             pred_box, pred_class_id, pred_score, pred_mask,
-    #                             iou_thresholds=None, verbose=1)
-    # mAPs_range[i] = AP
-    # print("mAP over range of IoU thresholds is : {}".format(AP))
-    #
-    # ###########################################################################
-    # ################  Quantitative Evaluation for All Image ################
-    # ###########################################################################
-    # mean_mAP = sum(mAPs)/len(mAPs)
-    # mean_mAP_range = sum(mAPs_range)/len(mAPs_range)
-    # print("For test data set, \n mean_mAP is : {} \n mean_mAP_range is : {}"
-    #       .format(mean_mAP, mean_mAP_range))
+#     ###########################################################################
+#     ################  Quantitative Evaluation for Single Image ################
+#     ###########################################################################
+#     gt_box = c
+#     gt_class_id = [1]
+#     gt_mask = get_mask(imgname)
+#     pred_box = r['rois']
+#     pred_class_id = r['class_ids']
+#     pred_score = r['scores']
+#     pred_mask = r['masks']
+#
+#     # mAP for a certain IoU threshold
+#     mAP, precisions, recalls, overlaps = utils.compute_ap(gt_box, gt_class_id, gt_mask,
+#                                                     pred_box, pred_class_id, pred_score, pred_mask,
+#                                                     iou_threshold = InferenceConfig.iou_threshold)
+#     mAPs[i] = mAP
+#     print("mAP is : {}".format(mAP))
+#
+#     # mAP over range of IoU thresholds
+#     AP = utils.compute_ap_range(gt_box, gt_class_id, gt_mask,
+#                                 pred_box, pred_class_id, pred_score, pred_mask,
+#                                 iou_thresholds=None, verbose=1)
+#     mAPs_range[i] = AP
+#     print("mAP over range of IoU thresholds is : {}".format(AP))
+#
+#     i = i + 1
+#
+# ###########################################################################
+# ################  Quantitative Evaluation for All Image ################
+# ###########################################################################
+# mean_mAP = sum(mAPs)/len(mAPs)
+# mean_mAP_range = sum(mAPs_range)/len(mAPs_range)
+# print("For test data set, \n mean_mAP is : {} \n mean_mAP_range is : {}"
+#       .format(mean_mAP, mean_mAP_range))
 
 
 

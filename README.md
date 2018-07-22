@@ -2,6 +2,8 @@
 
 
 ## Change Log
+2018/7/22   Trained with 2111 train-images, 93 validation-images, and 139 test-images. 50 epoches for heads and another 30 epoches for all cost approximately 10 hours, and Mask R-CNN based model achieves relative satisfactory results.  
+
 2018/7/18   Trained model with new dataset on my own computer. However, some images have incorrect mask. Furthermore, inference time is too slow due to unknown reason.
 
 2018/6/4    train:593  val:51  test:50

@@ -1,4 +1,4 @@
-1.utils.py-->resize_image-->453 order=1
+1(ok).utils.py-->resize_image-->453 order=1
 0: Nearest-neighbor
 1: Bi-linear (default)
 2: Bi-quadratic
@@ -6,7 +6,7 @@
 4: Bi-quartic
 5: Bi-quintic
 
-2.change resize_image mode.(square to pad64?)
+2(ok).change resize_image mode.(square to pad64?)
 
 3.Apply all anchor scales on each feature level.
 

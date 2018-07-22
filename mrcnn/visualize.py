@@ -12,6 +12,7 @@ import random
 import itertools
 import colorsys
 
+import skimage
 import numpy as np
 from skimage.measure import find_contours
 import matplotlib.pyplot as plt
@@ -164,11 +165,12 @@ def display_instances_and_save_image(imgname, OUTPUT_PATH, image, boxes, masks, 
             ax.add_patch(p)
     ax.imshow(masked_image.astype(np.uint8))
     # # TaylorMei want to save image.
-    # skimage.io.imsave(os.path.join(OUTPUT_PATH, imgname), masked_image.astype(np.uint8))
+    skimage.io.imsave(os.path.join(OUTPUT_PATH, imgname), masked_image.astype(np.uint8))
     if auto_show:
         # TaylorMei want to save fig
         plt.savefig(os.path.join(OUTPUT_PATH, imgname[:-4] + "_output.jpg"), bbox_inches='tight')
         # plt.show()
+        plt.close()
 
 
 def display_differences(image,

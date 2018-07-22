@@ -18,7 +18,7 @@ int main(void){
         if(!file)
         {
             number += 1;
-            cout<<i<<" not exist!"<<endl;
+            cout<<i<<endl;
             file.close();
             continue;
         }
@@ -41,6 +41,7 @@ int main(void){
             //imshow("haha",ff*100);
             //waitKey(0);
             imwrite(buff2,ff);
+            cout<<i<<"  is ok"<<endl;
             file.close();
         }
 
