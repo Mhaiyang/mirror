@@ -99,9 +99,11 @@ def compute_overlaps_masks(masks1, masks2):
     '''Computes IoU overlaps between two sets of masks.
     masks1, masks2: [Height, Width, instances]
     '''
-    # flatten masks
+    # flatten masks. if element large than .5, its value will be set to 1. Otherwise is set to 0
     masks1 = np.reshape(masks1 > .5, (-1, masks1.shape[-1])).astype(np.float32)
     masks2 = np.reshape(masks2 > .5, (-1, masks2.shape[-1])).astype(np.float32)
+    # The number of all points whose value is 1 is the mask area.
+    # The size of area is 1xn, each column is a instance's area.
     area1 = np.sum(masks1, axis=0)
     area2 = np.sum(masks2, axis=0)
 
@@ -675,12 +677,14 @@ def compute_matches(gt_boxes, gt_class_ids, gt_masks,
     pred_scores = pred_scores[:pred_boxes.shape[0]]
     # Sort predictions by score from high to low
     indices = np.argsort(pred_scores)[::-1]
+    # The type of indices is ndarray. Resorting pred_all(ndarray) according to indices.
     pred_boxes = pred_boxes[indices]
     pred_class_ids = pred_class_ids[indices]
     pred_scores = pred_scores[indices]
     pred_masks = pred_masks[..., indices]
 
     # Compute IoU overlaps [pred_masks, gt_masks]
+    # The type of overlaps is ndarray.
     overlaps = compute_overlaps_masks(pred_masks, gt_masks)
 
     # Loop through predictions and find matching ground truth boxes

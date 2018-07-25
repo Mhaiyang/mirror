@@ -2,6 +2,10 @@
 
 
 ## Change Log
+2018/7/25   mAP and mAP_range is ok, but i am not sure whether it is right or not. 
+            **Heads**  :mean_mAP is : 0.8920863309352518 mean_mAP_range is : 0.7190647482014391
+            **All**    :mean_mAP is : 0.9406474820143885 mean_mAP_range is : 0.7733812949640293
+
 2018/7/22   Trained with 2111 train-images, 93 validation-images, and 139 test-images. 50 epoches for heads and another 30 epoches for all cost approximately 10 hours, and Mask R-CNN based model achieves relative satisfactory results.  
 
 2018/7/18   Trained model with new dataset on my own computer. However, some images have incorrect mask. Furthermore, inference time is too slow due to unknown reason.
@@ -69,7 +73,7 @@ sys.setdefaultencoding('utf-8')
 ## TODO
 - [x] Collecting images containing mirrors
 - [x] Data preprocessing : Rename --> Resize --> label mirror --> move.py --> json_to_dataset --> transform(16 to 8)(label8.png and info.yaml)
-- [x] mirror.py (what the occlusion?)
+- [x] mirror.py (what the occlusion? Understand on July 25th.)
 - [x] train_mirror.py (Training head and all.)
 - [x] Using tensorboard to keep watch on training
 - [x] test_mirror.py (Including save test results.)

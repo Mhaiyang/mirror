@@ -13,6 +13,7 @@ import numpy as np
 import skimage.io
 import matplotlib
 import matplotlib.pyplot as plt
+import yaml
 
 import mrcnn.utils as utils
 import mrcnn.model as modellib
@@ -28,7 +29,7 @@ ROOT_DIR = os.getcwd()
 MODEL_DIR = os.path.join(ROOT_DIR, "logs")
 
 # Local path to trained weights file
-MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mask_rcnn_mirror_all.h5")
+MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mask_rcnn_mirror_heads.h5")
 
 # Directory of images to run detection on
 IMAGE_DIR = os.path.join(ROOT_DIR, "data", "test", "image")
@@ -53,7 +54,7 @@ class InferenceConfig(MirrorConfig):
     GPU_COUNT = 1
     IMAGES_PER_GPU = 1
 
-    # iou_threshold = 0.5
+    iou_threshold = 0.5
 
 
 config = InferenceConfig()
@@ -74,36 +75,54 @@ model.load_weights(MIRROR_MODEL_PATH, by_name=True)
 # the teddy bear class, use: class_names.index('teddy bear')
 class_names = ['BG', 'Mirror']
 
-## Written by TaylorMei
-# def get_mask(imgname):
-#     '''Get mask by specified image name'''
-#     filestr = imgname.split(".")[0]
-#     mask_folder = os.path.join(ROOT_DIR, "data", "test", "mask")
-#     mask_path = mask_folder + "/" +filestr + "_json/label8.png"
-#     if not os.path.exists(mask_path):
-#         print("{} has no label8.png")
-#     mask = Image.open(mask_path)
-#     width, height = mask.size
-#     num_obj = np.max(mask)
-#
-#     gt_mask = np.zeros([height, width, num_obj], dtype=np.uint8)
-#     for index in range(num_obj):
-#         """j is row and i is colum"""
-#         for i in range(width):
-#             for j in range(height):
-#                 at_pixel = image.getpixel((i,j))
-#                 if at_pixel == index + 1:
-#                     gt_mask[j, i, index] = 1
-#     return gt_mask
+# Written by TaylorMei
+def get_mask(imgname):
+    """Get mask by specified single image name"""
+    filestr = imgname.split(".")[0]
+    mask_folder = os.path.join(ROOT_DIR, "data", "test", "mask")
+    mask_path = mask_folder + "/" + filestr + "_json/label8.png"
+    if not os.path.exists(mask_path):
+        print("{} has no label8.png")
+    mask = Image.open(mask_path)
+    width, height = mask.size
+    num_obj = np.max(mask)
+
+    gt_mask = np.zeros([height, width, num_obj], dtype=np.uint8)
+    for index in range(num_obj):
+        """j is row and i is colum"""
+        for i in range(width):
+            for j in range(height):
+                at_pixel = mask.getpixel((i,j))
+                if at_pixel == index + 1:
+                    gt_mask[j, i, index] = 1
+    return gt_mask
+
+def get_class_ids(imgname):
+    """Get class_id by specified single image name"""
+    filestr = imgname.split(".")[0]
+    labels = []
+    class_folder = os.path.join(ROOT_DIR, "data", "test", "mask")
+    class_path = class_folder + "/" + filestr + "_json/info.yaml"
+    with open(class_path) as f:
+        temp = yaml.load(f.read())
+        labels = temp['label_names']
+        del labels[0]
+    labels_form = []
+    for i in range(len(labels)):
+        if labels[i].find("mirror")!=-1:
+            labels_form.append("mirror")
+    num = len(labels_form)
+    class_ids = np.ones([num], dtype=int)
+    return class_ids
 
 
 # ## Run Object Detection
 imglist = os.listdir(IMAGE_DIR)
 print("Total {} test images".format(len(imglist)))
 
-# i = 0
-# mAPs = []
-# mAPs_range = []
+i = 0
+mAPs = []
+mAPs_range = []
 
 for imgname in imglist:
 
@@ -114,43 +133,51 @@ for imgname in imglist:
     # As detect function returns a list of dict, one dict per image,
     # and each call detect function only feed one image, r =results[0]
     r = results[0]
+
     visualize.display_instances_and_save_image(imgname, OUTPUT_PATH, image, r['rois'], r['masks'], r['class_ids'],
                                 class_names, r['scores'])
 
-#     ###########################################################################
-#     ################  Quantitative Evaluation for Single Image ################
-#     ###########################################################################
-#     gt_box = c
-#     gt_class_id = [1]
-#     gt_mask = get_mask(imgname)
-#     pred_box = r['rois']
-#     pred_class_id = r['class_ids']
-#     pred_score = r['scores']
-#     pred_mask = r['masks']
-#
-#     # mAP for a certain IoU threshold
-#     mAP, precisions, recalls, overlaps = utils.compute_ap(gt_box, gt_class_id, gt_mask,
-#                                                     pred_box, pred_class_id, pred_score, pred_mask,
-#                                                     iou_threshold = InferenceConfig.iou_threshold)
-#     mAPs[i] = mAP
-#     print("mAP is : {}".format(mAP))
-#
-#     # mAP over range of IoU thresholds
-#     AP = utils.compute_ap_range(gt_box, gt_class_id, gt_mask,
-#                                 pred_box, pred_class_id, pred_score, pred_mask,
-#                                 iou_thresholds=None, verbose=1)
-#     mAPs_range[i] = AP
-#     print("mAP over range of IoU thresholds is : {}".format(AP))
-#
-#     i = i + 1
-#
-# ###########################################################################
-# ################  Quantitative Evaluation for All Image ################
-# ###########################################################################
-# mean_mAP = sum(mAPs)/len(mAPs)
-# mean_mAP_range = sum(mAPs_range)/len(mAPs_range)
-# print("For test data set, \n mean_mAP is : {} \n mean_mAP_range is : {}"
-#       .format(mean_mAP, mean_mAP_range))
+    ###########################################################################
+    ################  Quantitative Evaluation for Single Image ################
+    ###########################################################################
+    gt_mask = get_mask(imgname)
+    gt_box = utils.extract_bboxes(gt_mask)
+    gt_class_id = get_class_ids(imgname)
+    pred_box = r['rois']
+    pred_class_id = r['class_ids']
+    pred_score = r['scores']
+    pred_mask = r['masks']
+
+    N = pred_box.shape[0]
+    if N:
+        # mAP for a certain IoU threshold
+        mAP, precisions, recalls, overlaps = utils.compute_ap(gt_box, gt_class_id, gt_mask,
+                                                        pred_box, pred_class_id, pred_score, pred_mask,
+                                                        iou_threshold = InferenceConfig.iou_threshold)
+        # mAP over range of IoU thresholds
+        # Default range is 0.5---0.95, interval is 0.05
+        print("Precisions is {} \n Recalls is {} \n Overlaps is {}".format(precisions, recalls, overlaps))
+        AP = utils.compute_ap_range(gt_box, gt_class_id, gt_mask,
+                                    pred_box, pred_class_id, pred_score, pred_mask,
+                                    iou_thresholds=None, verbose=1)
+    else:
+        mAP = 0
+        AP = 0
+
+    mAPs.append(mAP)
+    print("mAP is : {}".format(mAP))
+    mAPs_range.append(AP)
+    print("mAP over range of IoU thresholds is : {}".format(AP))
+
+    i = i + 1
+
+###########################################################################
+################  Quantitative Evaluation for All Image ################
+###########################################################################
+mean_mAP = sum(mAPs)/len(mAPs)
+mean_mAP_range = sum(mAPs_range)/len(mAPs_range)
+print("For test data set, \n mean_mAP is : {} \n mean_mAP_range is : {}"
+      .format(mean_mAP, mean_mAP_range))
 
 
 

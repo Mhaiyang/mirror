@@ -74,7 +74,7 @@ class MirrorDataset(utils.Dataset):
                 for j in range(info['height']):
                     at_pixel = image.getpixel((i, j))
                     if at_pixel == index + 1:
-                        mask[j, i, index] = 1   # [row column channel] i.e. [h, w, c]
+                        mask[j, i, index] = 1   # [height width channel] i.e. [h, w, c]
         return mask
 
     def load_mirror(self, count, img_folder, mask_folder, imglist):
@@ -102,6 +102,8 @@ class MirrorDataset(utils.Dataset):
         mask = np.zeros([info['height'], info['width'], num_obj], dtype=np.uint8)
         mask = self.draw_mask(num_obj, mask, img, image_id)
         occlusion = np.logical_not(mask[:, :, -1]).astype(np.uint8)
+        print(mask.shape)
+        print(occlusion.shape)
         for i in range(count - 2, -1, -1):
             mask[:, :, i] = mask[:, :, i] * occlusion
             occlusion = np.logical_and(occlusion, np.logical_not(mask[:, :, i]))
