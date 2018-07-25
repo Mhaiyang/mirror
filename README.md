@@ -3,8 +3,10 @@
 
 ## Change Log
 2018/7/25   mAP and mAP_range is ok, but i am not sure whether it is right or not. 
+
 Heads : mean_mAP 0.8920863309352518 mean_mAP_range 0.7190647482014391
-All   : mean_mAP 0.9406474820143885 mean_mAP_range 0.7733812949640293
+
+   All: mean_mAP 0.9406474820143885 mean_mAP_range 0.7733812949640293
 
 2018/7/22   Trained with 2111 train-images, 93 validation-images, and 139 test-images. 50 epoches for heads and another 30 epoches for all cost approximately 10 hours, and Mask R-CNN based model achieves relative satisfactory results.  
 
