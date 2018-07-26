@@ -14,9 +14,8 @@ from mrcnn.config import Config
 
 # Directories of the project
 ROOT_DIR = os.getcwd()
-MODEL_DIR = os.path.join(ROOT_DIR, "logs")
-MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mask_rcnn_mirror_heads.h5")
-
+MODEL_DIR = os.path.join(ROOT_DIR, "logs/2")
+MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mask_rcnn_mirror_all.h5")
 IMAGE_DIR = os.path.join(ROOT_DIR, "data", "test", "image")
 OUTPUT_PATH = os.path.join(ROOT_DIR, 'data', 'test', "output_all")
 if not os.path.exists(OUTPUT_PATH):
@@ -46,9 +45,6 @@ model.load_weights(MIRROR_MODEL_PATH, by_name=True)
 
 # MIRROR Class Names
 class_names = ['BG', 'Mirror']
-
-# Written by TaylorMei
-
 
 # ## Run Object Detection
 imglist = os.listdir(IMAGE_DIR)
