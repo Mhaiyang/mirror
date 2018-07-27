@@ -693,9 +693,9 @@ def compute_matches(gt_boxes, gt_class_ids, gt_masks,
     gt_match = -1 * np.ones([gt_boxes.shape[0]])
     for i in range(len(pred_boxes)):
         # Find best matching ground truth box
-        # 1. Sort matches by score
+        # 1. Sort each row (prediction) by score, from high to low. Result is index.
         sorted_ixs = np.argsort(overlaps[i])[::-1]
-        # 2. Remove low scores
+        # 2. Remove low scores, np.where result is tulpe, [0] is its content.low_score_idx[0] is critical value.
         low_score_idx = np.where(overlaps[i, sorted_ixs] < score_threshold)[0]
         if low_score_idx.size > 0:
             sorted_ixs = sorted_ixs[:low_score_idx[0]]
@@ -735,7 +735,7 @@ def compute_ap(gt_boxes, gt_class_ids, gt_masks,
         pred_boxes, pred_class_ids, pred_scores, pred_masks,
         iou_threshold)
 
-    # Compute precision and recall at each prediction box step
+    # Compute precision and recall at each prediction box step. Sum logical number (0 or 1).
     precisions = np.cumsum(pred_match > -1) / (np.arange(len(pred_match)) + 1)
     recalls = np.cumsum(pred_match > -1).astype(np.float32) / len(gt_match)
 
@@ -749,7 +749,8 @@ def compute_ap(gt_boxes, gt_class_ids, gt_masks,
     for i in range(len(precisions) - 2, -1, -1):
         precisions[i] = np.maximum(precisions[i], precisions[i + 1])
 
-    # Compute mean AP over recall range
+    # Compute mean AP over recall range.
+    # The result of np.where is tuple, hence should use [0] to retrieve array or list.
     indices = np.where(recalls[:-1] != recalls[1:])[0] + 1
     mAP = np.sum((recalls[indices] - recalls[indices - 1]) *
                  precisions[indices])
@@ -760,7 +761,7 @@ def compute_ap(gt_boxes, gt_class_ids, gt_masks,
 def compute_ap_range(gt_box, gt_class_id, gt_mask,
                      pred_box, pred_class_id, pred_score, pred_mask,
                      iou_thresholds=None, verbose=1):
-    """Compute AP over a range or IoU thresholds. Default range is 0.5-0.95."""
+    """Compute AP over a range or IoU thresholds. Default range is 0.5-0.95"""
     # Default is 0.5 to 0.95 with increments of 0.05
     iou_thresholds = iou_thresholds or np.arange(0.5, 1.0, 0.05)
     

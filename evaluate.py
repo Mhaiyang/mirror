@@ -34,7 +34,7 @@ def get_mask(imgname):
                 at_pixel = mask.getpixel((i,j))
                 if at_pixel == index + 1:
                     gt_mask[j, i, index] = 1
-    return gt_mask
+    return num_obj, gt_mask
 
 def get_class_ids(imgname):
     """Get class_id by specified single image name"""

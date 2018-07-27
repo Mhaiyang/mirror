@@ -6,6 +6,7 @@
 """
 import os
 import skimage.io
+import numpy as np
 import mrcnn.utils as utils
 import mrcnn.model as modellib
 import mrcnn.visualize as visualize
@@ -14,7 +15,7 @@ from mrcnn.config import Config
 
 # Directories of the project
 ROOT_DIR = os.getcwd()
-MODEL_DIR = os.path.join(ROOT_DIR, "logs/2")
+MODEL_DIR = os.path.join(ROOT_DIR, "logs/3")
 MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mask_rcnn_mirror_all.h5")
 IMAGE_DIR = os.path.join(ROOT_DIR, "data", "test", "image")
 OUTPUT_PATH = os.path.join(ROOT_DIR, 'data', 'test', "output_all")
@@ -34,7 +35,9 @@ class InferenceConfig(MirrorConfig):
     # one image at a time. Batch size = GPU_COUNT * IMAGES_PER_GPU
     GPU_COUNT = 1
     IMAGES_PER_GPU = 1
-    iou_threshold = 0.5
+    # Important. If Iou greater than this threshold, this prediction will be considered as true.
+    bbox_iou_threshold = 0.5
+    mask_iou_threshold = 0.5
 
 config = InferenceConfig()
 config.display()
@@ -51,6 +54,7 @@ imglist = os.listdir(IMAGE_DIR)
 print("Total {} test images".format(len(imglist)))
 
 i = 0
+bbox_R = []
 mAPs = []
 mAPs_range = []
 
@@ -69,7 +73,7 @@ for imgname in imglist:
     ###########################################################################
     ################  Quantitative Evaluation for Single Image ################
     ###########################################################################
-    gt_mask = evaluate.get_mask(imgname)
+    num_obj, gt_mask = evaluate.get_mask(imgname)
     gt_box = utils.extract_bboxes(gt_mask)
     gt_class_id = evaluate.get_class_ids(imgname)
     pred_box = r['rois']
@@ -82,28 +86,32 @@ for imgname in imglist:
         # mAP for a certain IoU threshold
         mAP, precisions, recalls, overlaps = utils.compute_ap(gt_box, gt_class_id, gt_mask,
                                                         pred_box, pred_class_id, pred_score, pred_mask,
-                                                        iou_threshold = InferenceConfig.iou_threshold)
+                                                        iou_threshold = InferenceConfig.mask_iou_threshold)
         # mAP over range of IoU thresholds. Default range is 0.5---0.95, interval is 0.05
         print("{:15} {} \n{:15} {} \n{:15} {}".format("Precisions", precisions, "Recalls", recalls, "Overlaps", overlaps))
         AP = utils.compute_ap_range(gt_box, gt_class_id, gt_mask,
                                     pred_box, pred_class_id, pred_score, pred_mask,
                                     iou_thresholds=None, verbose=1)
+        bbox_recall, positive_ids = utils.compute_recall(pred_box, gt_box, InferenceConfig.bbox_iou_threshold)
     else:
         mAP = 0
         AP = 0
+        bbox_recall = 0
 
+    bbox_R.append(bbox_recall)
     mAPs.append(mAP)
     mAPs_range.append(AP)
-    print("{:35} {} \n{:35} {}".format("mAP", mAP, "mAP over range of IoU thresholds", AP))
+    print("{:35} {} \n{:35} {} \n{:35} {}".format("bbox_recall", bbox_recall, "mAP", mAP, "mAP over range of IoU thresholds", AP))
 
     i = i + 1
 
 ################################################################################################
 ############  Quantitative Evaluation for All Image   ##########################################
+mean_bbox_R = sum(bbox_R)/len(bbox_R)
 mean_mAP = sum(mAPs)/len(mAPs)
 mean_mAP_range = sum(mAPs_range)/len(mAPs_range)
-print("For Test Data Set, \n{:20} {} \n{:20} {}"
-      .format("mean_mAP", mean_mAP, "mean mAP range", mean_mAP_range))
+print("For Test Data Set, \n{:20} {} \n{:20} {} \n{:20} {}"
+      .format("mean bbox recall", mean_bbox_R, "mean_mAP", mean_mAP, "mean mAP range", mean_mAP_range))
 
 
 

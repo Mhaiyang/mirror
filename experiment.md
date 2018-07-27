@@ -12,4 +12,12 @@
     All:
     mean_mAP             0.9316546762589928 
     mean mAP range       0.756834532374101
-    
+3. mask分支改为conv-->deconv2-->deconv3-->deconv4--.deconv5-->conv, 输入尺寸14x14，输出尺寸224x224，训练12小时2分钟，训练损失0.6067，验证损失2.395
+    Heads:
+    mean bbox recall     0.9388489208633094 
+    mean_mAP             0.8902877697841727 
+    mean mAP range       0.5253597122302156
+    All:
+    mean bbox recall     0.9316546762589928 
+    mean_mAP             0.9190647482014388 
+    mean mAP range       0.6375899280575538

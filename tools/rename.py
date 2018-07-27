@@ -2,7 +2,7 @@ import os
 
 class ImageRename():
     def __init__(self):
-        self.path = os.path.join(os.getcwd(), '../again_OriginalImage')
+        self.path = os.path.join(os.getcwd(), '../experiment/rim')
 
     def rename(self):
         filelist = os.listdir(self.path)

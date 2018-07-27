@@ -968,32 +968,32 @@ def build_fpn_mask_graph(rois, feature_maps, image_meta,
                         name="roi_align_mask")([rois, image_meta] + feature_maps)
 
     # Conv layers
-    x = KL.TimeDistributed(KL.Conv2D(256, (5, 5), padding="same"),
+    x = KL.TimeDistributed(KL.Conv2D(128, (3, 3), padding="same"),
                            name="mrcnn_mask_conv11")(x)
     x = KL.TimeDistributed(BatchNorm(),
-                           name='mrcnn_mask_bn1')(x, training=train_bn)
+                           name='mrcnn_mask_bn11')(x, training=train_bn)
     x = KL.Activation('relu')(x)
 
-    x = KL.TimeDistributed(KL.Conv2D(256, (5, 5), padding="same"),
-                           name="mrcnn_mask_conv22")(x)
+    x = KL.TimeDistributed(KL.Conv2DTranspose(64, (2, 2), strides=2, activation="relu"),
+                           name="mrcnn_mask_deconv2")(x)
     x = KL.TimeDistributed(BatchNorm(),
-                           name='mrcnn_mask_bn2')(x, training=train_bn)
+                           name='mrcnn_mask_bn22')(x, training=train_bn)
     x = KL.Activation('relu')(x)
 
-    x = KL.TimeDistributed(KL.Conv2D(256, (5, 5), padding="same"),
-                           name="mrcnn_mask_conv33")(x)
+    x = KL.TimeDistributed(KL.Conv2DTranspose(32, (2, 2), strides=2, activation="relu"),
+                           name="mrcnn_mask_deconv3")(x)
     x = KL.TimeDistributed(BatchNorm(),
-                           name='mrcnn_mask_bn3')(x, training=train_bn)
+                           name='mrcnn_mask_bn33')(x, training=train_bn)
     x = KL.Activation('relu')(x)
 
-    x = KL.TimeDistributed(KL.Conv2D(256, (5, 5), padding="same"),
-                           name="mrcnn_mask_conv44")(x)
+    x = KL.TimeDistributed(KL.Conv2DTranspose(16, (2, 2), strides=2, activation="relu"),
+                           name="mrcnn_mask_deconv4")(x)
     x = KL.TimeDistributed(BatchNorm(),
-                           name='mrcnn_mask_bn4')(x, training=train_bn)
+                           name='mrcnn_mask_bn44')(x, training=train_bn)
     x = KL.Activation('relu')(x)
 
-    x = KL.TimeDistributed(KL.Conv2DTranspose(256, (2, 2), strides=2, activation="relu"),
-                           name="mrcnn_mask_deconv")(x)
+    x = KL.TimeDistributed(KL.Conv2DTranspose(8, (2, 2), strides=2, activation="relu"),
+                           name="mrcnn_mask_deconv5")(x)
     x = KL.TimeDistributed(KL.Conv2D(num_classes, (1, 1), strides=1, activation="sigmoid"),
                            name="mrcnn_mask")(x)
     return x
