@@ -28,7 +28,7 @@ def get_mask(imgname):
 
     gt_mask = np.zeros([height, width, num_obj], dtype=np.uint8)
     for index in range(num_obj):
-        """j is row and i is colum"""
+        """j is row and i is column"""
         for i in range(width):
             for j in range(height):
                 at_pixel = mask.getpixel((i,j))

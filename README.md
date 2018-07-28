@@ -2,7 +2,7 @@
 
 
 ## Change Log
-2018/7/27   Tried to changed mask branch, bad results.
+2018/7/27   Tried to changed mask branch, bad results. Begin to augment data set.
 
 2018/7/25   mAP and mAP_range is ok, but i am not sure whether it is right or not. 
 
@@ -83,8 +83,8 @@ sys.setdefaultencoding('utf-8')
 - [x] test_mirror.py (Including save test results.)
       
      **After a long pause, restart the project at June 29th.**
-- [ ] Adding evaluation code.(AP, mAP, AP-box, etc.)
-- [ ] Data augmentation.(flipping(left-right and top-down), rotation(90, 180 and 270))
+- [x] Adding evaluation code.(AP, mAP, box-recall, etc.) (AP-bbox is still unresolved.)
+- [ ] Data augmentation.(flipping(left-right and top-down), rotation(90, 180 and 270), and cropping.)
 - [ ] Determine Baseline (Refined network based on our dataset) and Begin to improve the architecture of network.(Such as PANet.)
 
 ## Loss

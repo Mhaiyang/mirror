@@ -8,12 +8,10 @@
   @Function: for test code
   
 """
-import numpy as np
+import yaml
 
-a = np.array([3, 4, 5])
-b = np.arange(3) + 1
-test = np.cumsum(a > 3)
-print(a)
-print(b)
-print(test)
-print(test/b)
+with open("/home/taylor/mirror/data/train/mask/1_json/info.yaml") as f:
+    temp = yaml.load(f.read())
+    labels = temp['label_names']
+    a = 2
+    print(labels[:a])
