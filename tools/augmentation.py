@@ -20,21 +20,25 @@ import skimage.io
 
 DATA_DIR = os.path.abspath(os.path.join(os.getcwd(), "../data", "train"))
 IMAGE_DIR = os.path.join(DATA_DIR, "image")
+if not os.path.exists(IMAGE_DIR):
+    os.mkdir(IMAGE_DIR)
 MASK_DIR = os.path.join(DATA_DIR, "mask")
-OUTPUT_DIR = os.path.join(DATA_DIR, "augmentation", "train")
-iou_threshold = 0.7
+if not os.path.exists(MASK_DIR):
+    os.mkdir(MASK_DIR)
+OUTPUT_DIR = os.path.join(DATA_DIR, "../../augmentation", "train")
+if not os.path.exists(OUTPUT_DIR):
+    os.mkdir(OUTPUT_DIR)
+    os.mkdir(os.path.join(OUTPUT_DIR, "image"))
+    os.mkdir(os.path.join(OUTPUT_DIR, "mask"))
 
-def crop(y1, x1, y2, x2, image, mask):
-    cropped_image = image[y1:y2, x1:x2, :]
-    cropped_mask = mask[y1:y2, x1:x2, :]
-
-    return cropped_image, cropped_mask
+iou_threshold_large = 0.6
+iou_threshold_small = 0.3
 
 imglist = os.listdir(IMAGE_DIR)
-print("Total {} images will be augmented!")
+print("Total {} images will be augmented!".format(len(imglist)))
 
 for imgname in imglist:
-
+    print(imgname)
     filestr = imgname.split(".")[0]
     image_path = IMAGE_DIR + "/" + imgname
     mask_path = MASK_DIR + "/" + filestr + "_json/label8.png"
@@ -61,36 +65,60 @@ for imgname in imglist:
         temp = yaml.load(f.read())
         labels = temp['label_names']
 
-    # crop operation
-    ratios = [(160, 128), (320, 256), (480, 384), (640, 512)]
-    shapes = ["wide", "square", "high"]
-    for i, ratio in enumerate(ratios):
-        shape = random.sample(shapes, 1)[0]
+    # crop operation. (width, height)
+    scales_1 = [(960, 768), (960, 960), (768, 960)]
+    scales_2 = [(640, 512), (640, 640), (512, 640)]
+    ratio_1 = random.sample(scales_1, 1)[0]
+    ratio_2 = random.sample(scales_2, 1)[0]
+    ratios = []
+    ratios.append(ratio_1)
+    ratios.append(ratio_2)
+
+    for ratio in ratios:
+        print(ratio)
+        if ratio[0] > 767:
+            iou_threshold = iou_threshold_large
+        else:
+            iou_threshold = iou_threshold_small
+        print("iou threshold : {}".format(iou_threshold))
         iou = np.zeros([num_obj])
-        if shape == "wide":
-            while iou < iou_threshold:
-                y1 = random.randint(1, height - ratio[1] + 1)
-                x1 = random.randint(1, width - ratio[0] + 1)
-                y2 = y1 + 896
-                x2 = x1 + 1120
-                box = np.array([y1, x1, y2, x2])
-                box_area = 1120.0 * 896.0
-                boxes = utils.extract_bboxes(gt_mask)
-                boxes_area = np.zeros([boxes.shape[0]], dtype=float)
-                for i in range(len(boxes_area)):
-                    boxes_area[i] = (boxes[2] - boxes[0]) * (boxes[3] - boxes[1])
-                iou = utils.compute_iou(box, boxes, box_area, boxes_area)
-                if len(np.where(iou >= iou_threshold)[0]):
-                    # Handle image, label, and mask
-                    new_image = image[y1:y2, x1:x2, :]
-                    skimage.io.imsave(new_image, OUTPUT_DIR + "/image/" + filestr + "_" + shape + "_" + str(i) + ".jpg")
-                    new_mask = mask.crop((x1, y1, x2, y2))
-                    new_mask.save(OUTPUT_DIR + "/mask/" + filestr + "_" + shape + "_" + str(i) + "_json/label8.png")
-                    new_label = labels[:len(np.where(iou > iou_threshold)[0])+1]
-
-
-
-
+        iteration = 0
+        while not len(np.where(iou >= iou_threshold)[0]):
+            iteration += 1
+            if iteration > 100:
+                iou_threshold -= 0.001
+            y1 = random.randint(1, height - ratio[1] + 1)
+            x1 = random.randint(1, width - ratio[0] + 1)
+            y2 = y1 + ratio[1]
+            x2 = x1 + ratio[0]
+            box = np.array([y1, x1, y2, x2])
+            box_area = float(ratio[0]*ratio[1])
+            boxes = utils.extract_bboxes(gt_mask)
+            boxes_area = np.zeros([boxes.shape[0]], dtype=float)
+            for i in range(len(boxes_area)):
+                boxes_area[i] = (boxes[i][2] - boxes[i][0]) * (boxes[i][3] - boxes[i][1])
+            iou = utils.compute_iou(box, boxes, box_area, boxes_area)
+            if len(np.where(iou >= iou_threshold)[0]):
+                # have found suitable box
+                print("iou : {}".format(iou))
+                # Handle image, mask, and label
+                if not os.path.exists(OUTPUT_DIR + "/mask/" + filestr + "_" + str(ratio[0]) + "x" + str(ratio[1]) + "_json"):
+                    os.mkdir(OUTPUT_DIR + "/mask/" + filestr + "_" + str(ratio[0]) + "x" + str(ratio[1]) + "_json")
+                new_image = image[y1:y2, x1:x2, :]
+                skimage.io.imsave(OUTPUT_DIR + "/image/" + filestr + "_" + str(ratio[0]) + "x" + str(ratio[1]) + ".jpg", new_image)
+                new_mask = mask.crop((x1, y1, x2, y2))
+                new_mask.save(OUTPUT_DIR + "/mask/" + filestr + "_" + str(ratio[0]) + "x" + str(ratio[1]) + "_json/label8.png")
+                max_value = 0
+                for column in range(ratio[0]):
+                    for row in range(ratio[1]):
+                        pixel = new_mask.getpixel((column, row))
+                        if max_value <= pixel:
+                            max_value = pixel
+                new_label = labels[:max_value + 1]
+                temp["label_names"] = new_label
+                with open(OUTPUT_DIR + "/mask/" + filestr + "_" + str(ratio[0]) + "x" + str(ratio[1]) + "_json/info.yaml", "w") as f:
+                    yaml.dump(temp, f)
+                print("##########  Okay!  ###########")
 
 
 
