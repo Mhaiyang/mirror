@@ -2,6 +2,8 @@
 
 
 ## Change Log
+2018/7/29   Accomplished data augmentation.(cropping, which include two scales).The number of train data from 2111 to 2111+4222=6333
+
 2018/7/27   Tried to changed mask branch, bad results. Begin to augment data set.
 
 2018/7/25   mAP and mAP_range is ok, but i am not sure whether it is right or not. 
@@ -84,7 +86,7 @@ sys.setdefaultencoding('utf-8')
       
      **After a long pause, restart the project at June 29th.**
 - [x] Adding evaluation code.(AP, mAP, box-recall, etc.) (AP-bbox is still unresolved.)
-- [ ] Data augmentation.(flipping(left-right and top-down), rotation(90, 180 and 270), and cropping.)
+- [x] Data augmentation.(cropping[two scales].)
 - [ ] Determine Baseline (Refined network based on our dataset) and Begin to improve the architecture of network.(Such as PANet.)
 
 ## Loss
