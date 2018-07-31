@@ -18,21 +18,20 @@ sys.path.append("../mrcnn")
 import mrcnn.utils as utils
 import skimage.io
 
-DATA_DIR = os.path.abspath(os.path.join(os.getcwd(), "../data", "train"))
+DATA_DIR = os.path.abspath(os.path.join(os.getcwd(), "../data", "test"))
 IMAGE_DIR = os.path.join(DATA_DIR, "image")
 if not os.path.exists(IMAGE_DIR):
     os.mkdir(IMAGE_DIR)
 MASK_DIR = os.path.join(DATA_DIR, "mask")
 if not os.path.exists(MASK_DIR):
     os.mkdir(MASK_DIR)
-OUTPUT_DIR = os.path.join(DATA_DIR, "../../augmentation", "train")
+OUTPUT_DIR = os.path.join(DATA_DIR, "../../augmentation", "test")
 if not os.path.exists(OUTPUT_DIR):
     os.mkdir(OUTPUT_DIR)
     os.mkdir(os.path.join(OUTPUT_DIR, "image"))
     os.mkdir(os.path.join(OUTPUT_DIR, "mask"))
 
-iou_threshold_large = 0.6
-iou_threshold_small = 0.3
+iou_initial = 0.7
 
 imglist = os.listdir(IMAGE_DIR)
 print("Total {} images will be augmented!".format(len(imglist)))
@@ -76,19 +75,18 @@ for imgname in imglist:
 
     for ratio in ratios:
         print(ratio)
-        if ratio[0] > 767:
-            iou_threshold = iou_threshold_large
-        else:
-            iou_threshold = iou_threshold_small
-        print("iou threshold : {}".format(iou_threshold))
+        iou_threshold = iou_initial
         iou = np.zeros([num_obj])
         iteration = 0
         while not len(np.where(iou >= iou_threshold)[0]):
             iteration += 1
             if iteration > 100:
                 iou_threshold -= 0.001
-            y1 = random.randint(1, height - ratio[1] + 1)
-            x1 = random.randint(1, width - ratio[0] + 1)
+            # if iou_threshold < IoU_MIN:
+            #     print("NO SUITABLE CROPPING")
+            #     break
+            y1 = random.randint(0, height - ratio[1] - 1)
+            x1 = random.randint(0, width - ratio[0] - 1)
             y2 = y1 + ratio[1]
             x2 = x1 + ratio[0]
             box = np.array([y1, x1, y2, x2])

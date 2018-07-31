@@ -31,7 +31,7 @@ config = mirror.MirrorConfig()
 config.display()
 
 # Configuration
-dataset_root_path = os.path.abspath(os.path.join(ROOT_DIR, "./data"))
+dataset_root_path = os.path.abspath(os.path.join(ROOT_DIR, "./augmentation"))
 train_folder = dataset_root_path + "/train"
 val_folder = dataset_root_path + "/val"
 train_image_folder = train_folder + "/image"
@@ -85,10 +85,10 @@ elif init_with == "last":
 
 # ## Training
 
-# 1. Train the head branches
+#1. Train the head branches
 model.train(dataset_train, dataset_val,
             learning_rate=config.LEARNING_RATE,
-            epochs=50,
+            epochs=20,
             layers='heads')
 model_path = os.path.join(MODEL_DIR, "mask_rcnn_mirror_heads.h5")
 model.keras_model.save_weights(model_path)
@@ -96,7 +96,7 @@ model.keras_model.save_weights(model_path)
 # 2. Fine tune all layers
 model.train(dataset_train, dataset_val,
             learning_rate=config.LEARNING_RATE / 10,
-            epochs=80,
+            epochs=40,
             layers="all")
 model_path = os.path.join(MODEL_DIR, "mask_rcnn_mirror_all.h5")
 model.keras_model.save_weights(model_path)

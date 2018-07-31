@@ -8,4 +8,4 @@
   @Function: for test code
   
 """
-print(int(526/100))
+

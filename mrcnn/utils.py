@@ -63,7 +63,7 @@ def compute_iou(box, boxes, box_area, boxes_area):
     boxes_area: array of length boxes_count.
 
     Note: the areas are passed in rather than calculated here for
-          efficency. Calculate once in the caller to avoid duplicate work.
+          efficiency. Calculate once in the caller to avoid duplicate work.
     """
     # Calculate intersection areas
     y1 = np.maximum(box[0], boxes[:, 0])
@@ -718,7 +718,7 @@ def compute_matches(gt_boxes, gt_class_ids, gt_masks,
     return gt_match, pred_match, overlaps
 
 
-def compute_ap(gt_boxes, gt_class_ids, gt_masks,
+def compute_ap_mask(gt_boxes, gt_class_ids, gt_masks,
                pred_boxes, pred_class_ids, pred_scores, pred_masks,
                iou_threshold=0.5):
     """Compute Average Precision at a set IoU threshold (default 0.5).
@@ -769,7 +769,7 @@ def compute_ap_range(gt_box, gt_class_id, gt_mask,
     AP = []
     for iou_threshold in iou_thresholds:
         ap, precisions, recalls, overlaps =\
-            compute_ap(gt_box, gt_class_id, gt_mask,
+            compute_ap_mask(gt_box, gt_class_id, gt_mask,
                         pred_box, pred_class_id, pred_score, pred_mask,
                         iou_threshold=iou_threshold)
         if verbose:
@@ -782,7 +782,7 @@ def compute_ap_range(gt_box, gt_class_id, gt_mask,
     return AP
 
 
-def compute_recall(pred_boxes, gt_boxes, iou):
+def compute_ap_box(pred_boxes, gt_boxes, iou):
     """Compute the recall at the given IoU threshold. It's an indication
     of how many GT boxes were found by the given prediction boxes.
 
@@ -790,14 +790,29 @@ def compute_recall(pred_boxes, gt_boxes, iou):
     gt_boxes: [N, (y1, x1, y2, x2)] in image coordinates
     """
     # Measure overlaps
+    # For each pred_box (row), find which gt_box has the largest iou with it.
     overlaps = compute_overlaps(pred_boxes, gt_boxes)
     iou_max = np.max(overlaps, axis=1)
-    iou_argmax = np.argmax(overlaps, axis=1)
-    positive_ids = np.where(iou_max >= iou)[0]
-    matched_gt_boxes = iou_argmax[positive_ids]
+    # iou_argmax = np.argmax(overlaps, axis=1)
+    # positive_ids = np.where(iou_max >= iou)[0]
+    # matched_gt_boxes = iou_argmax[positive_ids]
 
-    recall = len(set(matched_gt_boxes)) / gt_boxes.shape[0]
-    return recall, positive_ids
+    # Written by Taylor Mei
+    precisions = np.cumsum(iou_max > iou) / (np.arange(len(iou_max)) + 1)
+    recalls = np.cumsum(iou_max > iou).astype(np.float32) / gt_boxes.shape[0]
+
+    precisions = np.concatenate([[0], precisions, [0]])
+    recalls = np.concatenate([[0], recalls, [1]])
+
+    # Ensure precision values decrease but don't increase.
+    for i in range(len(precisions) - 2, -1, -1):
+        precisions[i] = np.maximum(precisions[i], precisions[i + 1])
+
+    # Compute mean AP over recall range
+    indices = np.where(recalls[:-1] != recalls[1:])[0] + 1
+    mAP = np.sum((recalls[indices] - recalls[indices - 1]) * precisions[indices])
+
+    return mAP, precisions, recalls, overlaps
 
 
 # ## Batch Slicing

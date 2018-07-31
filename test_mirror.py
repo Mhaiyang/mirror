@@ -17,8 +17,9 @@ from mrcnn.config import Config
 ROOT_DIR = os.getcwd()
 MODEL_DIR = os.path.join(ROOT_DIR, "logs/3")
 MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mask_rcnn_mirror_all.h5")
-IMAGE_DIR = os.path.join(ROOT_DIR, "data", "test", "image")
-OUTPUT_PATH = os.path.join(ROOT_DIR, 'data', 'test', "output_all")
+IMAGE_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "image")
+MASK_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "mask")
+OUTPUT_PATH = os.path.join(ROOT_DIR, 'augmentation', 'test', "output_all")
 if not os.path.exists(OUTPUT_PATH):
     os.mkdir(OUTPUT_PATH)
 
@@ -26,7 +27,7 @@ if not os.path.exists(OUTPUT_PATH):
 class MirrorConfig(Config):
     NAME = "Mirror"
     IMAGES_PER_GPU = 1
-    NUM_CLASSES = 1 + 1 # Mirror has only one class (mirror).
+    NUM_CLASSES = 1 + 1     # Mirror has only one class (mirror).
     RPN_ANCHOR_SCALES = (256, 128, 64, 32, 16)  # anchor side in pixels
     DETECTION_MIN_CONFIDENCE = 0.7
 
@@ -54,9 +55,9 @@ imglist = os.listdir(IMAGE_DIR)
 print("Total {} test images".format(len(imglist)))
 
 i = 0
-bbox_R = []
-mAPs = []
-mAPs_range = []
+mAPs_box = []
+mAPs_mask = []
+mAPs_range_mask = []
 
 for imgname in imglist:
 
@@ -73,9 +74,9 @@ for imgname in imglist:
     ###########################################################################
     ################  Quantitative Evaluation for Single Image ################
     ###########################################################################
-    num_obj, gt_mask = evaluate.get_mask(imgname)
+    num_obj, gt_mask = evaluate.get_mask(imgname, MASK_DIR)
     gt_box = utils.extract_bboxes(gt_mask)
-    gt_class_id = evaluate.get_class_ids(imgname)
+    gt_class_id = evaluate.get_class_ids(imgname, MASK_DIR)
     pred_box = r['rois']
     pred_class_id = r['class_ids']
     pred_score = r['scores']
@@ -83,35 +84,42 @@ for imgname in imglist:
 
     N = pred_box.shape[0]
     if N:
-        # mAP for a certain IoU threshold
-        mAP, precisions, recalls, overlaps = utils.compute_ap(gt_box, gt_class_id, gt_mask,
+        # mAP of box for a certaion IoU threshold
+        mAP_box, precisions_box, recalls_box, overlaps_box = utils.compute_ap_box(pred_box, gt_box,
+                                                                                  InferenceConfig.bbox_iou_threshold)
+        # mAP of mask for a certain IoU threshold
+        mAP_mask, precisions_mask, recalls_mask, overlaps_mask = utils.compute_ap_mask(gt_box, gt_class_id, gt_mask,
                                                         pred_box, pred_class_id, pred_score, pred_mask,
                                                         iou_threshold = InferenceConfig.mask_iou_threshold)
-        # mAP over range of IoU thresholds. Default range is 0.5---0.95, interval is 0.05
-        print("{:15} {} \n{:15} {} \n{:15} {}".format("Precisions", precisions, "Recalls", recalls, "Overlaps", overlaps))
-        AP = utils.compute_ap_range(gt_box, gt_class_id, gt_mask,
+
+        # mAP of mask over range of IoU thresholds. Default range is 0.5---0.95, interval is 0.05
+        AP_mask = utils.compute_ap_range(gt_box, gt_class_id, gt_mask,
                                     pred_box, pred_class_id, pred_score, pred_mask,
                                     iou_thresholds=None, verbose=1)
-        bbox_recall, positive_ids = utils.compute_recall(pred_box, gt_box, InferenceConfig.bbox_iou_threshold)
-    else:
-        mAP = 0
-        AP = 0
-        bbox_recall = 0
 
-    bbox_R.append(bbox_recall)
-    mAPs.append(mAP)
-    mAPs_range.append(AP)
-    print("{:35} {} \n{:35} {} \n{:35} {}".format("bbox_recall", bbox_recall, "mAP", mAP, "mAP over range of IoU thresholds", AP))
+        print("{:15} {} \n{:15} {} \n{:15} {}".format("Box  Precisions", precisions_box,
+                                                      "Box  Recalls", recalls_box, "Box  Overlaps", overlaps_box))
+        print("{:15} {} \n{:15} {} \n{:15} {}".format("Mask Precisions", precisions_mask,
+                                                      "Mask Recalls", recalls_mask, "Mask Overlaps", overlaps_mask))
+    else:
+        mAP_box = 0
+        mAP_mask = 0
+        AP_mask = 0
+
+    mAPs_box.append(mAP_box)
+    mAPs_mask.append(mAP_mask)
+    mAPs_range_mask.append(AP_mask)
+    print("{:35} {} \n{:35} {} \n{:35} {}".format("mAP_box", mAP_box, "mAP_mask", mAP_mask, "mAP_range_mask", AP_mask))
 
     i = i + 1
 
 ################################################################################################
 ############  Quantitative Evaluation for All Image   ##########################################
-mean_bbox_R = sum(bbox_R)/len(bbox_R)
-mean_mAP = sum(mAPs)/len(mAPs)
-mean_mAP_range = sum(mAPs_range)/len(mAPs_range)
+mean_mAP_box = sum(mAPs_box)/len(mAPs_box)
+mean_mAP_mask = sum(mAPs_mask)/len(mAPs_mask)
+mean_mAP_range_mask = sum(mAPs_range_mask)/len(mAPs_range_mask)
 print("For Test Data Set, \n{:20} {} \n{:20} {} \n{:20} {}"
-      .format("mean bbox recall", mean_bbox_R, "mean_mAP", mean_mAP, "mean mAP range", mean_mAP_range))
+      .format("mean_mAP_box", mean_mAP_box, "mean_mAP_mask", mean_mAP_mask, "mean_mAP_range_mask", mean_mAP_range_mask))
 
 
 

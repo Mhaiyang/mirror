@@ -21,3 +21,7 @@
     mean bbox recall     0.9316546762589928 
     mean_mAP             0.9190647482014388 
     mean mAP range       0.6375899280575538
+    Augmented test set ALL:
+    mean_mAP_box         0.9064748201438849 
+    mean_mAP_mask        0.8896882494004796 
+    mean_mAP_range_mask  0.5994604316546769
