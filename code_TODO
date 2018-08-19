@@ -11,3 +11,6 @@
 3.Apply all anchor scales on each feature level.
 
 4. Try path augmentation of PANet. (model.py --> class msak rcnn --> build.)
+
+# Network
+1.top-down is UpSampling2D (inverse pooling), use Transconv to substitute it

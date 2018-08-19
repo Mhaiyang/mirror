@@ -9,3 +9,7 @@
   
 """
 
+import numpy as np
+
+b = np.concatenate([1,2,3,4], axis=1)
+print(b)

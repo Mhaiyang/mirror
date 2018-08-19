@@ -2,7 +2,7 @@ import os
 
 class ImageRename():
     def __init__(self):
-        self.path = os.path.join(os.getcwd(), '../experiment/rim')
+        self.path = os.path.join(os.getcwd(), '/media/taylor/Seagate Backup Plus Drive/take_photo4')
 
     def rename(self):
         filelist = os.listdir(self.path)

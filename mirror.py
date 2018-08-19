@@ -29,9 +29,12 @@ class MirrorConfig(Config):
     IMAGE_MIN_DIM = 1024
     IMAGE_MAX_DIM = 1280
 
-    BACKBONE_STRIDES = [4, 8, 16, 32, 64]
+    BACKBONE_STRIDES = [4, 8, 16, 32, 64]   # for compute pyramid feature size
     RPN_ANCHOR_SCALES = (256, 128, 64, 32, 16)  # anchor side in pixels
     RPN_ANCHOR_RATIOS = [0.5, 1, 2]
+
+    USE_MINI_MASK = True
+    MINI_MASK_SHAPE = (56, 56)
 
     # Reduce training ROIs per image because the images are small and have
     # few objects. Aim to allow ROI sampling to pick 33% positive ROIs.

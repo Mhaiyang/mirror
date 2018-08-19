@@ -3,8 +3,8 @@ import cv2
 
 if __name__ =='__main__':
 
-    input_dir = os.path.join(os.getcwd(), '../original/glass/')
-    output_dir = os.path.join(os.getcwd(), '../experiment/glass/')
+    input_dir = os.path.join(os.getcwd(), '/media/taylor/Seagate Backup Plus Drive/take_photo4')
+    output_dir = os.path.join(os.getcwd(), '/media/taylor/mhy/mirror/take_photo4')
     if not os.path.exists(output_dir):
         os.mkdir(output_dir)
     filelist = os.listdir(input_dir)
