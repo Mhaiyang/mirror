@@ -1,0 +1,10 @@
+.gitignore
+inspect_mirror_data.ipynb
+inspect_mirror_model.ipynb
+mask_rcnn_coco.h5
+tools/transform
+
+__pychche__/
+.idea/
+data/
+logs/
