@@ -9,7 +9,12 @@
   
 """
 
-import numpy as np
+import collections
 
-b = np.concatenate([1,2,3,4], axis=1)
-print(b)
+dic = collections.OrderedDict()
+# dic = {}
+dic["mirror1"] = 1
+dic["mirror2"] = 2
+dic["mirror3"] = 3
+
+print(dic["mirror3"])

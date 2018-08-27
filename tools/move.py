@@ -1,7 +1,7 @@
 import shutil
 import os
 
-source_path = "/media/taylor/mhy/mirror/take_photo3/"
+source_path = "/media/taylor/mhy/mirror/take_photo4/"
 destination_path = "/home/taylor/mirror/data/"
 if not os.path.exists(destination_path + "train/"):
     os.mkdir(destination_path + "train/")
@@ -20,12 +20,12 @@ if not os.path.exists(destination_path + "test/"):
 list = os.listdir(source_path + "mask")
 print("Total {} images will be processed!".format(len(list)))
 
-train_order, val_order, test_order = 1941, 87, 129
+train_order, val_order, test_order = 1643, 118, 585
 
 for i, name in enumerate(list):
     # The ratio of train:validation:test is equal to 0.9:0.004:0.006
     # Train data
-    if i < len(list)*0.9:
+    if i < len(list)*0.7:
         order = list[i][:-5]
         # copy mask json file
         old_json = source_path + "mask/" + order + ".json"
@@ -38,7 +38,7 @@ for i, name in enumerate(list):
         print("{} Processing Train {}.jpg".format(train_order, order))
         train_order += 1
     # Validation data
-    elif i < len(list)*0.94:
+    elif i < len(list)*0.75:
         order = list[i][:-5]
         # copy mask json file
         old_json = source_path + "mask/" + order + ".json"
@@ -63,5 +63,6 @@ for i, name in enumerate(list):
         shutil.copy(old_image, new_image)
         print("{} Processing Test {}.jpg".format(test_order, order))
         test_order += 1
+print("Total {} images have been processed!".format(len(list)))
 print("Train count: {} \nValidation count: {}\nTest count: {}".format(train_order-1, val_order-1, test_order-1))
 

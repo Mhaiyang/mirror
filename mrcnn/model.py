@@ -335,7 +335,7 @@ class ProposalLayer(KE.Layer):
 ############################################################
 
 def log2_graph(x):
-    """Implementatin of Log2. TF doesn't have a native implemenation."""
+    """Implementatin of Log2. TF doesn't have a native implementation."""
     return tf.log(x) / tf.log(2.0)
 
 
@@ -403,7 +403,7 @@ class PyramidROIAlign(KE.Layer):
             # Keep track of which box is mapped to which level
             box_to_level.append(ix)
 
-            # Stop gradient propogation to ROI proposals
+            # Stop gradient propagation to ROI proposals
             level_boxes = tf.stop_gradient(level_boxes)
             box_indices = tf.stop_gradient(box_indices)
 
@@ -455,7 +455,7 @@ def overlaps_graph(boxes1, boxes2):
     """Computes IoU overlaps between two sets of boxes.
     boxes1, boxes2: [N, (y1, x1, y2, x2)].
     """
-    # 1. Tile boxes2 and repeate boxes1. This allows us to compare
+    # 1. Tile boxes2 and repeat boxes1. This allows us to compare
     # every boxes1 against every boxes2 without loops.
     # TF doesn't have an equivalent to np.repeate() so simulate it
     # using tf.tile() and tf.reshape.
@@ -502,7 +502,7 @@ def detection_targets_graph(proposals, gt_class_ids, gt_boxes, gt_masks, config)
 
     Note: Returned arrays might be zero padded if not enough target ROIs.
     """
-    # Assertions
+    # Assertions, if the number of proposals is greater than zero.
     asserts = [
         tf.Assert(tf.greater(tf.shape(proposals)[0], 0), [proposals],
                   name="roi_assertion"),
@@ -537,7 +537,7 @@ def detection_targets_graph(proposals, gt_class_ids, gt_boxes, gt_masks, config)
     crowd_iou_max = tf.reduce_max(crowd_overlaps, axis=1)
     no_crowd_bool = (crowd_iou_max < 0.001)
 
-    # Determine postive and negative ROIs
+    # Determine positive and negative ROIs
     roi_iou_max = tf.reduce_max(overlaps, axis=1)
     # 1. Positive ROIs are those with >= 0.5 IoU with a GT box
     positive_roi_bool = (roi_iou_max >= 0.5)
@@ -899,7 +899,7 @@ def fpn_classifier_graph(rois, feature_maps, image_meta,
 
     rois: [batch, num_rois, (y1, x1, y2, x2)] Proposal boxes in normalized
           coordinates.
-    feature_maps: List of feature maps from diffent layers of the pyramid,
+    feature_maps: List of feature maps from different layers of the pyramid,
                   [P2, P3, P4, P5]. Each has a different resolution.
     - image_meta: [batch, (meta data)] Image details. See compose_image_meta()
     pool_size: The width of the square feature map generated from ROI Pooling.
@@ -914,6 +914,7 @@ def fpn_classifier_graph(rois, feature_maps, image_meta,
     """
     # ROI Pooling
     # Shape: [batch, num_boxes, pool_height, pool_width, channels]
+    # each box is a time step. Independent with each other.
     x = PyramidROIAlign([pool_size, pool_size],
                         name="roi_align_classifier")([rois, image_meta] + feature_maps)
     # Two 1024 FC layers (implemented with Conv2D for consistency)
@@ -967,35 +968,36 @@ def build_fpn_mask_graph(rois, feature_maps, image_meta,
                         name="roi_align_mask")([rois, image_meta] + feature_maps)
 
     # Conv layers
-    x = KL.TimeDistributed(KL.Conv2D(128, (3, 3), padding="same"),
-                           name="mrcnn_mask_conv11")(x)
+    x = KL.TimeDistributed(KL.Conv2D(256, (3, 3), padding="same"),
+                           name="mrcnn_mask_conv1")(x)
     x = KL.TimeDistributed(BatchNorm(),
-                           name='mrcnn_mask_bn11')(x, training=train_bn)
+                           name='mrcnn_mask_bn1')(x, training=train_bn)
     x = KL.Activation('relu')(x)
 
-    x = KL.TimeDistributed(KL.Conv2DTranspose(64, (2, 2), strides=2, activation="relu"),
-                           name="mrcnn_mask_deconv2")(x)
+    x = KL.TimeDistributed(KL.Conv2D(256, (3, 3), padding="same"),
+                           name="mrcnn_mask_conv2")(x)
     x = KL.TimeDistributed(BatchNorm(),
-                           name='mrcnn_mask_bn22')(x, training=train_bn)
+                           name='mrcnn_mask_bn2')(x, training=train_bn)
     x = KL.Activation('relu')(x)
 
-    x = KL.TimeDistributed(KL.Conv2DTranspose(32, (2, 2), strides=2, activation="relu"),
-                           name="mrcnn_mask_deconv3")(x)
+    x = KL.TimeDistributed(KL.Conv2D(256, (3, 3), padding="same"),
+                           name="mrcnn_mask_conv3")(x)
     x = KL.TimeDistributed(BatchNorm(),
-                           name='mrcnn_mask_bn33')(x, training=train_bn)
+                           name='mrcnn_mask_bn3')(x, training=train_bn)
     x = KL.Activation('relu')(x)
 
-    x = KL.TimeDistributed(KL.Conv2DTranspose(16, (2, 2), strides=2, activation="relu"),
-                           name="mrcnn_mask_deconv4")(x)
+    x = KL.TimeDistributed(KL.Conv2D(256, (3, 3), padding="same"),
+                           name="mrcnn_mask_conv4")(x)
     x = KL.TimeDistributed(BatchNorm(),
-                           name='mrcnn_mask_bn44')(x, training=train_bn)
+                           name='mrcnn_mask_bn4')(x, training=train_bn)
     x = KL.Activation('relu')(x)
 
-    x = KL.TimeDistributed(KL.Conv2DTranspose(8, (2, 2), strides=2, activation="relu"),
-                           name="mrcnn_mask_deconv5")(x)
+    x = KL.TimeDistributed(KL.Conv2DTranspose(256, (2, 2), strides=2, activation="relu"),
+                           name="mrcnn_mask_deconv")(x)
     x = KL.TimeDistributed(KL.Conv2D(num_classes, (1, 1), strides=1, activation="sigmoid"),
                            name="mrcnn_mask")(x)
     return x
+
 
 
 ############################################################
@@ -1840,13 +1842,13 @@ class MaskRCNN():
         input_image_meta = KL.Input(shape=[config.IMAGE_META_SIZE],
                                     name="input_image_meta")
         if mode == "training":
-            # RPN GT
+            # First: RPN GT
             input_rpn_match = KL.Input(
                 shape=[None, 1], name="input_rpn_match", dtype=tf.int32)
             input_rpn_bbox = KL.Input(
                 shape=[None, 4], name="input_rpn_bbox", dtype=tf.float32)
 
-            # Detection GT (class IDs, bounding boxes, and masks)
+            # Second: Detection GT (class IDs, bounding boxes, and masks)
             # 1. GT Class IDs (zero padded)
             input_gt_class_ids = KL.Input(
                 shape=[None], name="input_gt_class_ids", dtype=tf.int32)
@@ -1937,7 +1939,7 @@ class MaskRCNN():
 
         rpn_class_logits, rpn_class, rpn_bbox = outputs
 
-        # Generate proposals
+        # Generate Proposals
         # Proposals are [batch, N, (y1, x1, y2, x2)] in normalized coordinates
         # and zero padded.
         proposal_count = config.POST_NMS_ROIS_TRAINING if mode == "training"\
@@ -2014,7 +2016,7 @@ class MaskRCNN():
 
         else:
             # Network Heads
-            # Proposal classifier and BBox regressor heads
+            # Proposal classifier and BBox regression heads
             mrcnn_class_logits, mrcnn_class, mrcnn_bbox =\
                 fpn_classifier_graph(rpn_rois, mrcnn_feature_maps, input_image_meta,
                                      config.POOL_SIZE, config.NUM_CLASSES,
@@ -2302,8 +2304,8 @@ class MaskRCNN():
         # if self.epoch % 10 == 0:
         callbacks = [keras.callbacks.TensorBoard(log_dir=self.log_dir,
                                                      histogram_freq=0, write_graph=True, write_images=False),
-                         # keras.callbacks.ModelCheckpoint(self.checkpoint_path,
-                         #                                 verbose=0, save_weights_only=True)
+                         keras.callbacks.ModelCheckpoint(self.checkpoint_path,
+                                                         verbose=0, save_weights_only=True)
                      ]
         # else:
         #     callbacks = [keras.callbacks.TensorBoard(log_dir=self.log_dir,

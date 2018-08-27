@@ -10,7 +10,7 @@ int main(void){
     char buff2[100];
     fstream file;
     int number = 0;
-    for(int i=1;i<=139;i++)
+    for(int i=1;i<=1234;i++)
     {
         sprintf(buff1,"/home/taylor/mirror/data/test/mask/%d_json/label.png",i);
 //        cout<<buff1<<endl;

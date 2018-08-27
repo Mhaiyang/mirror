@@ -25,29 +25,40 @@ class MirrorConfig(Config):
 
     # Use small images for faster training. Set the limits of the small side
     # the large side, and that determines the image shape.
-    IMAGE_RESIZE_MODE = "pad64"
+    IMAGE_RESIZE_MODE = "square"
     IMAGE_MIN_DIM = 1024
     IMAGE_MAX_DIM = 1280
 
     BACKBONE_STRIDES = [4, 8, 16, 32, 64]   # for compute pyramid feature size
-    RPN_ANCHOR_SCALES = (256, 128, 64, 32, 16)  # anchor side in pixels
+    RPN_ANCHOR_SCALES = (32, 64, 128, 256, 512)  # anchor side in pixels
     RPN_ANCHOR_RATIOS = [0.5, 1, 2]
 
     USE_MINI_MASK = True
     MINI_MASK_SHAPE = (56, 56)
 
+    # Shape of output mask
+    # To change this you also need to change the neural network mask branch
+    MASK_SHAPE = [28, 28]
+
     # Reduce training ROIs per image because the images are small and have
     # few objects. Aim to allow ROI sampling to pick 33% positive ROIs.
-    TRAIN_ROIS_PER_IMAGE = 200
+    TRAIN_ROIS_PER_IMAGE = 100
 
     # Use a small epoch since the data is simple
-    STEPS_PER_EPOCH = 1000
+    STEPS_PER_EPOCH = 3465
 
     # use small validation steps since the epoch is small
-    VALIDATION_STEPS = 93
+    VALIDATION_STEPS = 247
 
     # skip detection with <x% confidence
     DETECTION_MIN_CONFIDENCE = 0.7
+
+    # Pooled ROIs
+    POOL_SIZE = 7
+    MASK_POOL_SIZE = 14
+
+    # Learning rate
+    LEARNING_RATE = 0.001
 
 
 
@@ -94,7 +105,6 @@ class MirrorDataset(utils.Dataset):
             width, height = img.size
             self.add_image("Mirror", image_id=i, path=img_folder + "/" + imglist[i],
                            width=width, height=height, mask_path=mask_path, yaml_path=yaml_path)
-
 
     def load_mask(self, image_id):
         global iter_num
