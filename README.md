@@ -58,7 +58,7 @@ Docker Image : tf1.7.0-keras2.1.6-gpu:9.0-cudnn7.0.5-devel-ubuntu16.04_
 
 CUDA : 9.0.176
 
-cudnn : 7.1.2
+cudnn : 7.1.4
 
 'sudo pip3 install -r requirements.txt'
 
