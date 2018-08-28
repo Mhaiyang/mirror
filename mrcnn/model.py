@@ -578,7 +578,7 @@ def detection_targets_graph(proposals, gt_class_ids, gt_boxes, gt_masks, config)
     # Compute mask targets
     boxes = positive_rois
     if config.USE_MINI_MASK:
-        # Transform ROI corrdinates from normalized image space
+        # Transform ROI coordinates from normalized image space
         # to normalized mini-mask space.
         y1, x1, y2, x2 = tf.split(positive_rois, 4, axis=1)
         gt_y1, gt_x1, gt_y2, gt_x2 = tf.split(roi_gt_boxes, 4, axis=1)
@@ -2249,7 +2249,7 @@ class MaskRCNN():
             "*epoch*", "{epoch:04d}")
 
     def train(self, train_dataset, val_dataset, learning_rate, epochs, layers,
-              augmentation=None):
+              augmentation=None, save_model_each_epoch=False):
         """Train the model.
         train_dataset, val_dataset: Training and validation Dataset objects.
         learning_rate: The learning rate to train with
@@ -2302,11 +2302,16 @@ class MaskRCNN():
 
         # Callbacks
         # if self.epoch % 10 == 0:
-        callbacks = [keras.callbacks.TensorBoard(log_dir=self.log_dir,
-                                                     histogram_freq=0, write_graph=True, write_images=False),
-                         keras.callbacks.ModelCheckpoint(self.checkpoint_path,
-                                                         verbose=0, save_weights_only=True)
-                     ]
+        if save_model_each_epoch:
+            callbacks = [keras.callbacks.TensorBoard(log_dir=self.log_dir,
+                                                         histogram_freq=0, write_graph=True, write_images=False),
+                             keras.callbacks.ModelCheckpoint(self.checkpoint_path,
+                                                             verbose=0, save_weights_only=True)
+                         ]
+        else:
+            callbacks = [keras.callbacks.TensorBoard(log_dir=self.log_dir,
+                                                     histogram_freq=0, write_graph=True, write_images=False)
+                         ]
         # else:
         #     callbacks = [keras.callbacks.TensorBoard(log_dir=self.log_dir,
         #                                              histogram_freq=0, write_graph=True, write_images=False)]
