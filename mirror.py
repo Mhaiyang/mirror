@@ -17,7 +17,7 @@ class MirrorConfig(Config):
 
     # Train on 1 GPU and 8 images per GPU. We can put multiple images on each
     # GPU because the images are small. Batch size is 8 (GPUs * images/GPU).
-    GPU_COUNT = 1
+    GPU_COUNT = 2
     IMAGES_PER_GPU = 2
 
     # Number of classes (including background)
@@ -26,14 +26,14 @@ class MirrorConfig(Config):
     # Use small images for faster training. Set the limits of the small side
     # the large side, and that determines the image shape.
     IMAGE_RESIZE_MODE = "square"
-    IMAGE_MIN_DIM = 1024
-    IMAGE_MAX_DIM = 1280
+    IMAGE_MIN_DIM = 512
+    IMAGE_MAX_DIM = 640
 
     BACKBONE_STRIDES = [4, 8, 16, 32, 64]   # for compute pyramid feature size
     RPN_ANCHOR_SCALES = (32, 64, 128, 256, 512)  # anchor side in pixels
     RPN_ANCHOR_RATIOS = [0.5, 1, 2]
 
-    USE_MINI_MASK = True
+    USE_MINI_MASK = False
     MINI_MASK_SHAPE = (56, 56)
 
     # Shape of output mask
@@ -45,10 +45,10 @@ class MirrorConfig(Config):
     TRAIN_ROIS_PER_IMAGE = 100
 
     # Use a small epoch since the data is simple
-    STEPS_PER_EPOCH = 3465
+    STEPS_PER_EPOCH = 2599
 
     # use small validation steps since the epoch is small
-    VALIDATION_STEPS = 247
+    VALIDATION_STEPS = 186
 
     # skip detection with <x% confidence
     DETECTION_MIN_CONFIDENCE = 0.7
@@ -123,7 +123,6 @@ class MirrorDataset(utils.Dataset):
         labels_form=[]
         for i in range(len(labels)):
             if labels[i].find("mirror")!=-1:
-                #print "box"
                 labels_form.append("mirror")
         class_ids = np.array([self.class_names.index(s) for s in labels_form])
         return mask, class_ids.astype(np.int32)

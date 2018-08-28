@@ -31,7 +31,7 @@ config = mirror.MirrorConfig()
 config.display()
 
 # Configuration
-dataset_root_path = os.path.abspath(os.path.join(ROOT_DIR, "./data"))
+dataset_root_path = os.path.abspath(os.path.join(ROOT_DIR, "./augmentation"))
 train_folder = dataset_root_path + "/train"
 val_folder = dataset_root_path + "/val"
 train_image_folder = train_folder + "/image"
@@ -57,7 +57,7 @@ dataset_val.load_mirror(val_count, val_image_folder,
 dataset_val.prepare("validation")
 
 # Load and display random samples
-# image_ids = np.random.choice(dataset_train.image_ids, 4)
+# image_ids = np.random.choice(dataset_train.image_ids, 5)
 # for image_id in image_ids:
 #     image = dataset_train.load_image(image_id)
 #     mask, class_ids = dataset_train.load_mask(image_id)
@@ -68,7 +68,7 @@ model = modellib.MaskRCNN(mode="training", config=config,
                           model_dir=MODEL_DIR)
 
 # Which weights to start with?
-init_with = "last"  # imagenet, coco, or last
+init_with = "coco"  # imagenet, coco, or last
 
 if init_with == "imagenet":
     model.load_weights(model.get_imagenet_weights(), by_name=True)
@@ -86,17 +86,15 @@ elif init_with == "last":
 # ## Training
 
 #1. Train the head branches
-# model.train(dataset_train, dataset_val,
-#             learning_rate=config.LEARNING_RATE,
-#             epochs=10,
-#             layers='heads')
-# model_path = os.path.join(MODEL_DIR, "mask_rcnn_mirror_heads.h5")
-# model.keras_model.save_weights(model_path)
+model.train(dataset_train, dataset_val,
+            learning_rate=config.LEARNING_RATE,
+            epochs=30,
+            layers='heads')
+model_path = os.path.join(MODEL_DIR, "mask_rcnn_mirror_heads.h5")
+model.keras_model.save_weights(model_path)
 
 # 2. Fine tune all layers
 model.train(dataset_train, dataset_val,
             learning_rate=config.LEARNING_RATE / 10,
-            epochs=40,
-            layers="all")
-# model_path = os.path.join(MODEL_DIR, "mask_rcnn_mirror_all.h5")
-# model.keras_model.save_weights(model_path)
+            epochs=50,
+            layers="all", save_model_each_epoch=True)
