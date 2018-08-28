@@ -16,19 +16,18 @@ import random
 import yaml
 import numpy as np
 from PIL import Image
+from skimage import io, transform
 sys.path.append("../mrcnn")
 import mrcnn.utils as utils
-from skimage import io, transform
 
-
-DATA_DIR = os.path.abspath(os.path.join(os.getcwd(), "../data", "val"))
+DATA_DIR = os.path.abspath(os.path.join(os.getcwd(), "../data", "train"))
 IMAGE_DIR = os.path.join(DATA_DIR, "image")
 if not os.path.exists(IMAGE_DIR):
     os.mkdir(IMAGE_DIR)
 MASK_DIR = os.path.join(DATA_DIR, "mask")
 if not os.path.exists(MASK_DIR):
     os.mkdir(MASK_DIR)
-OUTPUT_DIR = os.path.join(DATA_DIR, "../../augmentation", "val")
+OUTPUT_DIR = os.path.join(DATA_DIR, "../../augmentation", "train")
 if not os.path.exists(OUTPUT_DIR):
     os.mkdir(OUTPUT_DIR)
     os.mkdir(os.path.join(OUTPUT_DIR, "image"))
@@ -75,9 +74,14 @@ for imgname in imglist:
     fixed_image = transform.resize(image, (fixed_size[1], fixed_size[0]), order=3)
     io.imsave(OUTPUT_DIR + "/image/" + filestr + "_" + str(width) + "x" + str(height) + ".jpg", fixed_image)
     fixed_mask = mask.resize(fixed_size, Image.BICUBIC)
+    if not os.path.exists(OUTPUT_DIR + "/mask/" + filestr + "_" + str(width) + "x" + str(height) + "_json"):
+        os.mkdir(OUTPUT_DIR + "/mask/" + filestr + "_" + str(width) + "x" + str(height) + "_json")
     fixed_mask.save(OUTPUT_DIR + "/mask/" + filestr + "_" + str(width) + "x" + str(height) + "_json/label8.png")
+    fixed_label = {}
+    fixed_label["label_names"] = labels
     with open(OUTPUT_DIR + "/mask/" + filestr + "_" + str(width) + "x" + str(height) + "_json/info.yaml", "w") as f:
-        yaml.dump(labels, f)
+        yaml.dump(fixed_label, f)
+    print("Original Image {} has been Resized!".format(imgname))
 
     # crop operation. (width, height)
     scales_1 = [(960, 768), (960, 960), (768, 960)]
@@ -121,8 +125,6 @@ for imgname in imglist:
                 # have found suitable box
                 print("iou : {}".format(iou))
                 # Handle image
-                if not os.path.exists(OUTPUT_DIR + "/mask/" + filestr + "_" + str(ratio[0]) + "x" + str(ratio[1]) + "_json"):
-                    os.mkdir(OUTPUT_DIR + "/mask/" + filestr + "_" + str(ratio[0]) + "x" + str(ratio[1]) + "_json")
                 new_image = image[y1:y2, x1:x2, :]
                 if x == 0:
                     new_image = transform.resize(new_image, (final_size[1], final_size[0]), order=3)
@@ -131,20 +133,23 @@ for imgname in imglist:
                 new_mask = mask.crop((x1, y1, x2, y2))
                 if x == 0:
                     new_mask = new_mask.resize(final_size, Image.BICUBIC)
+                if not os.path.exists(OUTPUT_DIR + "/mask/" + filestr + "_" + str(ratio[0]) + "x" + str(ratio[1]) + "_json"):
+                    os.mkdir(OUTPUT_DIR + "/mask/" + filestr + "_" + str(ratio[0]) + "x" + str(ratio[1]) + "_json")
                 new_mask.save(OUTPUT_DIR + "/mask/" + filestr + "_" + str(ratio[0]) + "x" + str(ratio[1]) + "_json/label8.png")
                 max_value = 0
-                for column in range(ratio[0]):
-                    for row in range(ratio[1]):
+                for column in range(final_size[0]):
+                    for row in range(final_size[1]):
                         pixel = new_mask.getpixel((column, row))
                         if max_value <= pixel:
                             max_value = pixel
                 new_label = labels[:max_value + 1]
-                temp["label_names"] = new_label
+                final_label = {}
+                final_label["label_names"] = new_label
                 with open(OUTPUT_DIR + "/mask/" + filestr + "_" + str(ratio[0]) + "x" + str(ratio[1]) + "_json/info.yaml", "w") as f:
-                    yaml.dump(temp, f)
+                    yaml.dump(final_label, f)
                 print("##########  Okay!  ###########")
 
-
+    print("--------------------------------------")
 
 
 
