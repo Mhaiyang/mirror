@@ -52,9 +52,13 @@ tensorflow1.7.0    keras2.1.6   numpy1.14.3
 
 CPU : Intel(R) Core(TM) i7-7700K @ 4.20GHz
 
-GPU : NVIDIA GTX 1080Ti
+GPU : Double NVIDIA GTX 1080Ti
 
 Docker Image : tf1.7.0-keras2.1.6-gpu:9.0-cudnn7.0.5-devel-ubuntu16.04_
+
+CUDA : 9.0.176
+
+cudnn : 7.1.2
 
 'sudo pip3 install -r requirements.txt'
 
