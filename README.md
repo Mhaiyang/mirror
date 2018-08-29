@@ -2,7 +2,7 @@
 
 
 ## Change Log
-2018/8/28   Began to train baseline.
+2018/8/28   Began to train baseline. Resolved the problem of **Multi-GPU training**.
 
 2018/7/29   Accomplished data augmentation.(cropping, which include two scales).The number of train data from 2111 to 2111+4222=6333
 
