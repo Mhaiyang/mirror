@@ -2,7 +2,7 @@ import os
 
 class ImageRename():
     def __init__(self):
-        self.path = os.path.join(os.getcwd(), '/media/taylor/Seagate Backup Plus Drive/take_photo4')
+        self.path = os.path.join(os.getcwd(), '/media/taylor/mhy/mirror/take_photo6/original')
 
     def rename(self):
         filelist = os.listdir(self.path)
@@ -15,7 +15,7 @@ class ImageRename():
                 src = os.path.join(os.path.abspath(self.path), item)
                 dst = os.path.join(os.path.abspath(self.path), format(str(i)) + '.jpg')
                 os.rename(src, dst)
-                print('converting {} to {} ...' .format(src, dst))
+                print('converting {} to {}' .format(src, dst))
                 i = i + 1
         print('total {} to rename & converted {} jpgs'.format(total_num, i-1))
 

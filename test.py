@@ -9,12 +9,4 @@
   
 """
 
-import collections
-
-dic = collections.OrderedDict()
-# dic = {}
-dic["mirror1"] = 1
-dic["mirror2"] = 2
-dic["mirror3"] = 3
-
-print(dic["mirror3"])
+print(1 / 'b')
