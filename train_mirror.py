@@ -88,7 +88,7 @@ elif init_with == "last":
 #1. Train the head branches
 model.train(dataset_train, dataset_val,
             learning_rate=config.LEARNING_RATE,
-            epochs=30,
+            epochs=20,
             layers='heads')
 model_path = os.path.join(MODEL_DIR, "mask_rcnn_mirror_heads.h5")
 model.keras_model.save_weights(model_path)
@@ -96,5 +96,5 @@ model.keras_model.save_weights(model_path)
 # 2. Fine tune all layers
 model.train(dataset_train, dataset_val,
             learning_rate=config.LEARNING_RATE / 10,
-            epochs=50,
+            epochs=30,
             layers="all", save_model_each_epoch=True)
