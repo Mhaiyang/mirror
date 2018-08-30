@@ -444,7 +444,6 @@ class PyramidROIAlign(KE.Layer):
         return pooled
 
     def compute_output_shape(self, input_shape):
-        print(input_shape)
         return input_shape[0][:2] + self.pool_shape + (input_shape[2][-1], )
 
 
