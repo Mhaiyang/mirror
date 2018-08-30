@@ -6,7 +6,6 @@
 """
 import os
 import skimage.io
-import numpy as np
 import mrcnn.utils as utils
 import mrcnn.model as modellib
 import mrcnn.visualize as visualize

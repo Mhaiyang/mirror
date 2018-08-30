@@ -8,5 +8,7 @@
   @Function: for test code
   
 """
-
-print(1 / 'b')
+a = (1, 2)
+b = (3,5,6)
+c = [a]
+print(c[0])
