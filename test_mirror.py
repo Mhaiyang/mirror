@@ -7,34 +7,31 @@
 import os
 import skimage.io
 import mrcnn.utils as utils
-import mrcnn.model as modellib
 import mrcnn.visualize as visualize
 import evaluate
-from mrcnn.config import Config
+from mirror import MirrorConfig
+# Important, need change when test different models.
+import mrcnn.decoder as modellib
 
 # Directories of the project
 ROOT_DIR = os.getcwd()
-MODEL_DIR = os.path.join(ROOT_DIR, "logs/3")
-MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mask_rcnn_mirror_all.h5")
-IMAGE_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "image")
-MASK_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "mask")
-OUTPUT_PATH = os.path.join(ROOT_DIR, 'augmentation', 'test', "output_all")
+MODEL_DIR = os.path.join(ROOT_DIR, "logs_decoder/mirror20180830T2035")
+MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mask_rcnn_mirror_0021.h5")
+IMAGE_DIR = os.path.join(ROOT_DIR, "data", "test", "image")
+MASK_DIR = os.path.join(ROOT_DIR, "data", "test", "mask")
+OUTPUT_PATH = os.path.join(ROOT_DIR, 'data', 'test', "output_decoder")
 if not os.path.exists(OUTPUT_PATH):
     os.mkdir(OUTPUT_PATH)
 
 ## Configurations
-class MirrorConfig(Config):
-    NAME = "Mirror"
-    IMAGES_PER_GPU = 1
-    NUM_CLASSES = 1 + 1     # Mirror has only one class (mirror).
-    RPN_ANCHOR_SCALES = (256, 128, 64, 32, 16)  # anchor side in pixels
-    DETECTION_MIN_CONFIDENCE = 0.7
-
 class InferenceConfig(MirrorConfig):
     # Set batch size to 1 since we'll be running inference on
     # one image at a time. Batch size = GPU_COUNT * IMAGES_PER_GPU
+    # Up to now, batch size must be one.
     GPU_COUNT = 1
     IMAGES_PER_GPU = 1
+    RPN_ANCHOR_SCALES = (32, 64, 128, 256, 512)
+    DETECTION_MIN_CONFIDENCE = 0.7
     # Important. If Iou greater than this threshold, this prediction will be considered as true.
     bbox_iou_threshold = 0.5
     mask_iou_threshold = 0.5

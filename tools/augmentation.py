@@ -20,14 +20,16 @@ from skimage import io, transform
 sys.path.append("../mrcnn")
 import mrcnn.utils as utils
 
-DATA_DIR = os.path.abspath(os.path.join(os.getcwd(), "../data", "train"))
+# Important, need modify.
+DATA_DIR = os.path.abspath(os.path.join(os.getcwd(), "../data", "test"))
 IMAGE_DIR = os.path.join(DATA_DIR, "image")
 if not os.path.exists(IMAGE_DIR):
     os.mkdir(IMAGE_DIR)
 MASK_DIR = os.path.join(DATA_DIR, "mask")
 if not os.path.exists(MASK_DIR):
     os.mkdir(MASK_DIR)
-OUTPUT_DIR = os.path.join(DATA_DIR, "../../augmentation", "train")
+# Important, need modify.
+OUTPUT_DIR = os.path.join(DATA_DIR, "../../augmentation", "test")
 if not os.path.exists(OUTPUT_DIR):
     os.mkdir(OUTPUT_DIR)
     os.mkdir(os.path.join(OUTPUT_DIR, "image"))
@@ -66,7 +68,9 @@ for imgname in imglist:
         temp = yaml.load(f.read())
         labels = temp['label_names']
 
-    # Resize to a fixed size (620x512 or 512x620)
+    ##################################################
+    # Resize to a fixed size (620x512 or 512x620)    #
+    ##################################################
     if width > height:
         fixed_size = (640, 512)
     else:
@@ -83,7 +87,9 @@ for imgname in imglist:
         yaml.dump(fixed_label, f)
     print("Original Image {} has been Resized!".format(imgname))
 
-    # crop operation. (width, height)
+    ##################################################
+    # crop operation. (width, height)                #
+    ##################################################
     scales_1 = [(960, 768), (960, 960), (768, 960)]
     scales_2 = [(640, 512), (640, 640), (512, 640)]
     ratio_1 = random.sample(scales_1, 1)[0]

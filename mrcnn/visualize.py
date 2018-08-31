@@ -164,11 +164,11 @@ def display_instances_and_save_image(imgname, OUTPUT_PATH, image, boxes, masks, 
             p = Polygon(verts, facecolor="none", edgecolor=color)
             ax.add_patch(p)
     ax.imshow(masked_image.astype(np.uint8))
-    # # TaylorMei want to save image.
+    # TaylorMei want to save image.
     # skimage.io.imsave(os.path.join(OUTPUT_PATH, imgname), masked_image.astype(np.uint8))
     if auto_show:
         # TaylorMei want to save fig
-        plt.savefig(os.path.join(OUTPUT_PATH, imgname[:-4] + "_output.jpg"), bbox_inches='tight')
+        plt.savefig(os.path.join(OUTPUT_PATH, str(imgname[:-4]) + "_output.jpg"), bbox_inches='tight')
         # plt.show()
         plt.close()
 

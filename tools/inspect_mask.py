@@ -12,7 +12,7 @@ import os
 import numpy as np
 from PIL import Image
 
-mask_folder = '/home/iccd/mirror/augmentation/train/mask/'
+mask_folder = '/home/iccd/mirror/augmentation/test/mask/'
 lists = os.listdir(mask_folder)
 # print(len(list))
 for list in lists:

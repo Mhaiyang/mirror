@@ -17,8 +17,8 @@ class MirrorConfig(Config):
 
     # Train on 1 GPU and 8 images per GPU. We can put multiple images on each
     # GPU because the images are small. Batch size is 8 (GPUs * images/GPU).
-    GPU_COUNT = 1
-    IMAGES_PER_GPU = 1
+    GPU_COUNT = 2
+    IMAGES_PER_GPU = 2
 
     # Number of classes (including background)
     NUM_CLASSES = 1 + 1  # background + 1 mirror
@@ -42,7 +42,7 @@ class MirrorConfig(Config):
 
     # For model.py
     # MASK_POOL_SIZE = 14
-    # MASK_SHAPE = [28]
+    # MASK_SHAPE = [28, 28]
 
     # For decoder.py
     MASK_POOL_SIZE = [32, 16, 8, 4]
