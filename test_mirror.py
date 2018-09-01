@@ -16,10 +16,10 @@ import mrcnn.decoder as modellib
 # Directories of the project
 ROOT_DIR = os.getcwd()
 MODEL_DIR = os.path.join(ROOT_DIR, "logs_decoder/mirror20180830T2035")
-MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mask_rcnn_mirror_0021.h5")
-IMAGE_DIR = os.path.join(ROOT_DIR, "data", "test", "image")
-MASK_DIR = os.path.join(ROOT_DIR, "data", "test", "mask")
-OUTPUT_PATH = os.path.join(ROOT_DIR, 'data', 'test', "output_decoder")
+MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mask_rcnn_mirror_0030.h5")
+IMAGE_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "image")
+MASK_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "mask")
+OUTPUT_PATH = os.path.join(ROOT_DIR, 'augmentation', 'test', "output_decoder")
 if not os.path.exists(OUTPUT_PATH):
     os.mkdir(OUTPUT_PATH)
 

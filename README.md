@@ -1,5 +1,3 @@
-[TOC]
-
 # Mirror Project
 
 ## Change Log
