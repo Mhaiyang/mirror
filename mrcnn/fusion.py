@@ -386,6 +386,7 @@ class PyramidROIAlign_classify(KE.Layer):
         box_indices = tf.stop_gradient(box_indices)
         level_boxes = tf.stop_gradient(level_boxes)
 
+        # pooled shape : [num_boxes, crop_height, crop_width, depth]
         p2_pooled = tf.image.crop_and_resize(
             feature_maps[0], level_boxes, box_indices, self.pool_shape,
             method="bilinear")
@@ -410,12 +411,12 @@ class PyramidROIAlign_classify(KE.Layer):
 
         pooled = tf.concat([p2_pooled, p3_pooled, p4_pooled, p5_pooled, p6_pooled], axis=3)
 
-        pooled = tf.expand_dims(pooled, 0)
+        pooled = tf.expand_dims(pooled, axis=0)
 
         return pooled
 
     def compute_output_shape(self, input_shape):
-        return input_shape[0][:2] + self.pool_shape + (input_shape[2][-1],)
+        return input_shape[0][:2] + self.pool_shape + (input_shape[2][-1]*5, )
 
 
 class PyramidROIAlign_mask(KE.Layer):
