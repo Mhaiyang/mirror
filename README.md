@@ -1,6 +1,5 @@
 # Mirror Project
 
-
 ## Change Log
 2018/8/31   Decoder trained finished. Just ok. **Setting validation batch size to two is ok.** Solved by add 'next()' on validation generator.
 

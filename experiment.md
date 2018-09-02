@@ -25,3 +25,21 @@
     mean_mAP_box         0.9064748201438849 
     mean_mAP_mask        0.8896882494004796 
     mean_mAP_range_mask  0.5994604316546769
+    
+
+9.1
+
+Augmentation test
+
+decoder:
+
+mean_mAP_box         0.9104763191336236 
+
+mean_mAP_mask        0.8969926166237636 
+
+mean_mAP_range_mask  0.6890442103499147
+
+mask rcnn
+mean_mAP_box         0.9270889609434917 
+mean_mAP_mask        0.9090356564220707 
+mean_mAP_range_mask  0.7329078876424174
