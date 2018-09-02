@@ -5,7 +5,7 @@
   
   @Project : mirror
   @File    : decoder.py
-  @Function: my own network.
+  @Function: Decoder structure for mask prediction branch.
   
 """
 import os
@@ -475,7 +475,7 @@ class PyramidROIAlign_mask(KE.Layer):
         self.level = level
 
     def call(self, inputs):
-        # Crop boxes [batch, num_boxes, (y1, x1, y2, x2)] in normalized coords
+        # Crop boxes [batch, num_boxes, (y1, x1, y2, x2)] in normalized coordinate.
         boxes = inputs[0]
 
         image_meta = inputs[1]
@@ -494,7 +494,7 @@ class PyramidROIAlign_mask(KE.Layer):
 
         image_area = tf.cast(image_shape[0] * image_shape[1], tf.float32)
         roi_level = log2_graph(tf.sqrt(h * w) / (224.0 / tf.sqrt(image_area)))
-        # Ensure all elements in matrix is level.
+        # Ensure all elements in matrix is self.level
         roi_level = tf.minimum(self.level, tf.maximum(
             self.level, 4 + tf.cast(tf.round(roi_level), tf.int32)))
         roi_level = tf.squeeze(roi_level, 2)
@@ -1042,10 +1042,10 @@ def build_fpn_mask_graph(rois, feature_maps, image_meta,
     # ROI Align
     # Shape: [batch, boxes, pool_height, pool_width, channels]
 
-    P2_pooled = PyramidROIAlign_mask(pool_size[0], 0, name="pyramid_roi_align_p2")([rois, image_meta] + feature_maps)
-    P3_pooled = PyramidROIAlign_mask(pool_size[1], 1, name="pyramid_roi_align_p3")([rois, image_meta] + feature_maps)
-    P4_pooled = PyramidROIAlign_mask(pool_size[2], 2, name="pyramid_roi_align_p4")([rois, image_meta] + feature_maps)
-    P5_pooled = PyramidROIAlign_mask(pool_size[3], 3, name="pyramid_roi_align_p5")([rois, image_meta] + feature_maps)
+    P2_pooled = PyramidROIAlign_mask(pool_size[0], 0, name="pyramid_roi_align_mask_p2")([rois, image_meta] + feature_maps)
+    P3_pooled = PyramidROIAlign_mask(pool_size[1], 1, name="pyramid_roi_align_mask_p3")([rois, image_meta] + feature_maps)
+    P4_pooled = PyramidROIAlign_mask(pool_size[2], 2, name="pyramid_roi_align_mask_p4")([rois, image_meta] + feature_maps)
+    P5_pooled = PyramidROIAlign_mask(pool_size[3], 3, name="pyramid_roi_align_mask_p5")([rois, image_meta] + feature_maps)
 
     print(P2_pooled, P3_pooled, P4_pooled, P5_pooled)
 
@@ -2365,7 +2365,7 @@ class MaskRCNN():
         # Pre-defined layer regular expressions
         layer_regex = {
             # all layers but the backbone
-            "heads": r"(decoder\_.*)|(rpn\_.*)|(fpn\_.*)",
+            "heads": r"(decoder\_.*)|(mrcnn\_.*)|(rpn\_.*)|(fpn\_.*)",
             # From a specific Resnet stage and up
             "3+": r"(res3.*)|(bn3.*)|(res4.*)|(bn4.*)|(res5.*)|(bn5.*)|(mrcnn\_.*)|(rpn\_.*)|(fpn\_.*)",
             "4+": r"(res4.*)|(bn4.*)|(res5.*)|(bn5.*)|(mrcnn\_.*)|(rpn\_.*)|(fpn\_.*)",
