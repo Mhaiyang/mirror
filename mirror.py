@@ -36,7 +36,7 @@ class MirrorConfig(Config):
     USE_MINI_MASK = False
     MINI_MASK_SHAPE = (56, 56)
 
-    # Pooled ROIs and Shape of output mask
+    # Shapes of Pooled ROIs and output masks
     # Need change if the mask branch is changed.
     CLASSIFY_POOL_SIZE = 7
 
@@ -54,9 +54,11 @@ class MirrorConfig(Config):
 
     # Use a small epoch since the data is simple
     STEPS_PER_EPOCH = 2599
+    # STEPS_PER_EPOCH = 1
 
     # use small validation steps since the epoch is small
     VALIDATION_STEPS = 186
+    # VALIDATION_STEPS = 1
 
     # skip detection with <x% confidence
     DETECTION_MIN_CONFIDENCE = 0.7

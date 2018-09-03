@@ -1013,7 +1013,7 @@ def fpn_classifier_graph(rois, feature_maps, image_meta,
 
     x = KL.TimeDistributed(KL.Conv2D(1024, (1, 1), padding="valid", activation="relu"),
                            name="fusion_class_conv4")(x)
-
+    # shape : [batch, num_boxes, 1024]
     shared = KL.Lambda(lambda x: K.squeeze(K.squeeze(x, 3), 2), name="pool_squeeze")(x)
 
     # Classifier head
@@ -2153,7 +2153,7 @@ class MaskRCNN():
         dir_name = os.path.join(self.model_dir, dir_names[-1])
         # Find the last checkpoint
         checkpoints = next(os.walk(dir_name))[2]
-        checkpoints = filter(lambda f: f.startswith("mask_rcnn"), checkpoints)
+        checkpoints = filter(lambda f: f.startswith("mirror"), checkpoints)
         checkpoints = sorted(checkpoints)
         if not checkpoints:
             return dir_name, None
@@ -2316,7 +2316,7 @@ class MaskRCNN():
             # /path/to/logs/coco20171029T2315/mask_rcnn_coco_0001.h5
             # /path/to/logs/coco20171029T2315/mask_rcnn_mirror_0001.h5
             # regex = r".*/(\d{1})/mask\_rcnn\_\w+(\d{4})\.h5"
-            regex = r".*/\w+(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})/mask\_rcnn\_\w+(\d{4})\.h5"
+            regex = r".*/\w+(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})/\w+(\d{4})\.h5"
             m = re.match(regex, model_path)
             if m:
                 now = datetime.datetime(int(m.group(1)), int(m.group(2)), int(m.group(3)),
@@ -2330,7 +2330,7 @@ class MaskRCNN():
             self.config.NAME.lower(), now))
 
         # Path to save after each epoch. Include placeholders that get filled by Keras.
-        self.checkpoint_path = os.path.join(self.log_dir, "mask_rcnn_{}_*epoch*.h5".format(
+        self.checkpoint_path = os.path.join(self.log_dir, "{}_*epoch*.h5".format(
             self.config.NAME.lower()))
         self.checkpoint_path = self.checkpoint_path.replace(
             "*epoch*", "{epoch:04d}")
