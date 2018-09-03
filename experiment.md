@@ -31,7 +31,7 @@
 
 Augmentation test
 
-decoder:
+**false decoder**:
 
 mean_mAP_box         0.9104763191336236 
 
@@ -39,7 +39,14 @@ mean_mAP_mask        0.8969926166237636
 
 mean_mAP_range_mask  0.6890442103499147
 
-mask rcnn
+**mask rcnn**
+
 mean_mAP_box         0.9270889609434917 
 mean_mAP_mask        0.9090356564220707 
 mean_mAP_range_mask  0.7329078876424174
+
+**correct decoder:**
+
+mean_mAP_box         0.9312083558651557 
+mean_mAP_mask        0.912929947800128 
+mean_mAP_range_mask  0.6968147848168522
