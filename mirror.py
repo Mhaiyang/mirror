@@ -17,8 +17,8 @@ class MirrorConfig(Config):
 
     # Train on 1 GPU and 8 images per GPU. We can put multiple images on each
     # GPU because the images are small. Batch size is 8 (GPUs * images/GPU).
-    GPU_COUNT = 2
-    IMAGES_PER_GPU = 2
+    GPU_COUNT = 1
+    IMAGES_PER_GPU = 1
 
     # Number of classes (including background)
     NUM_CLASSES = 1 + 1  # background + 1 mirror
@@ -36,17 +36,17 @@ class MirrorConfig(Config):
     USE_MINI_MASK = False
     MINI_MASK_SHAPE = (56, 56)
 
-    # Pooled ROIs and Shape of output mask
+    # Shapes of Pooled ROIs and output masks
     # Need change if the mask branch is changed.
     CLASSIFY_POOL_SIZE = 7
 
-    # For model.py
-    MASK_POOL_SIZE = 14
-    MASK_SHAPE = [28, 28]
+    # For model.py, fusion.py
+    # MASK_POOL_SIZE = 14
+    # MASK_SHAPE = [28, 28]
 
     # For decoder.py
-    # MASK_POOL_SIZE = [32, 16, 8, 4]
-    # MASK_SHAPE = [64, 64]
+    MASK_POOL_SIZE = [32, 16, 8, 4]
+    MASK_SHAPE = [64, 64]
 
     # Reduce training ROIs per image because the images are small and have
     # few objects. Aim to allow ROI sampling to pick 33% positive ROIs.
@@ -54,14 +54,14 @@ class MirrorConfig(Config):
 
     # Use a small epoch since the data is simple
     STEPS_PER_EPOCH = 2599
+    # STEPS_PER_EPOCH = 1
 
     # use small validation steps since the epoch is small
     VALIDATION_STEPS = 186
+    # VALIDATION_STEPS = 1
 
     # skip detection with <x% confidence
     DETECTION_MIN_CONFIDENCE = 0.7
-
-
 
     # Learning rate
     LEARNING_RATE = 0.001

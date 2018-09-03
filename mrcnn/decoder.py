@@ -5,7 +5,7 @@
   
   @Project : mirror
   @File    : decoder.py
-  @Function: my own network.
+  @Function: Decoder structure for mask prediction branch.
   
 """
 import os
@@ -475,7 +475,7 @@ class PyramidROIAlign_mask(KE.Layer):
         self.level = level
 
     def call(self, inputs):
-        # Crop boxes [batch, num_boxes, (y1, x1, y2, x2)] in normalized coords
+        # Crop boxes [batch, num_boxes, (y1, x1, y2, x2)] in normalized coordinate.
         boxes = inputs[0]
 
         image_meta = inputs[1]
@@ -485,26 +485,9 @@ class PyramidROIAlign_mask(KE.Layer):
         feature_maps = inputs[2:]
 
         # Written by TaylorMei
-        # Assign each ROI to all levels in the pyramid
-        y1, x1, y2, x2 = tf.split(boxes, 4, axis=2)
-        h = y2 - y1
-        w = x2 - x1
-        # Use shape of first image. Images in a batch must have the same size.
-        image_shape = parse_image_meta_graph(image_meta)['image_shape'][0]
-
-        image_area = tf.cast(image_shape[0] * image_shape[1], tf.float32)
-        roi_level = log2_graph(tf.sqrt(h * w) / (224.0 / tf.sqrt(image_area)))
-        # Ensure all elements in matrix is level.
-        roi_level = tf.minimum(self.level, tf.maximum(
-            self.level, 4 + tf.cast(tf.round(roi_level), tf.int32)))
-        roi_level = tf.squeeze(roi_level, 2)
-
-        # shape of ix : [batch, number_of_boxes]
-        ix = tf.where(tf.equal(roi_level, self.level))
+        roi_level = tf.ones([tf.shape(boxes)[0], tf.shape(boxes)[1]])
+        ix = tf.where(tf.equal(roi_level, 1))
         level_boxes = tf.gather_nd(boxes, ix)
-
-        # Box indicies for crop_and_resize. box_indices specify the image(batch) that
-        # the i-th box refers to.
         box_indices = tf.cast(ix[:, 0], tf.int32)
 
         box_indices = tf.stop_gradient(box_indices)
@@ -1042,10 +1025,10 @@ def build_fpn_mask_graph(rois, feature_maps, image_meta,
     # ROI Align
     # Shape: [batch, boxes, pool_height, pool_width, channels]
 
-    P2_pooled = PyramidROIAlign_mask(pool_size[0], 0, name="pyramid_roi_align_p2")([rois, image_meta] + feature_maps)
-    P3_pooled = PyramidROIAlign_mask(pool_size[1], 1, name="pyramid_roi_align_p3")([rois, image_meta] + feature_maps)
-    P4_pooled = PyramidROIAlign_mask(pool_size[2], 2, name="pyramid_roi_align_p4")([rois, image_meta] + feature_maps)
-    P5_pooled = PyramidROIAlign_mask(pool_size[3], 3, name="pyramid_roi_align_p5")([rois, image_meta] + feature_maps)
+    P2_pooled = PyramidROIAlign_mask(pool_size[0], 0, name="pyramid_roi_align_mask_p2")([rois, image_meta] + feature_maps)
+    P3_pooled = PyramidROIAlign_mask(pool_size[1], 1, name="pyramid_roi_align_mask_p3")([rois, image_meta] + feature_maps)
+    P4_pooled = PyramidROIAlign_mask(pool_size[2], 2, name="pyramid_roi_align_mask_p4")([rois, image_meta] + feature_maps)
+    P5_pooled = PyramidROIAlign_mask(pool_size[3], 3, name="pyramid_roi_align_mask_p5")([rois, image_meta] + feature_maps)
 
     print(P2_pooled, P3_pooled, P4_pooled, P5_pooled)
 
@@ -2312,7 +2295,7 @@ class MaskRCNN():
             # /path/to/logs/coco20171029T2315/mask_rcnn_coco_0001.h5
             # /path/to/logs/coco20171029T2315/mask_rcnn_mirror_0001.h5
             # regex = r".*/(\d{1})/mask\_rcnn\_\w+(\d{4})\.h5"
-            regex = r".*/\w+(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})/mask\_rcnn\_\w+(\d{4})\.h5"
+            regex = r".*/\w+(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})/\w+(\d{4})\.h5"
             m = re.match(regex, model_path)
             if m:
                 now = datetime.datetime(int(m.group(1)), int(m.group(2)), int(m.group(3)),
@@ -2326,7 +2309,7 @@ class MaskRCNN():
             self.config.NAME.lower(), now))
 
         # Path to save after each epoch. Include placeholders that get filled by Keras.
-        self.checkpoint_path = os.path.join(self.log_dir, "mask_rcnn_{}_*epoch*.h5".format(
+        self.checkpoint_path = os.path.join(self.log_dir, "{}_*epoch*.h5".format(
             self.config.NAME.lower()))
         self.checkpoint_path = self.checkpoint_path.replace(
             "*epoch*", "{epoch:04d}")
@@ -2365,7 +2348,7 @@ class MaskRCNN():
         # Pre-defined layer regular expressions
         layer_regex = {
             # all layers but the backbone
-            "heads": r"(decoder\_.*)|mrcnn\_.*)|(rpn\_.*)|(fpn\_.*)",
+            "heads": r"(decoder\_.*)|(mrcnn\_.*)|(rpn\_.*)|(fpn\_.*)",
             # From a specific Resnet stage and up
             "3+": r"(res3.*)|(bn3.*)|(res4.*)|(bn4.*)|(res5.*)|(bn5.*)|(mrcnn\_.*)|(rpn\_.*)|(fpn\_.*)",
             "4+": r"(res4.*)|(bn4.*)|(res5.*)|(bn5.*)|(mrcnn\_.*)|(rpn\_.*)|(fpn\_.*)",
