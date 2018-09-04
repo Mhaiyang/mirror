@@ -44,7 +44,7 @@ class MirrorConfig(Config):
     # MASK_POOL_SIZE = 14
     # MASK_SHAPE = [28, 28]
 
-    # For decoder.py
+    # For decoder.py, fusion+decoder.py
     MASK_POOL_SIZE = [32, 16, 8, 4]
     MASK_SHAPE = [64, 64]
 
