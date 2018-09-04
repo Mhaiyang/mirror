@@ -41,12 +41,12 @@ class MirrorConfig(Config):
     CLASSIFY_POOL_SIZE = 7
 
     # For model.py, fusion.py
-    MASK_POOL_SIZE = 14
-    MASK_SHAPE = [28, 28]
+    # MASK_POOL_SIZE = 14
+    # MASK_SHAPE = [28, 28]
 
     # For decoder.py, fusion+decoder.py
-    # MASK_POOL_SIZE = [32, 16, 8, 4]
-    # MASK_SHAPE = [64, 64]
+    MASK_POOL_SIZE = [32, 16, 8, 4]
+    MASK_SHAPE = [32, 32]
 
     # Reduce training ROIs per image because the images are small and have
     # few objects. Aim to allow ROI sampling to pick 33% positive ROIs.
