@@ -11,15 +11,15 @@ import mrcnn.visualize as visualize
 import evaluate
 from mirror import MirrorConfig
 # Important, need change when test different models.
-import mrcnn.decoder as modellib
+import mrcnn.fusion as modellib
 
 # Directories of the project
 ROOT_DIR = os.getcwd()
-MODEL_DIR = os.path.join(ROOT_DIR, "logs_decoder/mirror20180902T1947")
-MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mask_rcnn_mirror_0030.h5")
+MODEL_DIR = os.path.join(ROOT_DIR, "logs_fusion/mirror20180903T2103")
+MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mirror_0030.h5")
 IMAGE_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "image")
 MASK_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "mask")
-OUTPUT_PATH = os.path.join(ROOT_DIR, 'augmentation', 'test', "output_decoder")
+OUTPUT_PATH = os.path.join(ROOT_DIR, 'augmentation', 'test', "output_fusion")
 if not os.path.exists(OUTPUT_PATH):
     os.mkdir(OUTPUT_PATH)
 
