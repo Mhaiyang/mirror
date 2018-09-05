@@ -11,13 +11,13 @@
 import os
 import mirror
 # Need modify : model or decoder.
-import mrcnn.fusion_decoder as modellib
+import mrcnn.fusion_context_guided_decoder as modellib
 
 # Root directory of the project
 ROOT_DIR = os.getcwd()
 
 # Directory to save logs and trained model
-MODEL_DIR = os.path.join(ROOT_DIR, "logs_fusion_decoder")
+MODEL_DIR = os.path.join(ROOT_DIR, "logs_fusion_context_guided_decoder")
 
 # Local path to trained weights file
 COCO_MODEL_PATH = os.path.join(ROOT_DIR, "mask_rcnn_coco.h5")
