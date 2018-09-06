@@ -9,15 +9,8 @@
   
 """
 import numpy as np
-import tensorflow as tf
 
-a = np.array(list(range(100)))
-a = a.reshape([10,10])
-b = tf.constant(a)
-print(b)
-index = tf.where(b>50)
-print(index)
-c = tf.gather_nd(b,index)
-print(c)
-c = tf.gather(b,index)
-print(c)
+a = np.array([[1,2,3,2],[2,1,3,2]])
+b = np.where(a[:,3] == 2)
+print(a[:, 3])
+print(b[0])

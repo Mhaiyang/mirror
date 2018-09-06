@@ -23,7 +23,8 @@ OUTPUT_PATH = os.path.join(ROOT_DIR, 'augmentation', 'test', "output_fusion_deco
 if not os.path.exists(OUTPUT_PATH):
     os.mkdir(OUTPUT_PATH)
 
-## Configurations
+
+# Configurations
 class InferenceConfig(MirrorConfig):
     # Set batch size to 1 since we'll be running inference on
     # one image at a time. Batch size = GPU_COUNT * IMAGES_PER_GPU
@@ -35,6 +36,7 @@ class InferenceConfig(MirrorConfig):
     # Important. If Iou greater than this threshold, this prediction will be considered as true.
     bbox_iou_threshold = 0.5
     mask_iou_threshold = 0.5
+
 
 config = InferenceConfig()
 config.display()
