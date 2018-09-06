@@ -2450,6 +2450,7 @@ class MaskRCNN():
         """
         # How many detections do we have?
         # Detections array is padded with zeros. Find the first class_id == 0.
+        # N is the first number of zero box.
         zero_ix = np.where(detections[:, 4] == 0)[0]
         N = zero_ix[0] if zero_ix.shape[0] > 0 else detections.shape[0]
 
