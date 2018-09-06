@@ -81,7 +81,7 @@ def apply_mask(image, mask, color, alpha=0.5):
 
 
 def display_instances_and_save_image(imgname, OUTPUT_PATH, image, boxes, masks, class_ids, class_names,
-                      scores=None, title="",
+                      scores=None, title="title",
                       figsize=(32, 32), ax=None,
                       show_mask=True, show_bbox=True,
                       colors=None, captions=None):
@@ -118,7 +118,7 @@ def display_instances_and_save_image(imgname, OUTPUT_PATH, image, boxes, masks, 
     ax.set_ylim(height + 1, -1)
     ax.set_xlim(-1, width + 1)
     ax.axis('off')
-    ax.set_title(title)
+    # ax.set_title(title)
 
     masked_image = image.astype(np.uint32).copy()
     for i in range(N):
@@ -130,7 +130,7 @@ def display_instances_and_save_image(imgname, OUTPUT_PATH, image, boxes, masks, 
             continue
         y1, x1, y2, x2 = boxes[i]
         if show_bbox:
-            p = patches.Rectangle((x1, y1), x2 - x1, y2 - y1, linewidth=2,
+            p = patches.Rectangle((x1, y1), x2 - x1, y2 - y1, linewidth=5,
                                 alpha=0.7, linestyle="dashed",
                                 edgecolor=color, facecolor='none')
             ax.add_patch(p)
@@ -144,8 +144,8 @@ def display_instances_and_save_image(imgname, OUTPUT_PATH, image, boxes, masks, 
             caption = "{} {:.3f}".format(label, score) if score else label
         else:
             caption = captions[i]
-        ax.text(x1, y1 + 8, caption,
-                color='w', size=11, backgroundcolor="none")
+        ax.text(x1, y1 + 30, caption,
+                color='w', size=40, backgroundcolor="none")
 
         # Mask
         mask = masks[:, :, i]
@@ -202,7 +202,7 @@ def display_differences(image,
     # Set title if not provided
     title = title or "Ground Truth and Detections\n GT=green, pred=red, captions: score/IoU"
     # Display
-    display_instances(
+    display_instances_and_save_image(
         image,
         boxes, masks, class_ids,
         class_names, scores, ax=ax,

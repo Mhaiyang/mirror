@@ -2074,13 +2074,13 @@ class MaskRCNN:
                 fpn_classifier_graph(rpn_rois, rpn_feature_maps, input_image_meta,
                                      config.CLASSIFY_POOL_SIZE, config.NUM_CLASSES,
                                      train_bn=config.TRAIN_BN)
-
+            print(shared)
             # Detections
             # output is [batch, num_detections, (y1, x1, y2, x2, class_id, score)] in
             # normalized coordinates
             detections = DetectionLayer(config, name="mrcnn_detection")(
                 [rpn_rois, mrcnn_class, mrcnn_bbox, input_image_meta])
-
+            print(detections)
             # Create masks for detections
             detection_boxes = KL.Lambda(lambda x: x[..., :4])(detections)
             mrcnn_mask = build_fpn_mask_graph(detection_boxes, mrcnn_feature_maps, shared,

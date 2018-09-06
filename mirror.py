@@ -52,6 +52,8 @@ class MirrorConfig(Config):
     # few objects. Aim to allow ROI sampling to pick 33% positive ROIs.
     TRAIN_ROIS_PER_IMAGE = 100
 
+    DETECTION_MAX_INSTANCES = 100
+
     # Use a small epoch since the data is simple
     STEPS_PER_EPOCH = 2599
     # STEPS_PER_EPOCH = 1
