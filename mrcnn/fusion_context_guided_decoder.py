@@ -921,7 +921,7 @@ def build_rpn_model(anchor_stride, anchors_per_location, depth):
 #  Feature Pyramid Network Heads
 ############################################################
 
-def fpn_classifier_graph(rois, feature_maps, image_meta,
+def fpn_classifier_graph_first(rois, feature_maps, image_meta,
                          pool_size, num_classes, train_bn=True):
     """Builds the computation graph of the feature pyramid network classifier
     and regression heads.
@@ -984,6 +984,50 @@ def fpn_classifier_graph(rois, feature_maps, image_meta,
     mrcnn_bbox = KL.Reshape((s[1], num_classes, 4), name="fusion_bbox")(x)
 
     return mrcnn_class_logits, mrcnn_probs, mrcnn_bbox, shared
+
+
+def fpn_classifier_graph_second(rois, feature_maps, image_meta,
+                         pool_size, num_classes, train_bn=True):
+    """Builds the computation graph of the feature pyramid network classifier
+    and regression heads.
+
+    rois: [batch, num_rois, (y1, x1, y2, x2)] Proposal boxes in normalized
+          coordinates.
+    feature_maps: List of feature maps from different layers of the pyramid,
+                  [P2, P3, P4, P5, P6]. Each has a different resolution.
+    - image_meta: [batch, (meta data)] Image details. See compose_image_meta()
+    pool_size: The width of the square feature map generated from ROI Pooling.
+    num_classes: number of classes, which determines the depth of the results
+    train_bn: Boolean. Train or freeze Batch Norm layers
+
+    Returns:
+        logits: [N, NUM_CLASSES] classifier logits (before softmax)
+        probs: [N, NUM_CLASSES] classifier probabilities
+        bbox_deltas: [N, (dy, dx, log(dh), log(dw))] Deltas to apply to
+                     proposal boxes
+    """
+    # Classify and regression branch written by TaylorMei
+    # ROI Align
+    # Shape: [batch, num_boxes, pool_height, pool_width, channels]
+    # each box is a time step. Independent with each other. pyramid_roi_align_classify_second has no weights.
+    fusion = PyramidROIAlign_classify(pool_size, name="pyramid_roi_align_classify_second")(
+                                     [rois, image_meta] + feature_maps)
+
+    # 7x7
+    x = KL.TimeDistributed(KL.Conv2D(640, (3, 3), padding="same", activation="relu"),
+                           name="fusion_class_conv1_second")(fusion)
+
+    x = KL.TimeDistributed(KL.Conv2D(320, (3, 3), padding="same", activation="relu"),
+                           name="fusion_class_conv2_second")(x)
+
+    # 1x1
+    x = KL.TimeDistributed(KL.Conv2D(1024, (pool_size, pool_size), padding="valid", activation="relu"),
+                           name="fusion_class_conv3_second")(x)
+
+    shared = KL.TimeDistributed(KL.Conv2D(1024, (1, 1), padding="valid", activation="relu"),
+                           name="fusion_class_conv4_second")(x)
+
+    return shared
 
 
 def build_fpn_mask_graph(rois, feature_maps, shared, image_meta,
@@ -1854,7 +1898,7 @@ def data_generator(dataset, config, shuffle=True, augment=False, augmentation=No
 #  MaskRCNN Class
 ############################################################
 
-class MaskRCNN:
+class MaskRCNN(object):
     """Encapsulates the Mask RCNN model functionality.
 
     The actual Keras model is in the keras_model property.
@@ -2070,11 +2114,12 @@ class MaskRCNN:
         else:
             # Network Heads
             # Proposal classifier and BBox regression heads
-            mrcnn_class_logits, mrcnn_class, mrcnn_bbox, shared = \
-                fpn_classifier_graph(rpn_rois, rpn_feature_maps, input_image_meta,
+
+            mrcnn_class_logits, mrcnn_class, mrcnn_bbox, shared_first = \
+                fpn_classifier_graph_first(rpn_rois, rpn_feature_maps, input_image_meta,
                                      config.CLASSIFY_POOL_SIZE, config.NUM_CLASSES,
                                      train_bn=config.TRAIN_BN)
-            print(shared)
+            print(shared_first)
             # Detections
             # output is [batch, num_detections, (y1, x1, y2, x2, class_id, score)] in
             # normalized coordinates
@@ -2083,6 +2128,11 @@ class MaskRCNN:
             print(detections)
             # Create masks for detections
             detection_boxes = KL.Lambda(lambda x: x[..., :4])(detections)
+
+            shared = fpn_classifier_graph_second(detection_boxes, rpn_feature_maps, input_image_meta,
+                                                   config.CLASSIFY_POOL_SIZE, config.NUM_CLASSES,
+                                                   train_bn=config.TRAIN_BN)
+
             mrcnn_mask = build_fpn_mask_graph(detection_boxes, mrcnn_feature_maps, shared,
                                               input_image_meta,
                                               config.MASK_POOL_SIZE,
