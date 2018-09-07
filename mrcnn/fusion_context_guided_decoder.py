@@ -2568,7 +2568,7 @@ class MaskRCNN(object):
             images) == self.config.BATCH_SIZE, "len(images) must be equal to BATCH_SIZE"
 
         if verbose:
-            log("Processing {} images : {}".format(len(images), imgname))
+            log("Processing images : {}".format(imgname))
             for image in images:
                 log("image", image)
 
