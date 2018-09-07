@@ -42,7 +42,6 @@ class InferenceConfig(MirrorConfig):
     mask_iou_threshold = 0.5
 
 
-
 config = InferenceConfig()
 config.display()
 
