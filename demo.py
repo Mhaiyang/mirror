@@ -41,6 +41,7 @@ config.display()
 model = modellib.MaskRCNN(mode="inference", config=config, model_dir=MODEL_DIR)
 model.load_weights(MODEL_PATH, by_name=True)
 if version == "fusion_context_guided_decoder":
+    print("load additional weights.")
     mapping = dict()
     mapping["fusion_class_conv1_second"] = "fusion_class_conv1"
     mapping["fusion_class_conv2_second"] = "fusion_class_conv2"
