@@ -12,15 +12,15 @@ import mrcnn.visualize as visualize
 import evaluate
 from mirror import MirrorConfig
 # Important, need change when test different models.
-import mrcnn.fusion_context_guided_decoder as modellib
+import mrcnn.fusion as modellib
 
 # Directories of the project
 ROOT_DIR = os.getcwd()
-MODEL_DIR = os.path.join(ROOT_DIR, "logs_fusion_context_guided_decoder/mirror20180905T2113")
+MODEL_DIR = os.path.join(ROOT_DIR, "logs_fusion/mirror20180903T2103")
 MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mirror_0030.h5")
 IMAGE_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "image")
 MASK_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "mask")
-OUTPUT_PATH = os.path.join(ROOT_DIR, 'augmentation', 'test', "output_fusion_context_guided_decoder_false")
+OUTPUT_PATH = os.path.join(ROOT_DIR, 'augmentation', 'test', "output_fusion")
 if not os.path.exists(OUTPUT_PATH):
     os.mkdir(OUTPUT_PATH)
 
@@ -50,6 +50,7 @@ config.display()
 model = modellib.MaskRCNN(mode="inference", config=config, model_dir=MODEL_DIR)
 # ## Load weights
 model.load_weights(MIRROR_MODEL_PATH, by_name=True)
+# ## For fusion_context_guided_decoder
 # mapping = dict()
 # mapping["fusion_class_conv1_second"] = "fusion_class_conv1"
 # mapping["fusion_class_conv2_second"] = "fusion_class_conv2"
