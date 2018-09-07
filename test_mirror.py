@@ -20,7 +20,7 @@ MODEL_DIR = os.path.join(ROOT_DIR, "logs_fusion_context_guided_decoder/mirror201
 MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mirror_0030.h5")
 IMAGE_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "image")
 MASK_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "mask")
-OUTPUT_PATH = os.path.join(ROOT_DIR, 'augmentation', 'test', "output_fusion_context_guided_decoder_right")
+OUTPUT_PATH = os.path.join(ROOT_DIR, 'augmentation', 'test', "output_fusion_context_guided_decoder_false")
 if not os.path.exists(OUTPUT_PATH):
     os.mkdir(OUTPUT_PATH)
 
@@ -50,15 +50,15 @@ config.display()
 model = modellib.MaskRCNN(mode="inference", config=config, model_dir=MODEL_DIR)
 # ## Load weights
 model.load_weights(MIRROR_MODEL_PATH, by_name=True)
-mapping = dict()
-mapping["fusion_class_conv1_second"] = "fusion_class_conv1"
-mapping["fusion_class_conv2_second"] = "fusion_class_conv2"
-mapping["fusion_class_conv3_second"] = "fusion_class_conv3"
-mapping["fusion_class_conv4_second"] = "fusion_class_conv4"
-for layer in model.keras_model.layers:
-    if layer.name in mapping:
-        weight_name = mapping[layer.name]
-        layer.set_weights(model.keras_model.get_layer(weight_name).get_weights())
+# mapping = dict()
+# mapping["fusion_class_conv1_second"] = "fusion_class_conv1"
+# mapping["fusion_class_conv2_second"] = "fusion_class_conv2"
+# mapping["fusion_class_conv3_second"] = "fusion_class_conv3"
+# mapping["fusion_class_conv4_second"] = "fusion_class_conv4"
+# for layer in model.keras_model.layers:
+#     if layer.name in mapping:
+#         weight_name = mapping[layer.name]
+#         layer.set_weights(model.keras_model.get_layer(weight_name).get_weights())
 # for layer in model.keras_model.layers:
 #     print(layer.name)
 #     if layer.name == "fusion_class_conv2" or layer.name == "fusion_class_conv2_second":
