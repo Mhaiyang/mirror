@@ -1,6 +1,8 @@
 # Mirror Project
 
 ## Change Log
+2018/9/6    Fixed fusion_context_guided_decoder inference code. Begin to prepare report.
+
 2018/8/31   Decoder trained finished. Just ok. **Setting validation batch size to two is ok.** Solved by add 'next()' on validation generator.
 
 2018/8/29   Began to optimize the network.
