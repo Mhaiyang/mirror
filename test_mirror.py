@@ -16,7 +16,7 @@ import mrcnn.fusion_context_guided_decoder as modellib
 # Directories of the project
 ROOT_DIR = os.getcwd()
 MODEL_DIR = os.path.join(ROOT_DIR, "logs_fusion_context_guided_decoder/mirror20180905T2113")
-MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mirror_0024.h5")
+MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mirror_0030.h5")
 IMAGE_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "image")
 MASK_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "mask")
 OUTPUT_PATH = os.path.join(ROOT_DIR, 'augmentation', 'test', "output_fusion_context_guided_decoder")
@@ -33,7 +33,6 @@ class InferenceConfig(MirrorConfig):
     IMAGES_PER_GPU = 1
     RPN_ANCHOR_SCALES = (32, 64, 128, 256, 512)
     # These two must be same when test. As we use shared connecting the detection and segmentation.
-    POST_NMS_ROIS_INFERENCE = 100
     DETECTION_MAX_INSTANCES = 100
 
     DETECTION_MIN_CONFIDENCE = 0.7

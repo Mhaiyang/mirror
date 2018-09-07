@@ -71,3 +71,10 @@ mean_mAP_mask        0.9204484062870086
  
 mean_mAP_range_mask  0.7416283990775417
 
+**fusion context guided decoder**
+
+mean_mAP_box         0.9365883306535584 
+
+mean_mAP_mask        0.9262110571050438 
+
+mean_mAP_range_mask  0.7600148568497201
