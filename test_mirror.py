@@ -12,15 +12,15 @@ import mrcnn.visualize as visualize
 import evaluate
 from mirror import MirrorConfig
 # Important, need change when test different models.
-import mrcnn.p1 as modellib
+import mrcnn.fusion as modellib
 
 # Directories of the project
 ROOT_DIR = os.getcwd()
-MODEL_DIR = os.path.join(ROOT_DIR, "logs_p1/mirror20180907T2211")
-MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mirror_0035.h5")
+MODEL_DIR = os.path.join(ROOT_DIR, "logs_fusion/mirror20180903T2103")
+MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mirror_0030.h5")
 IMAGE_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "image")
 MASK_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "mask")
-OUTPUT_PATH = os.path.join(ROOT_DIR, 'augmentation', 'test', "output_p1")
+OUTPUT_PATH = os.path.join(ROOT_DIR, 'augmentation', 'test', "output_fusion")
 if not os.path.exists(OUTPUT_PATH):
     os.mkdir(OUTPUT_PATH)
 
@@ -38,8 +38,8 @@ class InferenceConfig(MirrorConfig):
 
     DETECTION_MIN_CONFIDENCE = 0.7
     # Important. If Iou greater than this threshold, this prediction will be considered as true.
-    bbox_iou_threshold = 0.5
-    mask_iou_threshold = 0.5
+    bbox_iou_threshold = 0.75
+    mask_iou_threshold = 0.75
 
 
 config = InferenceConfig()
@@ -50,16 +50,16 @@ model = modellib.MaskRCNN(mode="inference", config=config, model_dir=MODEL_DIR)
 # ## Load weights
 model.load_weights(MIRROR_MODEL_PATH, by_name=True)
 # For fusion_context_guided_decoder.py  p1.py
-mapping = dict()
-mapping["fusion_class_conv1_second"] = "fusion_class_conv1"
-mapping["fusion_class_conv2_second"] = "fusion_class_conv2"
-mapping["fusion_class_conv3_second"] = "fusion_class_conv3"
-mapping["fusion_class_conv4_second"] = "fusion_class_conv4"
-for layer in model.keras_model.layers:
-    if layer.name in mapping:
-        weight_name = mapping[layer.name]
-        layer.set_weights(model.keras_model.get_layer(weight_name).get_weights())
-print("Additional weights have been loaded.")
+# mapping = dict()
+# mapping["fusion_class_conv1_second"] = "fusion_class_conv1"
+# mapping["fusion_class_conv2_second"] = "fusion_class_conv2"
+# mapping["fusion_class_conv3_second"] = "fusion_class_conv3"
+# mapping["fusion_class_conv4_second"] = "fusion_class_conv4"
+# for layer in model.keras_model.layers:
+#     if layer.name in mapping:
+#         weight_name = mapping[layer.name]
+#         layer.set_weights(model.keras_model.get_layer(weight_name).get_weights())
+# print("Additional weights have been loaded.")
 # For validate.
 # for layer in model.keras_model.layers:
 #     print(layer.name)
