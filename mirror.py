@@ -45,7 +45,11 @@ class MirrorConfig(Config):
     # MASK_SHAPE = [28, 28]
 
     # For decoder.py, fusion_decoder.py, fusion_context_guided_decoder.py
-    MASK_POOL_SIZE = [32, 16, 8, 4]
+    # MASK_POOL_SIZE = [32, 16, 8, 4]
+    # MASK_SHAPE = [64, 64]
+
+    # For p1.py
+    MASK_POOL_SIZE = [64, 32, 16, 8, 4]
     MASK_SHAPE = [64, 64]
 
     # Reduce training ROIs per image because the images are small and have

@@ -5,7 +5,7 @@
   
   @Project : mirror
   @File    : fusion.py
-  @Function: Fusion network for classify branch and Context Guided Decoder network for mask prediction branch.
+  @Function: Add P1 features based on fusion context guided decoder Network.
   
 """
 
@@ -950,10 +950,10 @@ def fpn_classifier_graph_first(rois, feature_maps, image_meta,
                                      [rois, image_meta] + feature_maps)
 
     # 7x7
-    x = KL.TimeDistributed(KL.Conv2D(640, (3, 3), padding="same", activation="relu"),
+    x = KL.TimeDistributed(KL.Conv2D(960, (3, 3), padding="same", activation="relu"),
                            name="fusion_class_conv1")(fusion)
 
-    x = KL.TimeDistributed(KL.Conv2D(320, (3, 3), padding="same", activation="relu"),
+    x = KL.TimeDistributed(KL.Conv2D(640, (3, 3), padding="same", activation="relu"),
                            name="fusion_class_conv2")(x)
 
     # 1x1
@@ -1014,10 +1014,10 @@ def fpn_classifier_graph_second(rois, feature_maps, image_meta,
                                      [rois, image_meta] + feature_maps)
 
     # 7x7
-    x = KL.TimeDistributed(KL.Conv2D(640, (3, 3), padding="same", activation="relu"),
+    x = KL.TimeDistributed(KL.Conv2D(960, (3, 3), padding="same", activation="relu"),
                            name="fusion_class_conv1_second")(fusion)
 
-    x = KL.TimeDistributed(KL.Conv2D(320, (3, 3), padding="same", activation="relu"),
+    x = KL.TimeDistributed(KL.Conv2D(640, (3, 3), padding="same", activation="relu"),
                            name="fusion_class_conv2_second")(x)
 
     # 1x1
@@ -1049,12 +1049,13 @@ def build_fpn_mask_graph(rois, feature_maps, shared, image_meta,
     # ROI Pooling
     # Shape: [batch, boxes, pool_height, pool_width, channels]
 
-    P2_pooled = PyramidROIAlign_mask(pool_size[0], 0, name="pyramid_roi_align_mask_p2")([rois, image_meta] + feature_maps)
-    P3_pooled = PyramidROIAlign_mask(pool_size[1], 1, name="pyramid_roi_align_mask_p3")([rois, image_meta] + feature_maps)
-    P4_pooled = PyramidROIAlign_mask(pool_size[2], 2, name="pyramid_roi_align_mask_p4")([rois, image_meta] + feature_maps)
-    P5_pooled = PyramidROIAlign_mask(pool_size[3], 3, name="pyramid_roi_align_mask_p5")([rois, image_meta] + feature_maps)
+    P1_pooled = PyramidROIAlign_mask(pool_size[0], 0, name="pyramid_roi_align_mask_p1")([rois, image_meta] + feature_maps)
+    P2_pooled = PyramidROIAlign_mask(pool_size[1], 1, name="pyramid_roi_align_mask_p2")([rois, image_meta] + feature_maps)
+    P3_pooled = PyramidROIAlign_mask(pool_size[2], 2, name="pyramid_roi_align_mask_p3")([rois, image_meta] + feature_maps)
+    P4_pooled = PyramidROIAlign_mask(pool_size[3], 3, name="pyramid_roi_align_mask_p4")([rois, image_meta] + feature_maps)
+    P5_pooled = PyramidROIAlign_mask(pool_size[4], 4, name="pyramid_roi_align_mask_p5")([rois, image_meta] + feature_maps)
 
-    print(P2_pooled, P3_pooled, P4_pooled, P5_pooled)
+    print(P1_pooled, P2_pooled, P3_pooled, P4_pooled, P5_pooled)
 
     # Names below refer to a TimeDistributed object.
     x = KL.Add(name="decoder_mask_p5add")([
@@ -1085,13 +1086,18 @@ def build_fpn_mask_graph(rois, feature_maps, shared, image_meta,
                            name="decoder_mask_p2")(P2_pooled)
     ])
     print(x)
-    x = KL.TimeDistributed(KL.Conv2DTranspose(32, (2, 2), strides=2, activation="relu"),
-                           name="decoder_mask_64x64x32")(x)
+    x = KL.Add(name="decoder_mask_p1add")([
+        KL.TimeDistributed(KL.Conv2DTranspose(32, (2, 2), strides=2, activation="relu"),
+                           name="decoder_mask_p1upsampled")(x),
+        KL.TimeDistributed(KL.Conv2D(32, (3, 3), padding="same", activation="relu"),
+                           name="decoder_mask_p1")(P1_pooled)
+    ])
+    print(x)
 
-    x = KL.TimeDistributed(KL.Conv2D(16, (3, 3), padding="same", activation="relu"),
+    x = KL.TimeDistributed(KL.Conv2D(16, (5, 5), padding="same", activation="relu"),
                            name="decoder_mask_64x64x16")(x)
 
-    x = KL.TimeDistributed(KL.Conv2D(num_classes, (3, 3), padding="same", activation="sigmoid"),
+    x = KL.TimeDistributed(KL.Conv2D(num_classes, (5, 5), padding="same", activation="sigmoid"),
                            name="decoder_mask_64x64x2")(x)
     print(x)
     return x
@@ -1990,8 +1996,12 @@ class MaskRCNN(object):
         P2 = KL.Add(name="fpn_p2add")([
             KL.UpSampling2D(size=(2, 2), name="fpn_p3upsampled")(P3),
             KL.Conv2D(256, (1, 1), name='fpn_c2p2')(C2)])
+        P1 = KL.Add(name="fpn_p1add")([
+            KL.UpSampling2D(size=(2, 2), name="fpn_p2upsampled")(P2),
+            KL.Conv2D(256, (1, 1), name='fpn_c1p1')(C1)])
         # Attach 3x3 conv to all P layers to get the final feature maps.
         # TODO: Try path augmentation of PANet.
+        P1 = KL.Conv2D(256, (3, 3), padding="SAME", name="fpn_p1")(P1)
         P2 = KL.Conv2D(256, (3, 3), padding="SAME", name="fpn_p2")(P2)
         P3 = KL.Conv2D(256, (3, 3), padding="SAME", name="fpn_p3")(P3)
         P4 = KL.Conv2D(256, (3, 3), padding="SAME", name="fpn_p4")(P4)
@@ -2001,8 +2011,9 @@ class MaskRCNN(object):
         P6 = KL.MaxPooling2D(pool_size=(1, 1), strides=2, name="fpn_p6")(P5)
 
         # Note that P6 is only used in RPN, but not in the classifier heads.
-        rpn_feature_maps = [P2, P3, P4, P5, P6]
-        mrcnn_feature_maps = [P2, P3, P4, P5]
+        rpn_features = [P2, P3, P4, P5, P6]
+        fusion_features = [P2, P3, P4, P5, P6]
+        deocder_features = [P1, P2, P3, P4, P5]
 
         # Anchors
         if mode == "training":
@@ -2021,7 +2032,7 @@ class MaskRCNN(object):
                               len(config.RPN_ANCHOR_RATIOS), 256)
         # Loop through pyramid layers
         layer_outputs = []  # list of lists
-        for p in rpn_feature_maps:
+        for p in rpn_features:
             layer_outputs.append(rpn([p]))
         # Concatenate layer outputs
         # Convert from list of lists of level outputs to list of lists
@@ -2075,11 +2086,11 @@ class MaskRCNN(object):
             # Network Heads
             # TODO: verify that this handles zero padded ROIs
             mrcnn_class_logits, mrcnn_class, mrcnn_bbox, shared = \
-                fpn_classifier_graph_first(rois, rpn_feature_maps, input_image_meta,
+                fpn_classifier_graph_first(rois, fusion_features, input_image_meta,
                                      config.CLASSIFY_POOL_SIZE, config.NUM_CLASSES,
                                      train_bn=config.TRAIN_BN)
 
-            mrcnn_mask = build_fpn_mask_graph(rois, mrcnn_feature_maps, shared,
+            mrcnn_mask = build_fpn_mask_graph(rois, deocder_features, shared,
                                               input_image_meta,
                                               config.MASK_POOL_SIZE,
                                               config.NUM_CLASSES,
@@ -2116,7 +2127,7 @@ class MaskRCNN(object):
             # Proposal classifier and BBox regression heads
 
             mrcnn_class_logits, mrcnn_class, mrcnn_bbox, shared_first = \
-                fpn_classifier_graph_first(rpn_rois, rpn_feature_maps, input_image_meta,
+                fpn_classifier_graph_first(rpn_rois, fusion_features, input_image_meta,
                                      config.CLASSIFY_POOL_SIZE, config.NUM_CLASSES,
                                      train_bn=config.TRAIN_BN)
             print(shared_first)
@@ -2129,11 +2140,11 @@ class MaskRCNN(object):
             # Create masks for detections
             detection_boxes = KL.Lambda(lambda x: x[..., :4])(detections)
 
-            shared = fpn_classifier_graph_second(detection_boxes, rpn_feature_maps, input_image_meta,
+            shared = fpn_classifier_graph_second(detection_boxes, fusion_features, input_image_meta,
                                                    config.CLASSIFY_POOL_SIZE, config.NUM_CLASSES,
                                                    train_bn=config.TRAIN_BN)
 
-            mrcnn_mask = build_fpn_mask_graph(detection_boxes, mrcnn_feature_maps, shared,
+            mrcnn_mask = build_fpn_mask_graph(detection_boxes, deocder_features, shared,
                                               input_image_meta,
                                               config.MASK_POOL_SIZE,
                                               config.NUM_CLASSES,
