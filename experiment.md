@@ -26,6 +26,23 @@
     mean_mAP_mask        0.8896882494004796 
     mean_mAP_range_mask  0.5994604316546769
     
+实验：
+
+- odel:原始Mask RCNN
+
+- fusion：roi的多级特征和整张图的特征
+
+- decoder：mask branch是反编码器
+
+- fusion_decoder:fusion和decoder的结合
+
+- fusion_context_guided_decoder:用全连接层引导反编码，跟Rynson汇报的版本
+
+- p1:在fusion_context_guided_decoder的版本上使用了P1，效果反而降低了
+
+- path_full:在fusion_context_guided_decoder的基础上使用了PANet的path augmentation，full就是指fusion_context_guided_decoder
+
+
 
 9.1
 
