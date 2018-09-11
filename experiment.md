@@ -143,6 +143,7 @@ mean_mAP_mask        0.927201512715966
 mean_mAP_range_mask  0.7643863677435231
 
 **full_path**
+
 mean_mAP_box_50      0.9469656041993894 
 
 mean_mAP_box_75      0.9021699982099054 
