@@ -11,13 +11,13 @@
 import os
 import mirror
 # Need modify:
-import mrcnn.post_relu as modellib
+import mrcnn.attention as modellib
 
 # Root directory of the project
 ROOT_DIR = os.getcwd()
 
 # Directory to save logs and trained model
-MODEL_DIR = os.path.join(ROOT_DIR, "logs_post_relu")
+MODEL_DIR = os.path.join(ROOT_DIR, "logs_attention")
 
 # Local path to trained weights file
 COCO_MODEL_PATH = os.path.join(ROOT_DIR, "mask_rcnn_coco.h5")
