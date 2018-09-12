@@ -40,8 +40,11 @@
 
 - p1:在fusion_context_guided_decoder的版本上使用了P1，效果反而降低了
 
-- path_full:在fusion_context_guided_decoder的基础上使用了PANet的path augmentation，full就是指fusion_context_guided_decoder
+- path_full:在fusion_context_guided_decoder的基础上使用了PANet的path augmentation，full就是指fusion_context_guided_decoder，提升的比较大
 
+- post_relu:在path_full的基础上，在decoder部分，先进行卷积和反卷积，然后再relu激活。
+
+- attention：待续。。。
 
 
 9.1
