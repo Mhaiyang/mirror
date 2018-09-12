@@ -342,7 +342,7 @@ class ProposalLayer(KE.Layer):
 class copy_layer(KE.Layer):
     """
     Written by TaylorMei.
-    Copy tensor
+    Copy tensor. Used for TimeDistributed layer.
 
     """
 
@@ -994,16 +994,17 @@ def fpn_classifier_graph_first(rois, feature_maps, image_meta,
 
     fusion = PyramidROIAlign_classify(pool_size, name="pyramid_roi_align_classify")(
                                      [rois, image_meta] + feature_maps)
-    print(fusion)
+
+    # Attention module.
     fusion = KL.TimeDistributed(copy_layer(), name="copy_layer")(fusion)
-    print(fusion)
+
     flatten = KL.TimeDistributed(KL.Conv2D(1280, (pool_size, pool_size), padding="valid", activation="relu"),
                                  name="fusion_attention_flatten")(fusion)
-    print(flatten)
+
     weights = KL.TimeDistributed(KL.Conv2D(1280, (1, 1), padding="valid", activation="relu"),
                                  name="fusion_attention_weights")(flatten)
 
-    attention = attention_layer(pool_size, name="weights_repeat_layer")([fusion, weights])
+    attention = attention_layer(pool_size, name="attention_layer")([fusion, weights])
 
     # 7x7
     x = KL.TimeDistributed(KL.Conv2D(640, (3, 3), padding="same", activation="relu"),
@@ -1069,11 +1070,16 @@ def fpn_classifier_graph_second(rois, feature_maps, image_meta,
     fusion = PyramidROIAlign_classify(pool_size, name="pyramid_roi_align_classify_second")(
                                      [rois, image_meta] + feature_maps)
 
+    # Attention module.
+    fusion = KL.TimeDistributed(copy_layer(), name="copy_layer_second")(fusion)
+
     flatten = KL.TimeDistributed(KL.Conv2D(1280, (pool_size, pool_size), padding="valid", activation="relu"),
-                                 name="fusion_attention_flatten")(fusion)
+                                 name="fusion_attention_flatten_second")(fusion)
 
     weights = KL.TimeDistributed(KL.Conv2D(1280, (1, 1), padding="valid", activation="relu"),
-                                 name="fusion_attention_weights")(flatten)
+                                 name="fusion_attention_weights_second")(flatten)
+
+    attention = attention_layer(pool_size, name="attention_layer_second")([fusion, weights])
 
     # 7x7
     x = KL.TimeDistributed(KL.Conv2D(640, (3, 3), padding="same", activation="relu"),
