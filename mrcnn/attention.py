@@ -1006,19 +1006,12 @@ def fpn_classifier_graph_first(rois, feature_maps, image_meta,
 
     attention = attention_layer(pool_size, name="attention_layer")([fusion, weights])
 
-    # 7x7
-    x = KL.TimeDistributed(KL.Conv2D(640, (3, 3), padding="same", activation="relu"),
+    # 1x1
+    x = KL.TimeDistributed(KL.Conv2D(2048, (pool_size, pool_size), padding="valid", activation="relu"),
                            name="fusion_class_conv1")(attention)
 
-    x = KL.TimeDistributed(KL.Conv2D(320, (3, 3), padding="same", activation="relu"),
+    shared = KL.TimeDistributed(KL.Conv2D(2048, (1, 1), padding="valid", activation="relu"),
                            name="fusion_class_conv2")(x)
-
-    # 1x1
-    x = KL.TimeDistributed(KL.Conv2D(1024, (pool_size, pool_size), padding="valid", activation="relu"),
-                           name="fusion_class_conv3")(x)
-
-    shared = KL.TimeDistributed(KL.Conv2D(1024, (1, 1), padding="valid", activation="relu"),
-                           name="fusion_class_conv4")(x)
 
     # shape : [batch, num_boxes, 1024]
     squeezed = KL.Lambda(lambda xx: K.squeeze(K.squeeze(xx, 3), 2), name="pool_squeeze")(shared)
@@ -1081,19 +1074,12 @@ def fpn_classifier_graph_second(rois, feature_maps, image_meta,
 
     attention = attention_layer(pool_size, name="attention_layer_second")([fusion, weights])
 
-    # 7x7
-    x = KL.TimeDistributed(KL.Conv2D(640, (3, 3), padding="same", activation="relu"),
+    # 1x1
+    x = KL.TimeDistributed(KL.Conv2D(2048, (pool_size, pool_size), padding="valid", activation="relu"),
                            name="fusion_class_conv1_second")(attention)
 
-    x = KL.TimeDistributed(KL.Conv2D(320, (3, 3), padding="same", activation="relu"),
-                           name="fusion_class_conv2_second")(x)
-
-    # 1x1
-    x = KL.TimeDistributed(KL.Conv2D(1024, (pool_size, pool_size), padding="valid", activation="relu"),
-                           name="fusion_class_conv3_second")(x)
-
-    shared = KL.TimeDistributed(KL.Conv2D(1024, (1, 1), padding="valid", activation="relu"),
-                           name="fusion_class_conv4_second")(x)
+    shared = KL.TimeDistributed(KL.Conv2D(2048, (1, 1), padding="valid", activation="relu"),
+                                name="fusion_class_conv2_second")(x)
 
     return shared
 

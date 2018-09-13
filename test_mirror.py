@@ -12,7 +12,7 @@ import mrcnn.visualize as visualize
 import evaluate
 from mirror import MirrorConfig
 # Important, need change when test different models.
-import mrcnn.post_relu as modellib
+import mrcnn.attention as modellib
 
 # Directories of the project
 ROOT_DIR = os.getcwd()
@@ -53,10 +53,15 @@ model = modellib.MaskRCNN(mode="inference", config=config, model_dir=MODEL_DIR)
 model.load_weights(MIRROR_MODEL_PATH, by_name=True)
 # For fusion_context_guided_decoder.py  p1.py  path_full.py  post_relu.py
 mapping = dict()
+# mapping["fusion_class_conv1_second"] = "fusion_class_conv1"
+# mapping["fusion_class_conv2_second"] = "fusion_class_conv2"
+# mapping["fusion_class_conv3_second"] = "fusion_class_conv3"
+# mapping["fusion_class_conv4_second"] = "fusion_class_conv4"
+# ## attention.py #####
+mapping["fusion_attention_flatten_second"] = "fusion_attention_flatten"
+mapping["fusion_attention_weights_second"] = "fusion_attention_weights"
 mapping["fusion_class_conv1_second"] = "fusion_class_conv1"
 mapping["fusion_class_conv2_second"] = "fusion_class_conv2"
-mapping["fusion_class_conv3_second"] = "fusion_class_conv3"
-mapping["fusion_class_conv4_second"] = "fusion_class_conv4"
 for layer in model.keras_model.layers:
     if layer.name in mapping:
         weight_name = mapping[layer.name]
