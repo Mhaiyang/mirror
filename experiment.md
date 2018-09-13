@@ -44,7 +44,7 @@
 
 - post_relu:在path_full的基础上，在decoder部分，先进行卷积和反卷积，然后再relu激活。效果没path_full好。可能是非线性降低了，原来两个relu，现在只有一个了。
 
-- attention：在path_full的基础上，加入了attention module。decoder部分的层数也改动了。
+- attention：在path_full的基础上，加入了attention module。fusion和decoder部分都做了调整，包括特征层数和卷积核，去掉了一些卷积层
 
 
 9.1
