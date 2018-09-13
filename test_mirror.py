@@ -12,15 +12,15 @@ import mrcnn.visualize as visualize
 import evaluate
 from mirror import MirrorConfig
 # Important, need change when test different models.
-import mrcnn.path_full as modellib
+import mrcnn.post_relu as modellib
 
 # Directories of the project
 ROOT_DIR = os.getcwd()
-MODEL_DIR = os.path.join(ROOT_DIR, "logs_path_full/mirror20180910T1643")
+MODEL_DIR = os.path.join(ROOT_DIR, "logs_post_relu/mirror20180911T2216")
 MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mirror_0035.h5")
 IMAGE_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "image")
 MASK_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "mask")
-OUTPUT_PATH = os.path.join(ROOT_DIR, 'augmentation', 'test', "output_path_full")
+OUTPUT_PATH = os.path.join(ROOT_DIR, 'augmentation', 'test', "output_post_relu")
 if not os.path.exists(OUTPUT_PATH):
     os.mkdir(OUTPUT_PATH)
 
@@ -51,7 +51,7 @@ config.display()
 model = modellib.MaskRCNN(mode="inference", config=config, model_dir=MODEL_DIR)
 # ## Load weights
 model.load_weights(MIRROR_MODEL_PATH, by_name=True)
-# For fusion_context_guided_decoder.py  p1.py  path_full.py
+# For fusion_context_guided_decoder.py  p1.py  path_full.py  post_relu.py
 mapping = dict()
 mapping["fusion_class_conv1_second"] = "fusion_class_conv1"
 mapping["fusion_class_conv2_second"] = "fusion_class_conv2"
