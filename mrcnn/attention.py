@@ -1140,7 +1140,7 @@ def build_fpn_mask_graph(rois, feature_maps, shared, image_meta,
                            name="decoder_mask_p2")(P2_pooled)
     ])
     # 64x64
-    x = KL.TimeDistributed(KL.Conv2DTranspose(256, (2, 2), strides=2, activation="relu"),
+    x = KL.TimeDistributed(KL.Conv2DTranspose(128, (2, 2), strides=2, activation="relu"),
                            name="decoder_mask_64x64x256")(x)
 
     x = KL.TimeDistributed(KL.Conv2D(num_classes, (3, 3), padding="same", activation="sigmoid"),
