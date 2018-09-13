@@ -1113,37 +1113,37 @@ def build_fpn_mask_graph(rois, feature_maps, shared, image_meta,
     # Names below refer to a TimeDistributed object.
     # 4x4
     x = KL.Add(name="decoder_mask_p5add")([
-        KL.TimeDistributed(KL.Conv2DTranspose(512, (4, 4), strides=4, activation="relu"),
+        KL.TimeDistributed(KL.Conv2DTranspose(1024, (4, 4), strides=4, activation="relu"),
                            name="decoder_mask_sharedupsampled")(shared),
-        KL.TimeDistributed(KL.Conv2D(512, (3, 3), padding="same", activation="relu"),
+        KL.TimeDistributed(KL.Conv2D(1024, (1, 1), padding="same", activation="relu"),
                            name="decoder_mask_p5")(P5_pooled)
     ])
     # 8x8
     x = KL.Add(name="decoder_mask_p4add")([
         KL.TimeDistributed(KL.Conv2DTranspose(512, (2, 2), strides=2, activation="relu"),
                            name="decoder_mask_p4upsampled")(x),
-        KL.TimeDistributed(KL.Conv2D(512, (3, 3), padding="same", activation="relu"),
+        KL.TimeDistributed(KL.Conv2D(512, (1, 1), padding="same", activation="relu"),
                            name="decoder_mask_p4")(P4_pooled)
     ])
     # 16x16
     x = KL.Add(name="decoder_mask_p3add")([
         KL.TimeDistributed(KL.Conv2DTranspose(256, (2, 2), strides=2, activation="relu"),
                            name="decoder_mask_p3upsampled")(x),
-        KL.TimeDistributed(KL.Conv2D(256, (3, 3), padding="same", activation="relu"),
+        KL.TimeDistributed(KL.Conv2D(256, (1, 1), padding="same", activation="relu"),
                            name="decoder_mask_p3")(P3_pooled)
     ])
     # 32x32
     x = KL.Add(name="decoder_mask_p2add")([
-        KL.TimeDistributed(KL.Conv2DTranspose(256, (2, 2), strides=2, activation="relu"),
+        KL.TimeDistributed(KL.Conv2DTranspose(128, (2, 2), strides=2, activation="relu"),
                            name="decoder_mask_p2upsampled")(x),
-        KL.TimeDistributed(KL.Conv2D(256, (3, 3), padding="same", activation="relu"),
+        KL.TimeDistributed(KL.Conv2D(128, (1, 1), padding="same", activation="relu"),
                            name="decoder_mask_p2")(P2_pooled)
     ])
     # 64x64
-    x = KL.TimeDistributed(KL.Conv2DTranspose(128, (2, 2), strides=2, activation="relu"),
-                           name="decoder_mask_64x64x256")(x)
+    x = KL.TimeDistributed(KL.Conv2DTranspose(64, (2, 2), strides=2, activation="relu"),
+                           name="decoder_mask_64x64x64")(x)
 
-    x = KL.TimeDistributed(KL.Conv2D(num_classes, (3, 3), padding="same", activation="sigmoid"),
+    x = KL.TimeDistributed(KL.Conv2D(num_classes, (1, 1), padding="same", activation="sigmoid"),
                            name="decoder_mask_64x64x2")(x)
 
     return x
@@ -2028,7 +2028,7 @@ class MaskRCNN(object):
         # Bottom-up Layers
         # Returns a list of the last layers of each stage, 5 in total.
         # channel 64:256:512:1024:2048
-        C1, C2, C3, C4, C5 = resnet_graph(input_image, config.BACKBONE,
+        _, C2, C3, C4, C5 = resnet_graph(input_image, config.BACKBONE,
                                           stage5=True, train_bn=config.TRAIN_BN)
         # Top-down Layers
         # UpSampling2D : nearest neighbor interpolation.
