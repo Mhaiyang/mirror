@@ -998,19 +998,22 @@ def fpn_classifier_graph_first(rois, feature_maps, image_meta,
     # Attention module.
     fusion = KL.TimeDistributed(copy_layer(), name="copy_layer")(fusion)
 
-    flatten = KL.TimeDistributed(KL.Conv2D(1280, (pool_size, pool_size), padding="valid", activation="relu"),
-                                 name="fusion_attention_flatten")(fusion)
+    pooled = KL.TimeDistributed(KL.MaxPooling2D((pool_size, pool_size), strides=pool_size),
+                                name="fusion_attention_pooling")(fusion)
 
-    weights = KL.TimeDistributed(KL.Conv2D(1280, (1, 1), padding="valid", activation="relu"),
-                                 name="fusion_attention_weights")(flatten)
+    short = KL.TimeDistributed(KL.Conv2D(320, (1, 1), padding="valid", activation="relu"),
+                                 name="fusion_attention_flatten")(pooled)
+
+    weights = KL.TimeDistributed(KL.Conv2D(1280, (1, 1), padding="valid", activation="sigmoid"),
+                                 name="fusion_attention_weights")(short)
 
     attention = attention_layer(pool_size, name="attention_layer")([fusion, weights])
 
     # 1x1
-    x = KL.TimeDistributed(KL.Conv2D(2048, (pool_size, pool_size), padding="valid", activation="relu"),
+    x = KL.TimeDistributed(KL.Conv2D(1024, (pool_size, pool_size), padding="valid", activation="relu"),
                            name="fusion_class_conv1")(attention)
 
-    shared = KL.TimeDistributed(KL.Conv2D(2048, (1, 1), padding="valid", activation="relu"),
+    shared = KL.TimeDistributed(KL.Conv2D(1024, (1, 1), padding="valid", activation="relu"),
                            name="fusion_class_conv2")(x)
 
     # shape : [batch, num_boxes, 1024]
@@ -1064,22 +1067,25 @@ def fpn_classifier_graph_second(rois, feature_maps, image_meta,
                                      [rois, image_meta] + feature_maps)
 
     # Attention module.
-    fusion = KL.TimeDistributed(copy_layer(), name="copy_layer_second")(fusion)
+    fusion = KL.TimeDistributed(copy_layer(), name="copy_layer")(fusion)
 
-    flatten = KL.TimeDistributed(KL.Conv2D(1280, (pool_size, pool_size), padding="valid", activation="relu"),
-                                 name="fusion_attention_flatten_second")(fusion)
+    pooled = KL.TimeDistributed(KL.MaxPooling2D((pool_size, pool_size), strides=pool_size),
+                                name="fusion_attention_pooling")(fusion)
 
-    weights = KL.TimeDistributed(KL.Conv2D(1280, (1, 1), padding="valid", activation="relu"),
-                                 name="fusion_attention_weights_second")(flatten)
+    short = KL.TimeDistributed(KL.Conv2D(320, (1, 1), padding="valid", activation="relu"),
+                               name="fusion_attention_flatten")(pooled)
 
-    attention = attention_layer(pool_size, name="attention_layer_second")([fusion, weights])
+    weights = KL.TimeDistributed(KL.Conv2D(1280, (1, 1), padding="valid", activation="sigmoid"),
+                                 name="fusion_attention_weights")(short)
+
+    attention = attention_layer(pool_size, name="attention_layer")([fusion, weights])
 
     # 1x1
-    x = KL.TimeDistributed(KL.Conv2D(2048, (pool_size, pool_size), padding="valid", activation="relu"),
-                           name="fusion_class_conv1_second")(attention)
+    x = KL.TimeDistributed(KL.Conv2D(1024, (pool_size, pool_size), padding="valid", activation="relu"),
+                           name="fusion_class_conv1")(attention)
 
-    shared = KL.TimeDistributed(KL.Conv2D(2048, (1, 1), padding="valid", activation="relu"),
-                                name="fusion_class_conv2_second")(x)
+    shared = KL.TimeDistributed(KL.Conv2D(1024, (1, 1), padding="valid", activation="relu"),
+                                name="fusion_class_conv2")(x)
 
     return shared
 
@@ -1113,37 +1119,37 @@ def build_fpn_mask_graph(rois, feature_maps, shared, image_meta,
     # Names below refer to a TimeDistributed object.
     # 4x4
     x = KL.Add(name="decoder_mask_p5add")([
-        KL.TimeDistributed(KL.Conv2DTranspose(1024, (4, 4), strides=4, activation="relu"),
+        KL.TimeDistributed(KL.Conv2DTranspose(512, (4, 4), strides=4, activation="relu"),
                            name="decoder_mask_sharedupsampled")(shared),
-        KL.TimeDistributed(KL.Conv2D(1024, (1, 1), padding="same", activation="relu"),
+        KL.TimeDistributed(KL.Conv2D(512, (3, 3), padding="same", activation="relu"),
                            name="decoder_mask_p5")(P5_pooled)
     ])
     # 8x8
     x = KL.Add(name="decoder_mask_p4add")([
-        KL.TimeDistributed(KL.Conv2DTranspose(512, (2, 2), strides=2, activation="relu"),
+        KL.TimeDistributed(KL.Conv2DTranspose(256, (2, 2), strides=2, activation="relu"),
                            name="decoder_mask_p4upsampled")(x),
-        KL.TimeDistributed(KL.Conv2D(512, (1, 1), padding="same", activation="relu"),
+        KL.TimeDistributed(KL.Conv2D(256, (3, 3), padding="same", activation="relu"),
                            name="decoder_mask_p4")(P4_pooled)
     ])
     # 16x16
     x = KL.Add(name="decoder_mask_p3add")([
-        KL.TimeDistributed(KL.Conv2DTranspose(256, (2, 2), strides=2, activation="relu"),
+        KL.TimeDistributed(KL.Conv2DTranspose(128, (2, 2), strides=2, activation="relu"),
                            name="decoder_mask_p3upsampled")(x),
-        KL.TimeDistributed(KL.Conv2D(256, (1, 1), padding="same", activation="relu"),
+        KL.TimeDistributed(KL.Conv2D(128, (3, 3), padding="same", activation="relu"),
                            name="decoder_mask_p3")(P3_pooled)
     ])
     # 32x32
     x = KL.Add(name="decoder_mask_p2add")([
-        KL.TimeDistributed(KL.Conv2DTranspose(128, (2, 2), strides=2, activation="relu"),
+        KL.TimeDistributed(KL.Conv2DTranspose(64, (2, 2), strides=2, activation="relu"),
                            name="decoder_mask_p2upsampled")(x),
-        KL.TimeDistributed(KL.Conv2D(128, (1, 1), padding="same", activation="relu"),
+        KL.TimeDistributed(KL.Conv2D(64, (3, 3), padding="same", activation="relu"),
                            name="decoder_mask_p2")(P2_pooled)
     ])
     # 64x64
-    x = KL.TimeDistributed(KL.Conv2DTranspose(64, (2, 2), strides=2, activation="relu"),
-                           name="decoder_mask_64x64x64")(x)
+    x = KL.TimeDistributed(KL.Conv2DTranspose(32, (2, 2), strides=2, activation="relu"),
+                           name="decoder_mask_64x64x32")(x)
 
-    x = KL.TimeDistributed(KL.Conv2D(num_classes, (1, 1), padding="same", activation="sigmoid"),
+    x = KL.TimeDistributed(KL.Conv2D(num_classes, (3, 3), padding="same", activation="sigmoid"),
                            name="decoder_mask_64x64x2")(x)
 
     return x
