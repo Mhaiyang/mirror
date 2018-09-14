@@ -1002,7 +1002,7 @@ def fpn_classifier_graph_first(rois, feature_maps, image_meta,
                                 name="fusion_attention_pooling")(fusion)
 
     short = KL.TimeDistributed(KL.Conv2D(320, (1, 1), padding="valid", activation="relu"),
-                                 name="fusion_attention_flatten")(pooled)
+                                 name="fusion_attention_short")(pooled)
 
     weights = KL.TimeDistributed(KL.Conv2D(1280, (1, 1), padding="valid", activation="sigmoid"),
                                  name="fusion_attention_weights")(short)
@@ -1073,7 +1073,7 @@ def fpn_classifier_graph_second(rois, feature_maps, image_meta,
                                 name="fusion_attention_pooling")(fusion)
 
     short = KL.TimeDistributed(KL.Conv2D(320, (1, 1), padding="valid", activation="relu"),
-                               name="fusion_attention_flatten")(pooled)
+                               name="fusion_attention_short")(pooled)
 
     weights = KL.TimeDistributed(KL.Conv2D(1280, (1, 1), padding="valid", activation="sigmoid"),
                                  name="fusion_attention_weights")(short)
