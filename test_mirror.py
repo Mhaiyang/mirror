@@ -16,11 +16,11 @@ import mrcnn.attention as modellib
 
 # Directories of the project
 ROOT_DIR = os.getcwd()
-MODEL_DIR = os.path.join(ROOT_DIR, "logs_post_relu/mirror20180911T2216")
-MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mirror_0035.h5")
+MODEL_DIR = os.path.join(ROOT_DIR, "logs_attention/mirror20180913T1424")
+MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mirror_heads.h5")
 IMAGE_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "image")
 MASK_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "mask")
-OUTPUT_PATH = os.path.join(ROOT_DIR, 'augmentation', 'test', "output_post_relu")
+OUTPUT_PATH = os.path.join(ROOT_DIR, 'augmentation', 'test', "output_attention")
 if not os.path.exists(OUTPUT_PATH):
     os.mkdir(OUTPUT_PATH)
 
