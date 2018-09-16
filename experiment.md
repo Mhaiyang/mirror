@@ -168,3 +168,15 @@ mean_mAP_mask_50     0.9328291014094471
 mean_mAP_mask_75     0.8304069872275357 
 
 mean_mAP_range_mask  0.7792004322133131
+
+**attention**
+
+mean_mAP_box_50      0.9476184044928888 
+
+mean_mAP_box_75      0.8936160634025763 
+
+mean_mAP_mask_50     0.9427111471571966 
+
+mean_mAP_mask_75     0.8546056186006495 
+
+mean_mAP_range_mask  0.8001035476515147

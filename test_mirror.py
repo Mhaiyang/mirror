@@ -16,8 +16,8 @@ import mrcnn.attention as modellib
 
 # Directories of the project
 ROOT_DIR = os.getcwd()
-MODEL_DIR = os.path.join(ROOT_DIR, "logs_attention/mirror20180913T1424")
-MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mirror_0035.h5")
+MODEL_DIR = os.path.join(ROOT_DIR, "logs_attention/mirror20180914T2031")
+MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mirror_0034.h5")
 IMAGE_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "image")
 MASK_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "mask")
 OUTPUT_PATH = os.path.join(ROOT_DIR, 'augmentation', 'test', "output_attention")
@@ -58,7 +58,7 @@ mapping = dict()
 # mapping["fusion_class_conv3_second"] = "fusion_class_conv3"
 # mapping["fusion_class_conv4_second"] = "fusion_class_conv4"
 # ## attention.py #####
-mapping["fusion_attention_flatten_second"] = "fusion_attention_flatten"
+mapping["fusion_attention_short_second"] = "fusion_attention_short"
 mapping["fusion_attention_weights_second"] = "fusion_attention_weights"
 mapping["fusion_class_conv1_second"] = "fusion_class_conv1"
 mapping["fusion_class_conv2_second"] = "fusion_class_conv2"
