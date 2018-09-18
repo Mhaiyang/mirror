@@ -46,6 +46,9 @@
 
 - attention：在path_full的基础上，加入了attention module。fusion和decoder部分都做了调整，包括特征层数和卷积核，去掉了一些卷积层
 
+- attention2:在attention的基础上，在decoder部分增加了几个卷积层
+
+- attention3:在attention2的基础上，将attention的maxpooling换成转置卷积，decoder部分直接复制过来。
 
 9.1
 

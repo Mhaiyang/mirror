@@ -130,11 +130,11 @@ class MirrorDataset(utils.Dataset):
         for i in range(count - 2, -1, -1):
             mask[:, :, i] = mask[:, :, i] * occlusion
             occlusion = np.logical_and(occlusion, np.logical_not(mask[:, :, i]))
-        labels=[]
-        labels=self.from_yaml_get_class(image_id)
-        labels_form=[]
+        labels = []
+        labels = self.from_yaml_get_class(image_id)
+        labels_form = []
         for i in range(len(labels)):
-            if labels[i].find("mirror")!=-1:
+            if labels[i].find("mirror") != -1:
                 labels_form.append("mirror")
         class_ids = np.array([self.class_names.index(s) for s in labels_form])
         return mask, class_ids.astype(np.int32)

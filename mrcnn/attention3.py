@@ -6,6 +6,7 @@
   @Project : mirror
   @File    : fusion.py
   @Function: Fusion network for classify branch and Context Guided Decoder network for mask prediction branch.
+             Add attention in the classify branch based on post_relu.py
   
 """
 
@@ -338,6 +339,51 @@ class ProposalLayer(KE.Layer):
 ############################################################
 #  ROIAlign Layer
 ############################################################
+class copy_layer(KE.Layer):
+    """
+    Written by TaylorMei.
+    Copy tensor. Used for TimeDistributed layer.
+
+    """
+
+    def __init__(self, **kwargs):
+        super(copy_layer, self).__init__(**kwargs)
+
+    def call(self, inputs):
+
+        return inputs
+
+class attention_layer(KE.Layer):
+    """
+    Written by TaylorMei.
+    Implements attention.
+
+    Params:
+    - pool_shape: the size of output.
+
+    Inputs:
+    - weights: fusion and weights.
+
+    Output:
+    - Attention features.
+    """
+
+    def __init__(self, pool_shape, **kwargs):
+        super(attention_layer, self).__init__(**kwargs)
+        self.repeat_shape = [1, 1, pool_shape, pool_shape, 1]
+
+    def call(self, inputs):
+        # Crop boxes [batch, num_boxes, (y1, x1, y2, x2)] in normalized coordinate.
+        fusion = inputs[0]
+        weights_1x1 = inputs[1]
+
+        weights_nxn = K.tile(weights_1x1, self.repeat_shape)
+        attention = KL.multiply([fusion, weights_nxn])
+
+        return attention
+
+    def compute_output_shape(self, input_shape):
+        return input_shape[0]
 
 def log2_graph(x):
     """Implementatin of Log2. TF doesn't have a native implementation."""
@@ -949,19 +995,23 @@ def fpn_classifier_graph_first(rois, feature_maps, image_meta,
     fusion = PyramidROIAlign_classify(pool_size, name="pyramid_roi_align_classify")(
                                      [rois, image_meta] + feature_maps)
 
-    # 7x7
-    x = KL.TimeDistributed(KL.Conv2D(640, (3, 3), padding="same", activation="relu"),
-                           name="fusion_class_conv1")(fusion)
+    # Attention module.
+    fusion = KL.TimeDistributed(copy_layer(), name="copy_layer")(fusion)
 
-    x = KL.TimeDistributed(KL.Conv2D(320, (3, 3), padding="same", activation="relu"),
-                           name="fusion_class_conv2")(x)
+    pooled = KL.TimeDistributed(KL.Conv2D(1280, (pool_size, pool_size), padding="valid", activation="relu"),
+                                name="fusion_attention_pooling")(fusion)
+
+    weights = KL.TimeDistributed(KL.Conv2D(1280, (1, 1), padding="valid", activation="sigmoid"),
+                                 name="fusion_attention_weights")(pooled)
+
+    attention = attention_layer(pool_size, name="attention_layer")([fusion, weights])
 
     # 1x1
-    x = KL.TimeDistributed(KL.Conv2D(1024, (pool_size, pool_size), padding="valid", activation="relu"),
-                           name="fusion_class_conv3")(x)
+    x = KL.TimeDistributed(KL.Conv2D(2048, (pool_size, pool_size), padding="valid", activation="relu"),
+                           name="fusion_class_conv1")(attention)
 
     shared = KL.TimeDistributed(KL.Conv2D(1024, (1, 1), padding="valid", activation="relu"),
-                           name="fusion_class_conv4")(x)
+                           name="fusion_class_conv2")(x)
 
     # shape : [batch, num_boxes, 1024]
     squeezed = KL.Lambda(lambda xx: K.squeeze(K.squeeze(xx, 3), 2), name="pool_squeeze")(shared)
@@ -1013,19 +1063,23 @@ def fpn_classifier_graph_second(rois, feature_maps, image_meta,
     fusion = PyramidROIAlign_classify(pool_size, name="pyramid_roi_align_classify_second")(
                                      [rois, image_meta] + feature_maps)
 
-    # 7x7
-    x = KL.TimeDistributed(KL.Conv2D(640, (3, 3), padding="same", activation="relu"),
-                           name="fusion_class_conv1_second")(fusion)
+    # Attention module.
+    fusion = KL.TimeDistributed(copy_layer(), name="copy_layer_second")(fusion)
 
-    x = KL.TimeDistributed(KL.Conv2D(320, (3, 3), padding="same", activation="relu"),
-                           name="fusion_class_conv2_second")(x)
+    pooled = KL.TimeDistributed(KL.Conv2D(1280, (pool_size, pool_size), padding="valid", activation="relu"),
+                                name="fusion_attention_pooling_second")(fusion)
+
+    weights = KL.TimeDistributed(KL.Conv2D(1280, (1, 1), padding="valid", activation="sigmoid"),
+                                 name="fusion_attention_weights_second")(pooled)
+
+    attention = attention_layer(pool_size, name="attention_layer_second")([fusion, weights])
 
     # 1x1
-    x = KL.TimeDistributed(KL.Conv2D(1024, (pool_size, pool_size), padding="valid", activation="relu"),
-                           name="fusion_class_conv3_second")(x)
+    x = KL.TimeDistributed(KL.Conv2D(2048, (pool_size, pool_size), padding="valid", activation="relu"),
+                           name="fusion_class_conv1_second")(attention)
 
     shared = KL.TimeDistributed(KL.Conv2D(1024, (1, 1), padding="valid", activation="relu"),
-                           name="fusion_class_conv4_second")(x)
+                                name="fusion_class_conv2_second")(x)
 
     return shared
 
@@ -1057,43 +1111,54 @@ def build_fpn_mask_graph(rois, feature_maps, shared, image_meta,
     print(P2_pooled, P3_pooled, P4_pooled, P5_pooled)
 
     # Names below refer to a TimeDistributed object.
+    # 4x4
     x = KL.Add(name="decoder_mask_p5add")([
-        KL.TimeDistributed(KL.Conv2DTranspose(512, (4, 4), strides=4, activation="relu"),
+        KL.TimeDistributed(KL.Conv2DTranspose(256, (4, 4), strides=4),
                            name="decoder_mask_sharedupsampled")(shared),
-        KL.TimeDistributed(KL.Conv2D(512, (3, 3), padding="same", activation="relu"),
-                           name="decoder_mask_p5")(P5_pooled)
+        KL.TimeDistributed(copy_layer(), name="decoder_mask_p5pooled")(P5_pooled)
     ])
-    print(x)
+    x = KL.Activation("relu")(x)
+
+    x = KL.TimeDistributed(KL.Conv2D(256, (3, 3), padding="same", activation="relu"),
+                           name="decoder_mask_p5conv")(x)
+    # 8x8
     x = KL.Add(name="decoder_mask_p4add")([
-        KL.TimeDistributed(KL.Conv2DTranspose(256, (2, 2), strides=2, activation="relu"),
+        KL.TimeDistributed(KL.Conv2DTranspose(256, (2, 2), strides=2),
                            name="decoder_mask_p4upsampled")(x),
-        KL.TimeDistributed(KL.Conv2D(256, (3, 3), padding="same", activation="relu"),
-                           name="decoder_mask_p4")(P4_pooled)
+        KL.TimeDistributed(copy_layer(), name="decoder_mask_p4pooled")(P4_pooled)
     ])
-    print(x)
+    x = KL.Activation("relu")(x)
+
+    x = KL.TimeDistributed(KL.Conv2D(256, (3, 3), padding="same", activation="relu"),
+                           name="decoder_mask_p4conv")(x)
+    # 16x16
     x = KL.Add(name="decoder_mask_p3add")([
-        KL.TimeDistributed(KL.Conv2DTranspose(128, (2, 2), strides=2, activation="relu"),
+        KL.TimeDistributed(KL.Conv2DTranspose(256, (2, 2), strides=2),
                            name="decoder_mask_p3upsampled")(x),
-        KL.TimeDistributed(KL.Conv2D(128, (3, 3), padding="same", activation="relu"),
-                           name="decoder_mask_p3")(P3_pooled)
+        KL.TimeDistributed(copy_layer(), name="decoder_mask_p3pooled")(P3_pooled)
     ])
-    print(x)
+    x = KL.Activation("relu")(x)
+
+    x = KL.TimeDistributed(KL.Conv2D(256, (3, 3), padding="same", activation="relu"),
+                           name="decoder_mask_p3conv")(x)
+    # 32x32
     x = KL.Add(name="decoder_mask_p2add")([
-        KL.TimeDistributed(KL.Conv2DTranspose(64, (2, 2), strides=2, activation="relu"),
+        KL.TimeDistributed(KL.Conv2DTranspose(256, (2, 2), strides=2),
                            name="decoder_mask_p2upsampled")(x),
-        KL.TimeDistributed(KL.Conv2D(64, (3, 3), padding="same", activation="relu"),
-                           name="decoder_mask_p2")(P2_pooled)
+        KL.TimeDistributed(copy_layer(), name="decoder_mask_p2pooled")(P2_pooled)
     ])
-    print(x)
-    x = KL.TimeDistributed(KL.Conv2DTranspose(32, (2, 2), strides=2, activation="relu"),
+    x = KL.Activation("relu")(x)
+
+    x = KL.TimeDistributed(KL.Conv2D(256, (3, 3), padding="same", activation="relu"),
+                           name="decoder_mask_p2conv")(x)
+    # 64x64
+    x = KL.TimeDistributed(KL.Conv2DTranspose(64, (2, 2), strides=2, activation="relu"),
+                           name="decoder_mask_64x64x64")(x)
+    x = KL.TimeDistributed(KL.Conv2D(32, (3, 3), padding="same", activation="relu"),
                            name="decoder_mask_64x64x32")(x)
-
-    x = KL.TimeDistributed(KL.Conv2D(16, (3, 3), padding="same", activation="relu"),
-                           name="decoder_mask_64x64x16")(x)
-
     x = KL.TimeDistributed(KL.Conv2D(num_classes, (3, 3), padding="same", activation="sigmoid"),
                            name="decoder_mask_64x64x2")(x)
-    print(x)
+
     return x
 
 
@@ -1388,7 +1453,7 @@ def build_detection_targets(rpn_rois, gt_class_ids, gt_boxes, gt_masks, config):
     rpn_rois: [N, (y1, x1, y2, x2)] proposal boxes.
     gt_class_ids: [instance count] Integer class IDs
     gt_boxes: [instance count, (y1, x1, y2, x2)]
-    gt_masks: [height, width, instance count] Ground truth masks. Can be full
+    gt_masks: [height, width, instance count] Grund truth masks. Can be full
               size or mini-masks.
 
     Returns:
@@ -1976,33 +2041,52 @@ class MaskRCNN(object):
         # Bottom-up Layers
         # Returns a list of the last layers of each stage, 5 in total.
         # channel 64:256:512:1024:2048
-        C1, C2, C3, C4, C5 = resnet_graph(input_image, config.BACKBONE,
+        _, C2, C3, C4, C5 = resnet_graph(input_image, config.BACKBONE,
                                           stage5=True, train_bn=config.TRAIN_BN)
         # Top-down Layers
         # UpSampling2D : nearest neighbor interpolation.
         P5 = KL.Conv2D(256, (1, 1), name='fpn_c5p5')(C5)
+        P5 = KL.Activation("relu")(P5)
+
         P4 = KL.Add(name="fpn_p4add")([
             KL.UpSampling2D(size=(2, 2), name="fpn_p5upsampled")(P5),
             KL.Conv2D(256, (1, 1), name='fpn_c4p4')(C4)])
+        P4 = KL.Activation("relu")(P4)
+
         P3 = KL.Add(name="fpn_p3add")([
             KL.UpSampling2D(size=(2, 2), name="fpn_p4upsampled")(P4),
             KL.Conv2D(256, (1, 1), name='fpn_c3p3')(C3)])
+        P3 = KL.Activation("relu")(P3)
+
         P2 = KL.Add(name="fpn_p2add")([
             KL.UpSampling2D(size=(2, 2), name="fpn_p3upsampled")(P3),
             KL.Conv2D(256, (1, 1), name='fpn_c2p2')(C2)])
+        P2 = KL.Activation('relu')(P2)
         # Attach 3x3 conv to all P layers to get the final feature maps.
-        # TODO: Try path augmentation of PANet.
-        P2 = KL.Conv2D(256, (3, 3), padding="SAME", name="fpn_p2")(P2)
-        P3 = KL.Conv2D(256, (3, 3), padding="SAME", name="fpn_p3")(P3)
-        P4 = KL.Conv2D(256, (3, 3), padding="SAME", name="fpn_p4")(P4)
-        P5 = KL.Conv2D(256, (3, 3), padding="SAME", name="fpn_p5")(P5)
-        # P6 is used for the 5th anchor scale in RPN. Generated by
-        # subsampling from P5 with stride of 2.
-        P6 = KL.MaxPooling2D(pool_size=(1, 1), strides=2, name="fpn_p6")(P5)
+        # Written by TaylorMei
+        # Path augmentation of PANet.
+        N2 = P2
 
-        # Note that P6 is only used in RPN, but not in the classifier heads.
-        rpn_feature_maps = [P2, P3, P4, P5, P6]
-        mrcnn_feature_maps = [P2, P3, P4, P5]
+        N3 = KL.Add(name="fpn_n3add")([
+            KL.Conv2D(256, (3, 3), padding="same", strides=2, name="fpn_n2downsampled")(N2),
+            P3])
+        N3 = KL.Activation("relu")(N3)
+
+        N4 = KL.Add(name="fpn_n4add")([
+            KL.Conv2D(256, (3, 3), padding="same", strides=2, name="fpn_n3downsampled")(N3),
+            P4])
+        N4 = KL.Activation("relu")(N4)
+
+        N5 = KL.Add(name="fpn_n5add")([
+            KL.Conv2D(256, (3, 3), padding="same", strides=2, name="fpn_n4downsampled")(N4),
+            P5])
+        N5 = KL.Activation("relu")(N5)
+
+        N6 = KL.Conv2D(256, (3, 3), padding="same", strides=2, activation="relu", name="fpn_n5downsampled")(N5)
+
+        # Note that P6 is only used in RPN and classification branch, but not in mask prediction branch.
+        rpn_feature_maps = [N2, N3, N4, N5, N6]
+        mask_feature_maps = [N2, N3, N4, N5]
 
         # Anchors
         if mode == "training":
@@ -2079,7 +2163,7 @@ class MaskRCNN(object):
                                      config.CLASSIFY_POOL_SIZE, config.NUM_CLASSES,
                                      train_bn=config.TRAIN_BN)
 
-            mrcnn_mask = build_fpn_mask_graph(rois, mrcnn_feature_maps, shared,
+            mrcnn_mask = build_fpn_mask_graph(rois, mask_feature_maps, shared,
                                               input_image_meta,
                                               config.MASK_POOL_SIZE,
                                               config.NUM_CLASSES,
@@ -2133,7 +2217,7 @@ class MaskRCNN(object):
                                                    config.CLASSIFY_POOL_SIZE, config.NUM_CLASSES,
                                                    train_bn=config.TRAIN_BN)
 
-            mrcnn_mask = build_fpn_mask_graph(detection_boxes, mrcnn_feature_maps, shared,
+            mrcnn_mask = build_fpn_mask_graph(detection_boxes, mask_feature_maps, shared,
                                               input_image_meta,
                                               config.MASK_POOL_SIZE,
                                               config.NUM_CLASSES,

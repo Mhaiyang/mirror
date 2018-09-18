@@ -80,11 +80,9 @@ def apply_mask(image, mask, color, alpha=0.5):
     return image
 
 
-def display_instances_and_save_image(imgname, OUTPUT_PATH, image, boxes, masks, class_ids, class_names,
-                      scores=None, title="title",
-                      figsize=(32, 32), ax=None,
-                      show_mask=True, show_bbox=True,
-                      colors=None, captions=None):
+def display_instances_and_save_image(imgname, image, boxes, masks, class_ids, class_names,
+                                     save=True, OUTPUT_PATH=None, scores=None, title="title", figsize=(32, 32), ax=None,
+                                     show_mask=True, show_bbox=True, colors=None, captions=None):
     """
     boxes: [num_instance, (y1, x1, y2, x2, class_id)] in image coordinates.
     masks: [height, width, num_instances]
@@ -168,9 +166,10 @@ def display_instances_and_save_image(imgname, OUTPUT_PATH, image, boxes, masks, 
     # skimage.io.imsave(os.path.join(OUTPUT_PATH, imgname), masked_image.astype(np.uint8))
     if auto_show:
         # TaylorMei want to save fig
-        plt.savefig(os.path.join(OUTPUT_PATH, str(imgname[:-4]) + "_output.jpg"), bbox_inches='tight')
-        # plt.show()
-        plt.close()
+        if save:
+            plt.savefig(os.path.join(OUTPUT_PATH, str(imgname[:-4]) + "_output.jpg"), bbox_inches='tight')
+        plt.show()
+        # plt.close()
 
 
 def display_differences(image,
