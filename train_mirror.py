@@ -63,7 +63,7 @@ model = modellib.MaskRCNN(mode="training", config=config,
                           model_dir=MODEL_DIR)
 
 # Which weights to start with?
-init_with = "coco"  # imagenet, coco, or last
+init_with = "last"  # imagenet, coco, or last
 
 if init_with == "imagenet":
     model.load_weights(model.get_imagenet_weights(), by_name=True)
@@ -81,12 +81,12 @@ elif init_with == "last":
 # ## Training
 
 # 1. Train the head branches
-model.train(dataset_train, dataset_val,
-            learning_rate=config.LEARNING_RATE,
-            epochs=25,
-            layers='heads')
-model_path = os.path.join(MODEL_DIR, "mirror_heads.h5")
-model.keras_model.save_weights(model_path)
+# model.train(dataset_train, dataset_val,
+#             learning_rate=config.LEARNING_RATE,
+#             epochs=25,
+#             layers='heads')
+# model_path = os.path.join(MODEL_DIR, "mirror_heads.h5")
+# model.keras_model.save_weights(model_path)
 
 # 2. Fine tune all layers
 model.train(dataset_train, dataset_val,

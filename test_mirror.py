@@ -12,15 +12,15 @@ import mrcnn.visualize as visualize
 import evaluate
 from mirror import MirrorConfig
 # Important, need change when test different models.
-import mrcnn.attention as modellib
+import mrcnn.attention2 as modellib
 
 # Directories of the project
 ROOT_DIR = os.getcwd()
-MODEL_DIR = os.path.join(ROOT_DIR, "logs_attention/mirror20180914T2031")
-MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mirror_0034.h5")
+MODEL_DIR = os.path.join(ROOT_DIR, "logs_attention2/mirror20180916T1526")
+MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mirror_0035.h5")
 IMAGE_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "image")
 MASK_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "mask")
-OUTPUT_PATH = os.path.join(ROOT_DIR, 'augmentation', 'test', "output_attention")
+OUTPUT_PATH = os.path.join(ROOT_DIR, 'augmentation', 'test', "output_attention2")
 if not os.path.exists(OUTPUT_PATH):
     os.mkdir(OUTPUT_PATH)
 
@@ -57,7 +57,7 @@ mapping = dict()
 # mapping["fusion_class_conv2_second"] = "fusion_class_conv2"
 # mapping["fusion_class_conv3_second"] = "fusion_class_conv3"
 # mapping["fusion_class_conv4_second"] = "fusion_class_conv4"
-# ## attention.py #####
+# ## attention.py, attention2.py #####
 mapping["fusion_attention_short_second"] = "fusion_attention_short"
 mapping["fusion_attention_weights_second"] = "fusion_attention_weights"
 mapping["fusion_class_conv1_second"] = "fusion_class_conv1"
