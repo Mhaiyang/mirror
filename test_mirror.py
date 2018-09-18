@@ -17,10 +17,10 @@ import mrcnn.attention2 as modellib
 # Directories of the project
 ROOT_DIR = os.getcwd()
 MODEL_DIR = os.path.join(ROOT_DIR, "logs_attention2/mirror20180916T1526")
-MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mirror_0035.h5")
+MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mirror_0040.h5")
 IMAGE_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "image")
 MASK_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "mask")
-OUTPUT_PATH = os.path.join(ROOT_DIR, 'augmentation', 'test', "output_attention2")
+OUTPUT_PATH = os.path.join(ROOT_DIR, 'augmentation', 'test', "output_attention2_40")
 if not os.path.exists(OUTPUT_PATH):
     os.mkdir(OUTPUT_PATH)
 
@@ -64,6 +64,7 @@ mapping["fusion_class_conv1_second"] = "fusion_class_conv1"
 mapping["fusion_class_conv2_second"] = "fusion_class_conv2"
 for layer in model.keras_model.layers:
     if layer.name in mapping:
+        print(layer.name)
         weight_name = mapping[layer.name]
         layer.set_weights(model.keras_model.get_layer(weight_name).get_weights())
 print("Additional weights have been loaded.")
@@ -130,8 +131,7 @@ for imgname in imglist:
                                                         pred_box, pred_class_id, pred_score, pred_mask,
                                                         iou_threshold = InferenceConfig.mask_iou_threshold1)
         mAP_mask2, precisions_mask2, recalls_mask2, overlaps_mask2 = utils.compute_ap_mask(gt_box, gt_class_id, gt_mask,
-                                                        pred_box, pred_class_id,
-                                                        pred_score, pred_mask,
+                                                        pred_box, pred_class_id, pred_score, pred_mask,
                                                         iou_threshold = InferenceConfig.mask_iou_threshold2)
 
         print("Threshold = 0.5\n{:15} {} \n{:15} {} \n{:15} {}".format("Mask Precisions", precisions_mask1,

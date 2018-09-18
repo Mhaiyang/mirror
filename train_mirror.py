@@ -91,7 +91,7 @@ elif init_with == "last":
 # 2. Fine tune all layers
 model.train(dataset_train, dataset_val,
             learning_rate=config.LEARNING_RATE / 10,
-            epochs=35,
+            epochs=40,
             layers="all", save_model_each_epoch=True)
 model_path = os.path.join(MODEL_DIR, "mirror_all.h5")
 model.keras_model.save_weights(model_path)
