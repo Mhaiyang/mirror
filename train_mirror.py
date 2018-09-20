@@ -81,12 +81,12 @@ elif init_with == "last":
 # ## Training
 
 # 1. Train the head branches
-model.train(dataset_train, dataset_val,
-            learning_rate=config.LEARNING_RATE,
-            epochs=25,
-            layers='heads')
-model_path = os.path.join(MODEL_DIR, "mirror_heads.h5")
-model.keras_model.save_weights(model_path)
+# model.train(dataset_train, dataset_val,
+#             learning_rate=config.LEARNING_RATE,
+#             epochs=25,
+#             layers='heads')
+# model_path = os.path.join(MODEL_DIR, "mirror_heads.h5")
+# model.keras_model.save_weights(model_path)
 
 # 2. Fine tune all layers
 model.train(dataset_train, dataset_val,

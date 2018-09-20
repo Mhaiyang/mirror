@@ -12,15 +12,15 @@ import mrcnn.visualize as visualize
 import evaluate
 from mirror import MirrorConfig
 # Important, need change when test different models.
-import mrcnn.attention2 as modellib
+import mrcnn.attention3 as modellib
 
 # Directories of the project
 ROOT_DIR = os.getcwd()
-MODEL_DIR = os.path.join(ROOT_DIR, "logs_attention2/mirror20180916T1526")
-MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mirror_0040.h5")
+MODEL_DIR = os.path.join(ROOT_DIR, "logs_attention3/mirror20180918T2201")
+MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mirror_0035.h5")
 IMAGE_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "image")
 MASK_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "mask")
-OUTPUT_PATH = os.path.join(ROOT_DIR, 'augmentation', 'test', "output_attention2_40")
+OUTPUT_PATH = os.path.join(ROOT_DIR, 'augmentation', 'test', "output_attention3")
 if not os.path.exists(OUTPUT_PATH):
     os.mkdir(OUTPUT_PATH)
 
@@ -34,7 +34,7 @@ class InferenceConfig(MirrorConfig):
     IMAGES_PER_GPU = 1
     RPN_ANCHOR_SCALES = (32, 64, 128, 256, 512)
     # These two must be same when test. As we use shared connecting the detection and segmentation.
-    DETECTION_MAX_INSTANCES = 100
+    DETECTION_MAX_INSTANCES = 80
 
     DETECTION_MIN_CONFIDENCE = 0.7
     # Important. If Iou greater than this threshold, this prediction will be considered as true.
@@ -58,7 +58,9 @@ mapping = dict()
 # mapping["fusion_class_conv3_second"] = "fusion_class_conv3"
 # mapping["fusion_class_conv4_second"] = "fusion_class_conv4"
 # ## attention.py, attention2.py #####
-mapping["fusion_attention_short_second"] = "fusion_attention_short"
+# mapping["fusion_attention_short_second"] = "fusion_attention_short"
+# ## attention3.py
+mapping["fusion_attention_pooling_second"] = "fusion_attention_pooling"
 mapping["fusion_attention_weights_second"] = "fusion_attention_weights"
 mapping["fusion_class_conv1_second"] = "fusion_class_conv1"
 mapping["fusion_class_conv2_second"] = "fusion_class_conv2"
@@ -98,8 +100,8 @@ for imgname in imglist:
     # As detect function returns a list of dict, one dict per image,
     # and each call detect function only feed one image, r =results[0]
     r = results[0]
-    visualize.display_instances_and_save_image(imgname, OUTPUT_PATH, image, r['rois'], r['masks'], r['class_ids'],
-                                class_names, r['scores'])
+    visualize.display_instances_and_save_image(imgname, image, r['rois'], r['masks'], r['class_ids'],
+                                class_names, True, OUTPUT_PATH, r['scores'])
 
     ###########################################################################
     ################  Quantitative Evaluation for Single Image ################
