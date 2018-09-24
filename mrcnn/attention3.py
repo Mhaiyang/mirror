@@ -2,12 +2,12 @@
   @Time    : 2018-9-1 05:14
   @Author  : TaylorMei
   @Email   : mhy845879017@gmail.com
-  
+
   @Project : mirror
-  @File    : fusion.py
+  @File    : attention3.py
   @Function: Fusion network for classify branch and Context Guided Decoder network for mask prediction branch.
              Add attention in the classify branch based on post_relu.py
-  
+
 """
 
 import os
@@ -350,8 +350,8 @@ class copy_layer(KE.Layer):
         super(copy_layer, self).__init__(**kwargs)
 
     def call(self, inputs):
-
         return inputs
+
 
 class attention_layer(KE.Layer):
     """
@@ -384,6 +384,7 @@ class attention_layer(KE.Layer):
 
     def compute_output_shape(self, input_shape):
         return input_shape[0]
+
 
 def log2_graph(x):
     """Implementatin of Log2. TF doesn't have a native implementation."""
@@ -462,7 +463,7 @@ class PyramidROIAlign_classify(KE.Layer):
         return pooled
 
     def compute_output_shape(self, input_shape):
-        return input_shape[0][:2] + self.pool_shape + (input_shape[2][-1]*5, )
+        return input_shape[0][:2] + self.pool_shape + (input_shape[2][-1] * 5,)
 
 
 class PyramidROIAlign_mask(KE.Layer):
@@ -519,7 +520,7 @@ class PyramidROIAlign_mask(KE.Layer):
         return pooled
 
     def compute_output_shape(self, input_shape):
-        return input_shape[0][:2] + self.pool_shape + (input_shape[2][-1], )
+        return input_shape[0][:2] + self.pool_shape + (input_shape[2][-1],)
 
 
 ############################################################
@@ -968,7 +969,7 @@ def build_rpn_model(anchor_stride, anchors_per_location, depth):
 ############################################################
 
 def fpn_classifier_graph_first(rois, feature_maps, image_meta,
-                         pool_size, num_classes, train_bn=True):
+                               pool_size, num_classes, train_bn=True):
     """Builds the computation graph of the feature pyramid network classifier
     and regression heads.
 
@@ -993,7 +994,7 @@ def fpn_classifier_graph_first(rois, feature_maps, image_meta,
     # each box is a time step. Independent with each other.
 
     fusion = PyramidROIAlign_classify(pool_size, name="pyramid_roi_align_classify")(
-                                     [rois, image_meta] + feature_maps)
+        [rois, image_meta] + feature_maps)
 
     # Attention module.
     fusion = KL.TimeDistributed(copy_layer(), name="copy_layer")(fusion)
@@ -1011,7 +1012,7 @@ def fpn_classifier_graph_first(rois, feature_maps, image_meta,
                            name="fusion_class_conv1")(attention)
 
     shared = KL.TimeDistributed(KL.Conv2D(1024, (1, 1), padding="valid", activation="relu"),
-                           name="fusion_class_conv2")(x)
+                                name="fusion_class_conv2")(x)
 
     # shape : [batch, num_boxes, 1024]
     squeezed = KL.Lambda(lambda xx: K.squeeze(K.squeeze(xx, 3), 2), name="pool_squeeze")(shared)
@@ -1037,7 +1038,7 @@ def fpn_classifier_graph_first(rois, feature_maps, image_meta,
 
 
 def fpn_classifier_graph_second(rois, feature_maps, image_meta,
-                         pool_size, num_classes, train_bn=True):
+                                pool_size, num_classes, train_bn=True):
     """Builds the computation graph of the feature pyramid network classifier
     and regression heads.
 
@@ -1061,7 +1062,7 @@ def fpn_classifier_graph_second(rois, feature_maps, image_meta,
     # Shape: [batch, num_boxes, pool_height, pool_width, channels]
     # each box is a time step. Independent with each other. pyramid_roi_align_classify_second has no weights.
     fusion = PyramidROIAlign_classify(pool_size, name="pyramid_roi_align_classify_second")(
-                                     [rois, image_meta] + feature_maps)
+        [rois, image_meta] + feature_maps)
 
     # Attention module.
     fusion = KL.TimeDistributed(copy_layer(), name="copy_layer_second")(fusion)
@@ -1103,10 +1104,14 @@ def build_fpn_mask_graph(rois, feature_maps, shared, image_meta,
     # ROI Pooling
     # Shape: [batch, boxes, pool_height, pool_width, channels]
 
-    P2_pooled = PyramidROIAlign_mask(pool_size[0], 0, name="pyramid_roi_align_mask_p2")([rois, image_meta] + feature_maps)
-    P3_pooled = PyramidROIAlign_mask(pool_size[1], 1, name="pyramid_roi_align_mask_p3")([rois, image_meta] + feature_maps)
-    P4_pooled = PyramidROIAlign_mask(pool_size[2], 2, name="pyramid_roi_align_mask_p4")([rois, image_meta] + feature_maps)
-    P5_pooled = PyramidROIAlign_mask(pool_size[3], 3, name="pyramid_roi_align_mask_p5")([rois, image_meta] + feature_maps)
+    P2_pooled = PyramidROIAlign_mask(pool_size[0], 0, name="pyramid_roi_align_mask_p2")(
+        [rois, image_meta] + feature_maps)
+    P3_pooled = PyramidROIAlign_mask(pool_size[1], 1, name="pyramid_roi_align_mask_p3")(
+        [rois, image_meta] + feature_maps)
+    P4_pooled = PyramidROIAlign_mask(pool_size[2], 2, name="pyramid_roi_align_mask_p4")(
+        [rois, image_meta] + feature_maps)
+    P5_pooled = PyramidROIAlign_mask(pool_size[3], 3, name="pyramid_roi_align_mask_p5")(
+        [rois, image_meta] + feature_maps)
 
     print(P2_pooled, P3_pooled, P4_pooled, P5_pooled)
 
@@ -2042,7 +2047,7 @@ class MaskRCNN(object):
         # Returns a list of the last layers of each stage, 5 in total.
         # channel 64:256:512:1024:2048
         _, C2, C3, C4, C5 = resnet_graph(input_image, config.BACKBONE,
-                                          stage5=True, train_bn=config.TRAIN_BN)
+                                         stage5=True, train_bn=config.TRAIN_BN)
         # Top-down Layers
         # UpSampling2D : nearest neighbor interpolation.
         P5 = KL.Conv2D(256, (1, 1), name='fpn_c5p5')(C5)
@@ -2160,8 +2165,8 @@ class MaskRCNN(object):
             # TODO: verify that this handles zero padded ROIs
             mrcnn_class_logits, mrcnn_class, mrcnn_bbox, shared = \
                 fpn_classifier_graph_first(rois, rpn_feature_maps, input_image_meta,
-                                     config.CLASSIFY_POOL_SIZE, config.NUM_CLASSES,
-                                     train_bn=config.TRAIN_BN)
+                                           config.CLASSIFY_POOL_SIZE, config.NUM_CLASSES,
+                                           train_bn=config.TRAIN_BN)
 
             mrcnn_mask = build_fpn_mask_graph(rois, mask_feature_maps, shared,
                                               input_image_meta,
@@ -2201,8 +2206,8 @@ class MaskRCNN(object):
 
             mrcnn_class_logits, mrcnn_class, mrcnn_bbox, shared_first = \
                 fpn_classifier_graph_first(rpn_rois, rpn_feature_maps, input_image_meta,
-                                     config.CLASSIFY_POOL_SIZE, config.NUM_CLASSES,
-                                     train_bn=config.TRAIN_BN)
+                                           config.CLASSIFY_POOL_SIZE, config.NUM_CLASSES,
+                                           train_bn=config.TRAIN_BN)
             print(shared_first)
             # Detections
             # output is [batch, num_detections, (y1, x1, y2, x2, class_id, score)] in
@@ -2214,8 +2219,8 @@ class MaskRCNN(object):
             detection_boxes = KL.Lambda(lambda x: x[..., :4])(detections)
 
             shared = fpn_classifier_graph_second(detection_boxes, rpn_feature_maps, input_image_meta,
-                                                   config.CLASSIFY_POOL_SIZE, config.NUM_CLASSES,
-                                                   train_bn=config.TRAIN_BN)
+                                                 config.CLASSIFY_POOL_SIZE, config.NUM_CLASSES,
+                                                 train_bn=config.TRAIN_BN)
 
             mrcnn_mask = build_fpn_mask_graph(detection_boxes, mask_feature_maps, shared,
                                               input_image_meta,

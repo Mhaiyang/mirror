@@ -17,10 +17,10 @@ import mrcnn.attention3 as modellib
 # Directories of the project
 ROOT_DIR = os.getcwd()
 MODEL_DIR = os.path.join(ROOT_DIR, "logs_attention3/mirror20180918T2201")
-MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mirror_0040.h5")
+MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mirror_0045.h5")
 IMAGE_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "image")
 MASK_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "mask")
-OUTPUT_PATH = os.path.join(ROOT_DIR, 'augmentation', 'test', "output_attention3_40")
+OUTPUT_PATH = os.path.join(ROOT_DIR, 'augmentation', 'test', "output_attention3_45_multi-time")
 if not os.path.exists(OUTPUT_PATH):
     os.mkdir(OUTPUT_PATH)
 
@@ -60,10 +60,23 @@ mapping = dict()
 # ## attention.py, attention2.py #####
 # mapping["fusion_attention_short_second"] = "fusion_attention_short"
 # ## attention3.py
+# mapping["fusion_attention_pooling_second"] = "fusion_attention_pooling"
+# mapping["fusion_attention_weights_second"] = "fusion_attention_weights"
+# mapping["fusion_class_conv1_second"] = "fusion_class_conv1"
+# mapping["fusion_class_conv2_second"] = "fusion_class_conv2"
+# ## attention3.py multi-time.
 mapping["fusion_attention_pooling_second"] = "fusion_attention_pooling"
 mapping["fusion_attention_weights_second"] = "fusion_attention_weights"
 mapping["fusion_class_conv1_second"] = "fusion_class_conv1"
 mapping["fusion_class_conv2_second"] = "fusion_class_conv2"
+mapping["fusion_class_logits_second"] = "fusion_class_logits"
+mapping["fusion_bbox_fc_second"] = "fusion_bbox_fc"
+
+mapping["fusion_attention_pooling_third"] = "fusion_attention_pooling"
+mapping["fusion_attention_weights_third"] = "fusion_attention_weights"
+mapping["fusion_class_conv1_third"] = "fusion_class_conv1"
+mapping["fusion_class_conv2_third"] = "fusion_class_conv2"
+
 for layer in model.keras_model.layers:
     if layer.name in mapping:
         print(layer.name)

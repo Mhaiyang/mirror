@@ -17,7 +17,7 @@ import mrcnn.visualize as visualize
 from mirror import MirrorConfig
 import mrcnn.fusion_context_guided_decoder as modellib
 
-version = "fusion_context_guided_decoder"
+version = "attention3"
 ROOT_DIR = os.getcwd()
 MODEL_DIR = os.path.join(ROOT_DIR, "logs_" + version)
 MODEL_PATH = os.path.join(MODEL_DIR, "mirror_all.h5")
@@ -40,7 +40,7 @@ config.display()
 
 model = modellib.MaskRCNN(mode="inference", config=config, model_dir=MODEL_DIR)
 model.load_weights(MODEL_PATH, by_name=True)
-if version == "fusion_context_guided_decoder":
+if version == "attention3":
     print("load additional weights.")
     mapping = dict()
     mapping["fusion_class_conv1_second"] = "fusion_class_conv1"
