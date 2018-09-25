@@ -11,13 +11,13 @@
 import os
 import mirror
 # Need modify:
-import mrcnn.attention3 as modellib
+import mhy.edge as modellib
 
 # Root directory of the project
 ROOT_DIR = os.getcwd()
 
 # Directory to save logs and trained model
-MODEL_DIR = os.path.join(ROOT_DIR, "logs_attention3")
+MODEL_DIR = os.path.join(ROOT_DIR, "log", "edge")
 
 # Local path to trained weights file
 COCO_MODEL_PATH = os.path.join(ROOT_DIR, "mask_rcnn_coco.h5")
@@ -59,11 +59,10 @@ dataset_val.prepare("validation")
 #     visualize.display_top_masks(image, mask, class_ids, dataset_train.class_names)
 
 ### Create Model  ###
-model = modellib.MaskRCNN(mode="training", config=config,
-                          model_dir=MODEL_DIR)
+model = modellib.Edge(mode="training", config=config, model_dir=MODEL_DIR)
 
 # Which weights to start with?
-init_with = "last"  # imagenet, coco, or last
+init_with = "coco"  # imagenet, coco, or last
 
 if init_with == "imagenet":
     model.load_weights(model.get_imagenet_weights(), by_name=True)
@@ -81,17 +80,17 @@ elif init_with == "last":
 # ## Training
 
 # 1. Train the head branches
-# model.train(dataset_train, dataset_val,
-#             learning_rate=config.LEARNING_RATE,
-#             epochs=25,
-#             layers='heads')
-# model_path = os.path.join(MODEL_DIR, "mirror_heads.h5")
-# model.keras_model.save_weights(model_path)
+model.train(dataset_train, dataset_val,
+            learning_rate=config.LEARNING_RATE,
+            epochs=30,
+            layers='heads')
+model_path = os.path.join(MODEL_DIR, "mirror_edge_heads.h5")
+model.keras_model.save_weights(model_path)
 
 # 2. Fine tune all layers
-model.train(dataset_train, dataset_val,
-            learning_rate=config.LEARNING_RATE / 20,
-            epochs=45,
-            layers="all", save_model_each_epoch=True)
-model_path = os.path.join(MODEL_DIR, "mirror_all.h5")
-model.keras_model.save_weights(model_path)
+# model.train(dataset_train, dataset_val,
+#             learning_rate=config.LEARNING_RATE / 20,
+#             epochs=45,
+#             layers="all", save_model_each_epoch=True)
+# model_path = os.path.join(MODEL_DIR, "mirror_all.h5")
+# model.keras_model.save_weights(model_path)
