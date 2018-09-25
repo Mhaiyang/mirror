@@ -57,25 +57,25 @@ mapping = dict()
 # mapping["fusion_class_conv2_second"] = "fusion_class_conv2"
 # mapping["fusion_class_conv3_second"] = "fusion_class_conv3"
 # mapping["fusion_class_conv4_second"] = "fusion_class_conv4"
-# ## attention.py, attention2.py #####
+## attention.py, attention2.py #####
 # mapping["fusion_attention_short_second"] = "fusion_attention_short"
-# ## attention3.py
-# mapping["fusion_attention_pooling_second"] = "fusion_attention_pooling"
-# mapping["fusion_attention_weights_second"] = "fusion_attention_weights"
-# mapping["fusion_class_conv1_second"] = "fusion_class_conv1"
-# mapping["fusion_class_conv2_second"] = "fusion_class_conv2"
-# ## attention3.py multi-time.
+## attention3.py
 mapping["fusion_attention_pooling_second"] = "fusion_attention_pooling"
 mapping["fusion_attention_weights_second"] = "fusion_attention_weights"
 mapping["fusion_class_conv1_second"] = "fusion_class_conv1"
 mapping["fusion_class_conv2_second"] = "fusion_class_conv2"
-mapping["fusion_class_logits_second"] = "fusion_class_logits"
-mapping["fusion_bbox_fc_second"] = "fusion_bbox_fc"
-
-mapping["fusion_attention_pooling_third"] = "fusion_attention_pooling"
-mapping["fusion_attention_weights_third"] = "fusion_attention_weights"
-mapping["fusion_class_conv1_third"] = "fusion_class_conv1"
-mapping["fusion_class_conv2_third"] = "fusion_class_conv2"
+# # ## attention3.py multi-time.
+# mapping["fusion_attention_pooling_second"] = "fusion_attention_pooling"
+# mapping["fusion_attention_weights_second"] = "fusion_attention_weights"
+# mapping["fusion_class_conv1_second"] = "fusion_class_conv1"
+# mapping["fusion_class_conv2_second"] = "fusion_class_conv2"
+# mapping["fusion_class_logits_second"] = "fusion_class_logits"
+# mapping["fusion_bbox_fc_second"] = "fusion_bbox_fc"
+#
+# mapping["fusion_attention_pooling_third"] = "fusion_attention_pooling"
+# mapping["fusion_attention_weights_third"] = "fusion_attention_weights"
+# mapping["fusion_class_conv1_third"] = "fusion_class_conv1"
+# mapping["fusion_class_conv2_third"] = "fusion_class_conv2"
 
 for layer in model.keras_model.layers:
     if layer.name in mapping:

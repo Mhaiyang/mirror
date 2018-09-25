@@ -872,7 +872,7 @@ def fpn_classifier_graph(rois, feature_maps, image_meta,
     x = KL.TimeDistributed(KL.Conv2D(256, (3, 3), padding="same", strides=2, activation="relu"),
                            name="edge_class_conv2")(x)
 
-    x = KL.TimeDistributed(KL.Conv2D(2048, (pool_size[0]/4, pool_size[0]/4), padding="valid", activation="relu"),
+    x = KL.TimeDistributed(KL.Conv2D(2048, (7, 7), padding="valid", activation="relu"),
                            name="edge_class_conv3")(x)
     edge_1024 = KL.TimeDistributed(KL.Conv2D(1024, (1, 1), padding="valid", activation="relu"),
                            name="edge_class_conv4")(x)
@@ -2110,7 +2110,8 @@ class Edge():
         self.keras_model._per_input_losses = {}
         loss_names = [
             "rpn_class_loss",  "rpn_bbox_loss",
-            "mrcnn_class_loss", "mrcnn_bbox_loss", "mrcnn_mask_loss"]
+            "mrcnn_class_loss", "mrcnn_bbox_loss"]
+            # , "mrcnn_mask_loss"]
         for name in loss_names:
             layer = self.keras_model.get_layer(name)
             if layer.output in self.keras_model.losses:
