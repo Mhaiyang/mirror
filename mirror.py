@@ -1,8 +1,8 @@
 import os
 import numpy as np
 from PIL import Image
-from mrcnn.config import Config
-import mrcnn.utils as utils
+from mhy.config import Config
+import mhy.utils as utils
 import yaml
 
 
@@ -18,7 +18,7 @@ class MirrorConfig(Config):
     # Train on 1 GPU and 8 images per GPU. We can put multiple images on each
     # GPU because the images are small. Batch size is 8 (GPUs * images/GPU).
     GPU_COUNT = 2
-    IMAGES_PER_GPU = 1
+    IMAGES_PER_GPU = 8
 
     # Number of classes (including background)
     NUM_CLASSES = 1 + 1  # background + 1 mirror
@@ -36,15 +36,18 @@ class MirrorConfig(Config):
     USE_MINI_MASK = False
     MINI_MASK_SHAPE = (56, 56)
 
-    # Shapes of Pooled ROIs and output masks
-    # Need change if the mask branch is changed.
-    CLASSIFY_POOL_SIZE = 7
+    # For the version before mid-autumn festival.
+    # CLASSIFY_POOL_SIZE = 7
+
+    # For three individual version.
+    CLASSIFY_POOL_SIZE = [28, 14, 14, 7, 7]
 
     # For model.py, fusion.py
     # MASK_POOL_SIZE = 14
     # MASK_SHAPE = [28, 28]
 
-    # For decoder.py, fusion_decoder.py, fusion_context_guided_decoder.py, path_full.py, post_relu.py, attention.py, attention2.py.
+    # For decoder.py, fusion_decoder.py, fusion_context_guided_decoder.py, path_full.py, post_relu.py,
+    # attention.py, attention2.py, attention3.py, and maybe three individual version.
     MASK_POOL_SIZE = [32, 16, 8, 4]
     MASK_SHAPE = [64, 64]
 
