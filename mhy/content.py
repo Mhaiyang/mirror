@@ -2357,7 +2357,7 @@ class Edge():
         windows = np.stack(windows)
         return molded_images, image_metas, windows
 
-    def unmold_detections(self, detections, original_image_shape,
+    def unmold_detections(self, detections, mrcnn_mask, original_image_shape,
                           image_shape, window):
         """Reformats the detections of one image from the format of the neural
         network output to a format suitable for use in the rest of the
@@ -2385,6 +2385,7 @@ class Edge():
         boxes = detections[:N, :4]
         class_ids = detections[:N, 4].astype(np.int32)
         scores = detections[:N, 5]
+        masks = mrcnn_mask[np.arange(N), :, :, class_ids]
 
         # Translate normalized coordinates in the resized image to pixel
         # coordinates in the original image before resizing
@@ -2407,9 +2408,19 @@ class Edge():
             boxes = np.delete(boxes, exclude_ix, axis=0)
             class_ids = np.delete(class_ids, exclude_ix, axis=0)
             scores = np.delete(scores, exclude_ix, axis=0)
+            masks = np.delete(masks, exclude_ix, axis=0)
             N = class_ids.shape[0]
 
-        return boxes, class_ids, scores
+        # Resize masks to original image size and set boundary threshold.
+        full_masks = []
+        for i in range(N):
+            # Convert neural network mask to full size mask
+            full_mask = utils.unmold_mask(masks[i], boxes[i], original_image_shape)
+            full_masks.append(full_mask)
+        full_masks = np.stack(full_masks, axis=-1)\
+            if full_masks else np.empty(masks.shape[1:3] + (0,))
+
+        return boxes, class_ids, scores, full_masks
 
     def detect(self, imgname, images, verbose=0):
         """Runs the detection pipeline.
@@ -2454,19 +2465,20 @@ class Edge():
             log("image_metas", image_metas)
             log("anchors", anchors)
         # Run object detection
-        detections, _, _, _, _, _ =\
+        detections, _, _, mrcnn_mask, _, _, _ =\
             self.keras_model.predict([molded_images, image_metas, anchors], verbose=0)
         # Process detections
         results = []
         for i, image in enumerate(images):
-            final_rois, final_class_ids, final_scores = \
-                self.unmold_detections(detections[i],
+            final_rois, final_class_ids, final_scores, final_masks =\
+                self.unmold_detections(detections[i], mrcnn_mask[i],
                                        image.shape, molded_images[i].shape,
                                        windows[i])
             results.append({
                 "rois": final_rois,
                 "class_ids": final_class_ids,
                 "scores": final_scores,
+                "masks": final_masks,
             })
         return results
 

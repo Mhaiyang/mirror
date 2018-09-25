@@ -6,9 +6,8 @@
 """
 import os
 import skimage.io
-import numpy as np
-import mrcnn.utils as utils
-import mrcnn.visualize as visualize
+import mhy.utils as utils
+import mhy.visualize as visualize
 import evaluate
 from mirror import MirrorConfig
 # Important, need change when test different models.
@@ -16,11 +15,11 @@ import mrcnn.attention3 as modellib
 
 # Directories of the project
 ROOT_DIR = os.getcwd()
-MODEL_DIR = os.path.join(ROOT_DIR, "logs_attention3/mirror20180918T2201")
-MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mirror_0045.h5")
+MODEL_DIR = os.path.join(ROOT_DIR, "log", "edge/mirror20180918T2201")
+MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mirror_edge_heads.h5")
 IMAGE_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "image")
 MASK_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "mask")
-OUTPUT_PATH = os.path.join(ROOT_DIR, 'augmentation', 'test', "output_attention3_45_multi-time")
+OUTPUT_PATH = os.path.join(ROOT_DIR, 'augmentation', 'test', "output_edge_bbox")
 if not os.path.exists(OUTPUT_PATH):
     os.mkdir(OUTPUT_PATH)
 
