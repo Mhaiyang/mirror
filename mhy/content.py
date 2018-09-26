@@ -382,16 +382,20 @@ class PyramidROIAlign_classify(KE.Layer):
         level_boxes = tf.stop_gradient(level_boxes)
 
         # pooled shape : [num_boxes, crop_height, crop_width, depth]
-        p2_pooled = tf.image.crop_and_resize(
+        p3_pooled = tf.image.crop_and_resize(
             feature_maps[0], level_boxes, box_indices, self.pool_shape,
             method="bilinear")
+        p4_pooled = tf.image.crop_and_resize(
+            feature_maps[1], level_boxes, box_indices, self.pool_shape,
+            method="bilinear")
 
-        pooled = tf.expand_dims(p2_pooled, axis=0)
+        pooled = tf.concat([p3_pooled, p4_pooled], axis=3)
+        pooled = tf.expand_dims(pooled, axis=0)
 
         return pooled
 
     def compute_output_shape(self, input_shape):
-        return input_shape[0][:2] + self.pool_shape + (input_shape[2][-1],)
+        return input_shape[0][:2] + self.pool_shape + (input_shape[2][-1] * 2,)
 
 
 ############################################################
@@ -863,39 +867,39 @@ def fpn_classifier_graph(rois, feature_maps, image_meta,
     # ROI align
     # Shape: [batch, num_boxes, pool_height, pool_width, channels]
     # each box is a time step. Independent with each other.
-    fusion = PyramidROIAlign_classify(pool_size[0], name="pyramid_roi_classify")(
+    fusion = PyramidROIAlign_classify(pool_size[1], name="pyramid_roi_classify")(
         [rois, image_meta] + feature_maps)
 
-    # ################ Edge Module #########################
+    # ################ Content Module #########################
     x = KL.TimeDistributed(KL.Conv2D(256, (3, 3), padding="same", strides=2, activation="relu"),
-                           name="edge_class_conv1")(fusion)
-    x = KL.TimeDistributed(KL.Conv2D(256, (3, 3), padding="same", strides=2, activation="relu"),
-                           name="edge_class_conv2")(x)
+                           name="content_class_conv1")(fusion)
+    x = KL.TimeDistributed(KL.Conv2D(256, (3, 3), padding="same", strides=1, activation="relu"),
+                           name="content_class_conv2")(x)
 
     x = KL.TimeDistributed(KL.Conv2D(2048, (7, 7), padding="valid", activation="relu"),
-                           name="edge_class_conv3")(x)
+                           name="content_class_conv3")(x)
     edge_1024 = KL.TimeDistributed(KL.Conv2D(1024, (1, 1), padding="valid", activation="relu"),
-                           name="edge_class_conv4")(x)
+                           name="content_class_conv4")(x)
 
     # shape : [batch, num_boxes, 1024]
     squeezed = KL.Lambda(lambda xx: K.squeeze(K.squeeze(xx, 3), 2), name="pool_squeeze")(edge_1024)
 
     # ############## Classifier Head #########################
     mrcnn_class_logits = KL.TimeDistributed(KL.Dense(num_classes),
-                                            name='edge_class_logits')(squeezed)
+                                            name='content_class_logits')(squeezed)
 
     mrcnn_probs = KL.TimeDistributed(KL.Activation("softmax"),
-                                     name="edge_class")(mrcnn_class_logits)
+                                     name="content_class")(mrcnn_class_logits)
 
     # BBox head
     # [batch, boxes, num_classes * (dy, dx, log(dh), log(dw))]
     x = KL.TimeDistributed(KL.Dense(num_classes * 4, activation='linear'),
-                           name='edge_bbox_fc')(squeezed)
+                           name='content_bbox_fc')(squeezed)
 
     # Reshape to [batch, boxes, num_classes, (dy, dx, log(dh), log(dw))]
     s = K.int_shape(x)
 
-    mrcnn_bbox = KL.Reshape((s[1], num_classes, 4), name="edge_bbox")(x)
+    mrcnn_bbox = KL.Reshape((s[1], num_classes, 4), name="content_bbox")(x)
 
     return mrcnn_class_logits, mrcnn_probs, mrcnn_bbox
 
@@ -1753,7 +1757,7 @@ def data_generator(dataset, config, shuffle=True, augment=False, augmentation=No
 #  MaskRCNN Class
 ############################################################
 
-class Edge():
+class Content():
     """Encapsulates the Edge-based model functionality.
 
     The actual Keras model is in the keras_model property.
@@ -1875,7 +1879,7 @@ class Edge():
 
         # Feature maps for different module.
         rpn_feature_maps = [N2, N3, N4, N5, N6]
-        class_feature_maps = [N2]
+        class_feature_maps = [N3, N4]
         mask_feature_maps = [N2, N3, N4, N5]
 
         # Anchors
@@ -1912,7 +1916,7 @@ class Edge():
 
         # Generate Proposals
         # Proposals are [batch, N, (y1, x1, y2, x2)] in normalized coordinates
-        # and zero padded.
+        # and zero padded. Training:2000 validate or test:1000
         proposal_count = config.POST_NMS_ROIS_TRAINING if mode == "training"\
             else config.POST_NMS_ROIS_INFERENCE
         rpn_rois = ProposalLayer(
@@ -1983,7 +1987,7 @@ class Edge():
                        mrcnn_class_logits, mrcnn_class, mrcnn_bbox,
                        rpn_rois, output_rois,
                        rpn_class_loss, rpn_bbox_loss, class_loss, bbox_loss]
-            model = KM.Model(inputs, outputs, name='Edge')
+            model = KM.Model(inputs, outputs, name='Content')
 
         else:
             # Network Heads
@@ -2010,7 +2014,7 @@ class Edge():
             model = KM.Model([input_image, input_image_meta, input_anchors],
                              [detections, mrcnn_class, mrcnn_bbox,
                                  rpn_rois, rpn_class, rpn_bbox],
-                             name='Edge')
+                             name='Content')
 
         # Add multi-GPU support.
         if config.GPU_COUNT > 1:
