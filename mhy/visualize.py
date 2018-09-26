@@ -81,7 +81,7 @@ def apply_mask(image, mask, color, alpha=0.5):
 
 
 def display_instances_and_save_image(imgname, image, boxes, class_ids, class_names,
-                                     save=True, OUTPUT_PATH=None, scores=None, title="title", figsize=(64, 64), ax=None,
+                                     save=True, OUTPUT_PATH=None, scores=None, title="title", figsize=(32, 32), ax=None,
                                      show_mask=True, show_bbox=True, colors=None, captions=None):
     """
     boxes: [num_instance, (y1, x1, y2, x2, class_id)] in image coordinates.
@@ -144,7 +144,7 @@ def display_instances_and_save_image(imgname, image, boxes, class_ids, class_nam
             caption = captions[i]
         ax.text(x1, y1 + 30, caption,
                 color='w', size=40, backgroundcolor="none")
-
+    ax.imshow(masked_image.astype(np.uint8))
     # TaylorMei want to save image.
     # skimage.io.imsave(os.path.join(OUTPUT_PATH, imgname), masked_image.astype(np.uint8))
     if auto_show:

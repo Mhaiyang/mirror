@@ -15,7 +15,8 @@ import mhy.edge as modellib
 
 # Directories of the project
 ROOT_DIR = os.getcwd()
-MODEL_DIR = os.path.join(ROOT_DIR, "log", "edge/mirror20180918T2201")
+print(ROOT_DIR)
+MODEL_DIR = os.path.join(ROOT_DIR, "log", "edge")
 MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mirror_edge_heads.h5")
 IMAGE_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "image")
 MASK_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "mask")
