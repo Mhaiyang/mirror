@@ -3,7 +3,7 @@ Edge-based Module.
 
   @Author  : TaylorMei
   @Email   : mhy845879017@gmail.com
-  @Function: Performing mirror detection only use middle-level features.
+  @Function: Performing mirror detection only use high-level features.
 
 """
 
@@ -382,14 +382,20 @@ class PyramidROIAlign_classify(KE.Layer):
         level_boxes = tf.stop_gradient(level_boxes)
 
         # pooled shape : [num_boxes, crop_height, crop_width, depth]
-        p3_pooled = tf.image.crop_and_resize(
+        p5_pooled = tf.image.crop_and_resize(
             feature_maps[0], level_boxes, box_indices, self.pool_shape,
             method="bilinear")
-        p4_pooled = tf.image.crop_and_resize(
-            feature_maps[1], level_boxes, box_indices, self.pool_shape,
+        # For p6 pooled
+        a = tf.zeros([tf.shape(boxes)[0], tf.shape(boxes)[1], 2])
+        b = tf.ones([tf.shape(boxes)[0], tf.shape(boxes)[1], 2])
+        boxes_p6 = tf.concat([a, b], 2)
+        level_boxes_p6 = tf.gather_nd(boxes_p6, ix)
+        level_boxes_p6 = tf.stop_gradient(level_boxes_p6)
+        p6_pooled = tf.image.crop_and_resize(
+            feature_maps[1], level_boxes_p6, box_indices, self.pool_shape,
             method="bilinear")
 
-        pooled = tf.concat([p3_pooled, p4_pooled], axis=3)
+        pooled = tf.concat([p5_pooled, p6_pooled], axis=3)
         pooled = tf.expand_dims(pooled, axis=0)
 
         return pooled
@@ -867,39 +873,39 @@ def fpn_classifier_graph(rois, feature_maps, image_meta,
     # ROI align
     # Shape: [batch, num_boxes, pool_height, pool_width, channels]
     # each box is a time step. Independent with each other.
-    fusion = PyramidROIAlign_classify(pool_size[1], name="pyramid_roi_classify")(
+    fusion = PyramidROIAlign_classify(pool_size[3], name="pyramid_roi_classify")(
         [rois, image_meta] + feature_maps)
 
-    # ################ Content Module #########################
-    x = KL.TimeDistributed(KL.Conv2D(256, (3, 3), padding="same", strides=2, activation="relu"),
-                           name="content_class_conv1")(fusion)
+    # ################ Context Module #########################
     x = KL.TimeDistributed(KL.Conv2D(256, (3, 3), padding="same", strides=1, activation="relu"),
-                           name="content_class_conv2")(x)
+                           name="context_class_conv1")(fusion)
+    x = KL.TimeDistributed(KL.Conv2D(256, (3, 3), padding="same", strides=1, activation="relu"),
+                           name="context_class_conv2")(x)
 
     x = KL.TimeDistributed(KL.Conv2D(2048, (7, 7), padding="valid", activation="relu"),
-                           name="content_class_conv3")(x)
-    content_1024 = KL.TimeDistributed(KL.Conv2D(1024, (1, 1), padding="valid", activation="relu"),
-                           name="content_class_conv4")(x)
+                           name="context_class_conv3")(x)
+    context_1024 = KL.TimeDistributed(KL.Conv2D(1024, (1, 1), padding="valid", activation="relu"),
+                           name="context_class_conv4")(x)
 
     # shape : [batch, num_boxes, 1024]
-    squeezed = KL.Lambda(lambda xx: K.squeeze(K.squeeze(xx, 3), 2), name="pool_squeeze")(content_1024)
+    squeezed = KL.Lambda(lambda xx: K.squeeze(K.squeeze(xx, 3), 2), name="pool_squeeze")(context_1024)
 
     # ############## Classifier Head #########################
     mrcnn_class_logits = KL.TimeDistributed(KL.Dense(num_classes),
-                                            name='content_class_logits')(squeezed)
+                                            name='context_class_logits')(squeezed)
 
     mrcnn_probs = KL.TimeDistributed(KL.Activation("softmax"),
-                                     name="content_class")(mrcnn_class_logits)
+                                     name="context_class")(mrcnn_class_logits)
 
     # BBox head
     # [batch, boxes, num_classes * (dy, dx, log(dh), log(dw))]
     x = KL.TimeDistributed(KL.Dense(num_classes * 4, activation='linear'),
-                           name='content_bbox_fc')(squeezed)
+                           name='context_bbox_fc')(squeezed)
 
     # Reshape to [batch, boxes, num_classes, (dy, dx, log(dh), log(dw))]
     s = K.int_shape(x)
 
-    mrcnn_bbox = KL.Reshape((s[1], num_classes, 4), name="content_bbox")(x)
+    mrcnn_bbox = KL.Reshape((s[1], num_classes, 4), name="context_bbox")(x)
 
     return mrcnn_class_logits, mrcnn_probs, mrcnn_bbox
 
@@ -1757,8 +1763,8 @@ def data_generator(dataset, config, shuffle=True, augment=False, augmentation=No
 #  MaskRCNN Class
 ############################################################
 
-class Content():
-    """Encapsulates the Content-based model functionality.
+class Context():
+    """Encapsulates the Context-based model functionality.
 
     The actual Keras model is in the keras_model property.
     """
@@ -1879,7 +1885,7 @@ class Content():
 
         # Feature maps for different module.
         rpn_feature_maps = [N2, N3, N4, N5, N6]
-        class_feature_maps = [N3, N4]
+        class_feature_maps = [N5, N6]
         mask_feature_maps = [N2, N3, N4, N5]
 
         # Anchors
@@ -1987,7 +1993,7 @@ class Content():
                        mrcnn_class_logits, mrcnn_class, mrcnn_bbox,
                        rpn_rois, output_rois,
                        rpn_class_loss, rpn_bbox_loss, class_loss, bbox_loss]
-            model = KM.Model(inputs, outputs, name='Content')
+            model = KM.Model(inputs, outputs, name='Context')
 
         else:
             # Network Heads
@@ -2014,7 +2020,7 @@ class Content():
             model = KM.Model([input_image, input_image_meta, input_anchors],
                              [detections, mrcnn_class, mrcnn_bbox,
                                  rpn_rois, rpn_class, rpn_bbox],
-                             name='Content')
+                             name='Context')
 
         # Add multi-GPU support.
         if config.GPU_COUNT > 1:
@@ -2258,7 +2264,7 @@ class Content():
         # Pre-defined layer regular expressions
         layer_regex = {
             # all layers but the backbone
-            "heads": r"(content\_.*)|(rpn\_.*)|(fpn\_.*)",
+            "heads": r"(context\_.*)|(rpn\_.*)|(fpn\_.*)",
             # From a specific Resnet stage and up
             "3+": r"(res3.*)|(bn3.*)|(res4.*)|(bn4.*)|(res5.*)|(bn5.*)|(mrcnn\_.*)|(rpn\_.*)|(fpn\_.*)",
             "4+": r"(res4.*)|(bn4.*)|(res5.*)|(bn5.*)|(mrcnn\_.*)|(rpn\_.*)|(fpn\_.*)",
