@@ -1,9 +1,9 @@
 """
-Context-based Module.
+Aggregation Module.
 
   @Author  : TaylorMei
   @Email   : mhy845879017@gmail.com
-  @Function: Performing mirror detection only use high-level features.
+  @Function: Performing mirror detection by aggregating features of different level.
 
 """
 
@@ -338,29 +338,89 @@ def log2_graph(x):
     """Implementatin of Log2. TF doesn't have a native implementation."""
     return tf.log(x) / tf.log(2.0)
 
-
-class PyramidROIAlign_classify(KE.Layer):
-    """Implements ROI Pooling on multiple levels of the feature pyramid.
-
-    Params:
-    - pool_shape: [height, width] of the output pooled regions. Usually [7, 7]
-
-    Inputs:
-    - boxes: [batch, num_boxes, (y1, x1, y2, x2)] in normalized
-             coordinates. Possibly padded with zeros if not enough
-             boxes to fill the array.
-    - image_meta: [batch, (meta data)] Image details. See compose_image_meta()
-    - Feature maps: List of feature maps from different levels of the pyramid.
-                    Each is [batch, height, width, channels]
-
-    Output:
-    Pooled regions in the shape: [batch, num_boxes, height, width, channels].
-    The width and height are those specific in the pool_shape in the layer
-    constructor.
-    """
+# pooling for edge branch.
+class PyramidROIAlign_classify_edge(KE.Layer):
 
     def __init__(self, pool_shape, **kwargs):
-        super(PyramidROIAlign_classify, self).__init__(**kwargs)
+        super(PyramidROIAlign_classify_edge, self).__init__(**kwargs)
+        self.pool_shape = tuple([pool_shape, pool_shape])
+
+    def call(self, inputs):
+        # Crop boxes [batch, num_boxes, (y1, x1, y2, x2)] in normalized coordinate.
+        boxes = inputs[0]
+
+        image_meta = inputs[1]
+
+        # Feature Maps. List of feature maps from different level of the
+        # feature pyramid. Each is [batch, height, width, channels]
+        feature_maps = inputs[2:]
+
+        roi_level = tf.ones([tf.shape(boxes)[0], tf.shape(boxes)[1]])
+        ix = tf.where(tf.equal(roi_level, 1))
+        level_boxes = tf.gather_nd(boxes, ix)
+        box_indices = tf.cast(ix[:, 0], tf.int32)
+
+        box_indices = tf.stop_gradient(box_indices)
+        level_boxes = tf.stop_gradient(level_boxes)
+
+        # pooled shape : [num_boxes, crop_height, crop_width, depth]
+        p2_pooled = tf.image.crop_and_resize(
+            feature_maps[0], level_boxes, box_indices, self.pool_shape,
+            method="bilinear")
+
+        pooled = tf.expand_dims(p2_pooled, axis=0)
+
+        return pooled
+
+    def compute_output_shape(self, input_shape):
+        return input_shape[0][:2] + self.pool_shape + (input_shape[2][-1],)
+
+# pooling for content branch.
+class PyramidROIAlign_classify_content(KE.Layer):
+
+    def __init__(self, pool_shape, **kwargs):
+        super(PyramidROIAlign_classify_content, self).__init__(**kwargs)
+        self.pool_shape = tuple([pool_shape, pool_shape])
+
+    def call(self, inputs):
+        # Crop boxes [batch, num_boxes, (y1, x1, y2, x2)] in normalized coordinate.
+        boxes = inputs[0]
+
+        image_meta = inputs[1]
+
+        # Feature Maps. List of feature maps from different level of the
+        # feature pyramid. Each is [batch, height, width, channels]
+        feature_maps = inputs[2:]
+
+        roi_level = tf.ones([tf.shape(boxes)[0], tf.shape(boxes)[1]])
+        ix = tf.where(tf.equal(roi_level, 1))
+        level_boxes = tf.gather_nd(boxes, ix)
+        box_indices = tf.cast(ix[:, 0], tf.int32)
+
+        box_indices = tf.stop_gradient(box_indices)
+        level_boxes = tf.stop_gradient(level_boxes)
+
+        # pooled shape : [num_boxes, crop_height, crop_width, depth]
+        p3_pooled = tf.image.crop_and_resize(
+            feature_maps[1], level_boxes, box_indices, self.pool_shape,
+            method="bilinear")
+        p4_pooled = tf.image.crop_and_resize(
+            feature_maps[2], level_boxes, box_indices, self.pool_shape,
+            method="bilinear")
+
+        pooled = tf.concat([p3_pooled, p4_pooled], axis=3)
+        pooled = tf.expand_dims(pooled, axis=0)
+
+        return pooled
+
+    def compute_output_shape(self, input_shape):
+        return input_shape[0][:2] + self.pool_shape + (input_shape[2][-1] * 2,)
+
+# pooling for context branch.
+class PyramidROIAlign_classify_context(KE.Layer):
+
+    def __init__(self, pool_shape, **kwargs):
+        super(PyramidROIAlign_classify_context, self).__init__(**kwargs)
         self.pool_shape = tuple([pool_shape, pool_shape])
 
     def call(self, inputs):
@@ -383,7 +443,7 @@ class PyramidROIAlign_classify(KE.Layer):
 
         # pooled shape : [num_boxes, crop_height, crop_width, depth]
         p5_pooled = tf.image.crop_and_resize(
-            feature_maps[0], level_boxes, box_indices, self.pool_shape,
+            feature_maps[3], level_boxes, box_indices, self.pool_shape,
             method="bilinear")
         # For p6 pooled
         a = tf.zeros([tf.shape(boxes)[0], tf.shape(boxes)[1], 2])
@@ -392,7 +452,7 @@ class PyramidROIAlign_classify(KE.Layer):
         level_boxes_p6 = tf.gather_nd(boxes_p6, ix)
         level_boxes_p6 = tf.stop_gradient(level_boxes_p6)
         p6_pooled = tf.image.crop_and_resize(
-            feature_maps[1], level_boxes_p6, box_indices, self.pool_shape,
+            feature_maps[4], level_boxes_p6, box_indices, self.pool_shape,
             method="bilinear")
 
         pooled = tf.concat([p5_pooled, p6_pooled], axis=3)
@@ -873,39 +933,70 @@ def fpn_classifier_graph(rois, feature_maps, image_meta,
     # ROI align
     # Shape: [batch, num_boxes, pool_height, pool_width, channels]
     # each box is a time step. Independent with each other.
-    fusion = PyramidROIAlign_classify(pool_size[3], name="pyramid_roi_classify")(
+    fusion_edge = PyramidROIAlign_classify_edge(pool_size[0], name="pyramid_roi_classify_edge")(
+        [rois, image_meta] + feature_maps)
+    fusion_content = PyramidROIAlign_classify_content(pool_size[1], name="pyramid_roi_classify_content")(
+        [rois, image_meta] + feature_maps)
+    fusion_context = PyramidROIAlign_classify_context(pool_size[3], name="pyramid_roi_classify_context")(
         [rois, image_meta] + feature_maps)
 
-    # ################ Context Module #########################
-    x = KL.TimeDistributed(KL.Conv2D(256, (3, 3), padding="same", strides=1, activation="relu"),
-                           name="context_class_conv1")(fusion)
-    x = KL.TimeDistributed(KL.Conv2D(256, (3, 3), padding="same", strides=1, activation="relu"),
-                           name="context_class_conv2")(x)
+    # ################ Edge Module #########################
+    x = KL.TimeDistributed(KL.Conv2D(256, (3, 3), padding="same", strides=2, activation="relu"),
+                           name="edge_class_conv1")(fusion_edge)
+    x = KL.TimeDistributed(KL.Conv2D(256, (3, 3), padding="same", strides=2, activation="relu"),
+                           name="edge_class_conv2")(x)
 
     x = KL.TimeDistributed(KL.Conv2D(2048, (7, 7), padding="valid", activation="relu"),
-                           name="context_class_conv3")(x)
+                           name="edge_class_conv3")(x)
+    edge_1024 = KL.TimeDistributed(KL.Conv2D(1024, (1, 1), padding="valid", activation="relu"),
+                           name="edge_class_conv4")(x)
+
+    # ################ Content Module #########################
+    y = KL.TimeDistributed(KL.Conv2D(256, (3, 3), padding="same", strides=2, activation="relu"),
+                           name="content_class_conv1")(fusion_content)
+    y = KL.TimeDistributed(KL.Conv2D(256, (3, 3), padding="same", strides=1, activation="relu"),
+                           name="content_class_conv2")(y)
+
+    y = KL.TimeDistributed(KL.Conv2D(2048, (7, 7), padding="valid", activation="relu"),
+                           name="content_class_conv3")(y)
+    content_1024 = KL.TimeDistributed(KL.Conv2D(1024, (1, 1), padding="valid", activation="relu"),
+                           name="content_class_conv4")(y)
+
+    # ################ Context Module #########################
+    z = KL.TimeDistributed(KL.Conv2D(256, (3, 3), padding="same", strides=1, activation="relu"),
+                           name="context_class_conv1")(fusion_context)
+    z = KL.TimeDistributed(KL.Conv2D(256, (3, 3), padding="same", strides=1, activation="relu"),
+                           name="context_class_conv2")(z)
+
+    z = KL.TimeDistributed(KL.Conv2D(2048, (7, 7), padding="valid", activation="relu"),
+                           name="context_class_conv3")(z)
     context_1024 = KL.TimeDistributed(KL.Conv2D(1024, (1, 1), padding="valid", activation="relu"),
-                           name="context_class_conv4")(x)
+                           name="context_class_conv4")(z)
+
+    # ################ Aggregation Module #########################
+    aggregation = KL.Lambda(lambda a: K.concatenate(a, axis=4),
+                            name="aggregation")([edge_1024, content_1024, context_1024])
+    print(aggregation)
+    shared = KL.TimeDistributed(KL.Conv2D(1024, (1, 1), padding="valid", activation="relu"),
+                                name="aggregation_conv")(aggregation)
 
     # shape : [batch, num_boxes, 1024]
-    squeezed = KL.Lambda(lambda xx: K.squeeze(K.squeeze(xx, 3), 2), name="pool_squeeze")(context_1024)
+    squeezed = KL.Lambda(lambda xx: K.squeeze(K.squeeze(xx, 3), 2), name="pool_squeeze")(shared)
 
     # ############## Classifier Head #########################
     mrcnn_class_logits = KL.TimeDistributed(KL.Dense(num_classes),
-                                            name='context_class_logits')(squeezed)
+                                            name='aggregation_class_logits')(squeezed)
 
     mrcnn_probs = KL.TimeDistributed(KL.Activation("softmax"),
-                                     name="context_class")(mrcnn_class_logits)
+                                     name="aggregation_class")(mrcnn_class_logits)
 
     # BBox head
     # [batch, boxes, num_classes * (dy, dx, log(dh), log(dw))]
-    x = KL.TimeDistributed(KL.Dense(num_classes * 4, activation='linear'),
-                           name='context_bbox_fc')(squeezed)
-
+    q = KL.TimeDistributed(KL.Dense(num_classes * 4, activation='linear'),
+                           name='aggregation_bbox_fc')(squeezed)
     # Reshape to [batch, boxes, num_classes, (dy, dx, log(dh), log(dw))]
-    s = K.int_shape(x)
-
-    mrcnn_bbox = KL.Reshape((s[1], num_classes, 4), name="context_bbox")(x)
+    s = K.int_shape(q)
+    mrcnn_bbox = KL.Reshape((s[1], num_classes, 4), name="aggregation_bbox")(q)
 
     return mrcnn_class_logits, mrcnn_probs, mrcnn_bbox
 
@@ -1763,8 +1854,8 @@ def data_generator(dataset, config, shuffle=True, augment=False, augmentation=No
 #  MaskRCNN Class
 ############################################################
 
-class Context():
-    """Encapsulates the Context-based model functionality.
+class Aggregation():
+    """Encapsulates the Aggregation model functionality.
 
     The actual Keras model is in the keras_model property.
     """
@@ -1783,7 +1874,7 @@ class Context():
         self.keras_model = self.build(mode=mode, config=config)
 
     def build(self, mode, config):
-        """Build Edge architecture.
+        """Build Aggregation architecture.
             input_shape: The shape of the input image.
             mode: Either "training" or "inference". The inputs and
                 outputs of the model differ accordingly.
@@ -1885,7 +1976,7 @@ class Context():
 
         # Feature maps for different module.
         rpn_feature_maps = [N2, N3, N4, N5, N6]
-        class_feature_maps = [N5, N6]
+        class_feature_maps = [N2, N3, N4, N5, N6]
         mask_feature_maps = [N2, N3, N4, N5]
 
         # Anchors
@@ -1993,7 +2084,7 @@ class Context():
                        mrcnn_class_logits, mrcnn_class, mrcnn_bbox,
                        rpn_rois, output_rois,
                        rpn_class_loss, rpn_bbox_loss, class_loss, bbox_loss]
-            model = KM.Model(inputs, outputs, name='Context')
+            model = KM.Model(inputs, outputs, name='Aggregation')
 
         else:
             # Network Heads
@@ -2020,7 +2111,7 @@ class Context():
             model = KM.Model([input_image, input_image_meta, input_anchors],
                              [detections, mrcnn_class, mrcnn_bbox,
                                  rpn_rois, rpn_class, rpn_bbox],
-                             name='Context')
+                             name='Aggregation')
 
         # Add multi-GPU support.
         if config.GPU_COUNT > 1:
@@ -2264,7 +2355,7 @@ class Context():
         # Pre-defined layer regular expressions
         layer_regex = {
             # all layers but the backbone
-            "heads": r"(context\_.*)|(rpn\_.*)|(fpn\_.*)",
+            "heads": r"(edge\_.*)|(content\_.*)|(context\_.*)|(aggregation\_.*)|(rpn\_.*)|(fpn\_.*)",
             # From a specific Resnet stage and up
             "3+": r"(res3.*)|(bn3.*)|(res4.*)|(bn4.*)|(res5.*)|(bn5.*)|(mrcnn\_.*)|(rpn\_.*)|(fpn\_.*)",
             "4+": r"(res4.*)|(bn4.*)|(res5.*)|(bn5.*)|(mrcnn\_.*)|(rpn\_.*)|(fpn\_.*)",

@@ -1,5 +1,5 @@
 """
-Edge-based Module.
+Content-based Module.
 
   @Author  : TaylorMei
   @Email   : mhy845879017@gmail.com
