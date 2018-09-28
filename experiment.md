@@ -58,7 +58,7 @@
 
 - context: using high-level features to perform mirror detection.
 
-- mod: mask-rcnn only detection. (no mask branch)(baseline)
+- mod: mask-rcnn only detection. (no mask branch)(baseline). Used path augmentation.
 
 9.1
 

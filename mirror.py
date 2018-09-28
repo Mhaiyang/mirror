@@ -39,7 +39,7 @@ class MirrorConfig(Config):
     # For the version before mid-autumn festival.
     # CLASSIFY_POOL_SIZE = 7
 
-    # For three individual version.
+    # For three individual version and Mod.
     CLASSIFY_POOL_SIZE = [28, 14, 14, 7, 7]
 
     # For model.py, fusion.py
