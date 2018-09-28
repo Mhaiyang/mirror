@@ -50,6 +50,16 @@
 
 - attention3:在attention2的基础上，将attention的maxpooling换成转置卷积，decoder部分直接复制过来。
 
+
+# Mid-Autumn Festival
+- edge: only use low-level features to perform mirror detection.
+
+- content: using mid-level features to perform mirror detection.
+
+- context: using high-level features to perform mirror detection.
+
+- mod: mask-rcnn only detection. (no mask branch)(baseline)
+
 9.1
 
 Augmentation test
