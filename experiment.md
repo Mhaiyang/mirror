@@ -276,3 +276,10 @@ mean_mAP_box_50      0.9240950837626707
 mean_mAP_box_75      0.8649153610795076 
 
 mean_mAP_box_85      0.7579911759436163
+
+# aggregation
+mean_mAP_box_50      0.9437466234669115
+ 
+mean_mAP_box_75      0.8789843328011353 
+
+mean_mAP_box_85      0.7610750945461735
