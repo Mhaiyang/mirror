@@ -2542,7 +2542,7 @@ class Ad(object):
         # Pre-defined layer regular expressions
         layer_regex = {
             # all layers but the backbone
-            "heads": r"(fusion\_.*)|(decoder\_.*)|(rpn\_.*)|(fpn\_.*)",
+            "heads": r"(edge\_.*)|(content\_.*)|(context\_.*)|(aggregation\_.*)|(decoder\_.*)|(rpn\_.*)|(fpn\_.*)",
             # From a specific Resnet stage and up
             "3+": r"(res3.*)|(bn3.*)|(res4.*)|(bn4.*)|(res5.*)|(bn5.*)|(mrcnn\_.*)|(rpn\_.*)|(fpn\_.*)",
             "4+": r"(res4.*)|(bn4.*)|(res5.*)|(bn5.*)|(mrcnn\_.*)|(rpn\_.*)|(fpn\_.*)",
