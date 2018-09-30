@@ -60,6 +60,8 @@
 
 - mod: mask-rcnn only detection. (no mask branch)(baseline). Used path augmentation.
 
+- ad: aggregation for detection and decoder for mask prediction.
+
 9.1
 
 Augmentation test
