@@ -11,16 +11,16 @@ import mhy.visualize as visualize
 import evaluate
 from mirror import MirrorConfig
 # Important, need change when test different models.
-import mhy.aggregation as modellib
+import mhy.mod as modellib
 
 # Directories of the project
 ROOT_DIR = os.getcwd()
 print(ROOT_DIR)
-MODEL_DIR = os.path.join(ROOT_DIR, "log", "aggregation")
-MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mirror_aggregation_heads.h5")
+MODEL_DIR = os.path.join(ROOT_DIR, "log", "mod")
+MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mirror_mod_heads.h5")
 IMAGE_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "image")
 MASK_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "mask")
-OUTPUT_PATH = os.path.join(ROOT_DIR, 'augmentation', 'test', "output_aggregation_bbox")
+OUTPUT_PATH = os.path.join(ROOT_DIR, 'augmentation', 'test', "output_mod_bbox")
 if not os.path.exists(OUTPUT_PATH):
     os.mkdir(OUTPUT_PATH)
 
@@ -47,7 +47,7 @@ config = InferenceConfig()
 config.display()
 
 # ## Create Model and Load Trained Weights
-model = modellib.Aggregation(mode="inference", config=config, model_dir=MODEL_DIR)
+model = modellib.Mod(mode="inference", config=config, model_dir=MODEL_DIR)
 # ## Load weights
 model.load_weights(MIRROR_MODEL_PATH, by_name=True)
 
