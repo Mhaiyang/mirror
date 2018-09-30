@@ -39,7 +39,7 @@ class MirrorConfig(Config):
     # For the version before mid-autumn festival.
     # CLASSIFY_POOL_SIZE = 7
 
-    # For three individual version and Mod.
+    # For three individual version, Mod and Ad.
     CLASSIFY_POOL_SIZE = [28, 14, 14, 7, 7]
 
     # For model.py, fusion.py
@@ -47,7 +47,7 @@ class MirrorConfig(Config):
     # MASK_SHAPE = [28, 28]
 
     # For decoder.py, fusion_decoder.py, fusion_context_guided_decoder.py, path_full.py, post_relu.py,
-    # attention.py, attention2.py, attention3.py, and maybe three individual version.
+    # attention.py, attention2.py, attention3.py, and maybe three individual version. and Ad.
     MASK_POOL_SIZE = [32, 16, 8, 4]
     MASK_SHAPE = [64, 64]
 
