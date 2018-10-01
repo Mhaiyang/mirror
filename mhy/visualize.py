@@ -25,7 +25,7 @@ ROOT_DIR = os.path.abspath("../")
 
 # Import Mask RCNN
 sys.path.append(ROOT_DIR)  # To find local version of the library
-from mhy import utils
+from mrcnn import utils
 
 
 ############################################################
@@ -80,7 +80,7 @@ def apply_mask(image, mask, color, alpha=0.5):
     return image
 
 
-def display_instances_and_save_image(imgname, image, boxes, class_ids, class_names,
+def display_instances_and_save_image(imgname, image, boxes, masks, class_ids, class_names,
                                      save=True, OUTPUT_PATH=None, scores=None, title="title", figsize=(32, 32), ax=None,
                                      show_mask=True, show_bbox=True, colors=None, captions=None):
     """
@@ -100,7 +100,7 @@ def display_instances_and_save_image(imgname, image, boxes, class_ids, class_nam
     if not N:
         print("\n*** No instances to display *** \n")
     else:
-        assert boxes.shape[0] == class_ids.shape[0]
+        assert boxes.shape[0] == masks.shape[-1] == class_ids.shape[0]
 
     # If no axis is passed, create one and automatically call show()
     auto_show = False
@@ -144,13 +144,30 @@ def display_instances_and_save_image(imgname, image, boxes, class_ids, class_nam
             caption = captions[i]
         ax.text(x1, y1 + 30, caption,
                 color='w', size=40, backgroundcolor="none")
+
+        # Mask
+        mask = masks[:, :, i]
+        if show_mask:
+            masked_image = apply_mask(masked_image, mask, color)
+
+        # Mask Polygon
+        # Pad to ensure proper polygons for masks that touch image edges.
+        padded_mask = np.zeros(
+            (mask.shape[0] + 2, mask.shape[1] + 2), dtype=np.uint8)
+        padded_mask[1:-1, 1:-1] = mask
+        contours = find_contours(padded_mask, 0.5)
+        for verts in contours:
+            # Subtract the padding and flip (y, x) to (x, y)
+            verts = np.fliplr(verts) - 1
+            p = Polygon(verts, facecolor="none", edgecolor=color)
+            ax.add_patch(p)
     ax.imshow(masked_image.astype(np.uint8))
     # TaylorMei want to save image.
     # skimage.io.imsave(os.path.join(OUTPUT_PATH, imgname), masked_image.astype(np.uint8))
     if auto_show:
         # TaylorMei want to save fig
         if save:
-            plt.savefig(os.path.join(OUTPUT_PATH, str(imgname[:-4]) + "_mod.jpg"), bbox_inches='tight')
+            plt.savefig(os.path.join(OUTPUT_PATH, str(imgname[:-4]) + "_ad.jpg"), bbox_inches='tight')
         # plt.show()
         plt.close()
 

@@ -11,15 +11,15 @@ import mhy.visualize as visualize
 import evaluate
 from mirror import MirrorConfig
 # Important, need change when test different models.
-import mrcnn.attention3 as modellib
+import mhy.ad as modellib
 
 # Directories of the project
 ROOT_DIR = os.getcwd()
-MODEL_DIR = os.path.join(ROOT_DIR, "log", "edge/mirror20180918T2201")
-MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mirror_edge_heads.h5")
+MODEL_DIR = os.path.join(ROOT_DIR, "log", "ad")
+MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mirror_all_35.h5")
 IMAGE_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "image")
 MASK_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "mask")
-OUTPUT_PATH = os.path.join(ROOT_DIR, 'augmentation', 'test', "output_edge_bbox")
+OUTPUT_PATH = os.path.join(ROOT_DIR, 'augmentation', 'test', "output_ad")
 if not os.path.exists(OUTPUT_PATH):
     os.mkdir(OUTPUT_PATH)
 
@@ -47,7 +47,7 @@ config = InferenceConfig()
 config.display()
 
 # ## Create Model and Load Trained Weights
-model = modellib.MaskRCNN(mode="inference", config=config, model_dir=MODEL_DIR)
+model = modellib.Ad(mode="inference", config=config, model_dir=MODEL_DIR)
 # ## Load weights
 model.load_weights(MIRROR_MODEL_PATH, by_name=True)
 # For fusion_context_guided_decoder.py  p1.py  path_full.py  post_relu.py
@@ -59,22 +59,27 @@ mapping = dict()
 ## attention.py, attention2.py #####
 # mapping["fusion_attention_short_second"] = "fusion_attention_short"
 ## attention3.py
-mapping["fusion_attention_pooling_second"] = "fusion_attention_pooling"
-mapping["fusion_attention_weights_second"] = "fusion_attention_weights"
-mapping["fusion_class_conv1_second"] = "fusion_class_conv1"
-mapping["fusion_class_conv2_second"] = "fusion_class_conv2"
-# # ## attention3.py multi-time.
 # mapping["fusion_attention_pooling_second"] = "fusion_attention_pooling"
 # mapping["fusion_attention_weights_second"] = "fusion_attention_weights"
 # mapping["fusion_class_conv1_second"] = "fusion_class_conv1"
 # mapping["fusion_class_conv2_second"] = "fusion_class_conv2"
-# mapping["fusion_class_logits_second"] = "fusion_class_logits"
-# mapping["fusion_bbox_fc_second"] = "fusion_bbox_fc"
-#
-# mapping["fusion_attention_pooling_third"] = "fusion_attention_pooling"
-# mapping["fusion_attention_weights_third"] = "fusion_attention_weights"
-# mapping["fusion_class_conv1_third"] = "fusion_class_conv1"
-# mapping["fusion_class_conv2_third"] = "fusion_class_conv2"
+# ## ad.py
+mapping["edge_class_conv1_second"] = "edge_class_conv1"
+mapping["edge_class_conv2_second"] = "edge_class_conv2"
+mapping["edge_class_conv3_second"] = "edge_class_conv3"
+mapping["edge_class_conv4_second"] = "edge_class_conv4"
+
+mapping["content_class_conv1_second"] = "content_class_conv1"
+mapping["content_class_conv2_second"] = "content_class_conv2"
+mapping["content_class_conv3_second"] = "content_class_conv3"
+mapping["content_class_conv4_second"] = "content_class_conv4"
+
+mapping["context_class_conv1_second"] = "context_class_conv1"
+mapping["context_class_conv2_second"] = "context_class_conv2"
+mapping["context_class_conv3_second"] = "context_class_conv3"
+mapping["context_class_conv4_second"] = "context_class_conv4"
+
+mapping["aggregation_conv_second"] = "aggregation_conv"
 
 for layer in model.keras_model.layers:
     if layer.name in mapping:
