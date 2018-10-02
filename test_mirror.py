@@ -15,11 +15,11 @@ import mhy.ad as modellib
 
 # Directories of the project
 ROOT_DIR = os.getcwd()
-MODEL_DIR = os.path.join(ROOT_DIR, "log", "ad")
-MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mirror_all_45.h5")
+MODEL_DIR = os.path.join(ROOT_DIR, "log", "ad/mirror20180930T1127")
+MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mirror_0040.h5")
 IMAGE_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "image")
 MASK_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "mask")
-OUTPUT_PATH = os.path.join(ROOT_DIR, 'augmentation', 'test', "output_ad_45")
+OUTPUT_PATH = os.path.join(ROOT_DIR, 'augmentation', 'test', "output_ad_40")
 if not os.path.exists(OUTPUT_PATH):
     os.mkdir(OUTPUT_PATH)
 
