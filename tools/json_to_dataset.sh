@@ -1,7 +1,7 @@
 #!/bin/bash
-image="/home/taylor/mirror/data/val/mask/"
+image="/home/taylor/Desktop/image/"
 format=".json"
-for((i=1;i<=247;i++))
+for((i=168;i<=168;i++))
     do
         num=${i}
         labelme_json_to_dataset ${image}${num}${format}

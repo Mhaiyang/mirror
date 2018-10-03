@@ -10,9 +10,9 @@ int main(void){
     char buff2[100];
     fstream file;
     int number = 0;
-    for(int i=1;i<=1234;i++)
+    for(int i=168;i<=168;i++)
     {
-        sprintf(buff1,"/home/taylor/mirror/data/test/mask/%d_json/label.png",i);
+        sprintf(buff1,"/home/taylor/Desktop/image/%d_json/label.png",i);
 //        cout<<buff1<<endl;
         file.open(buff1, ios::in);
         if(!file)
@@ -24,7 +24,7 @@ int main(void){
         }
         else
         {
-            sprintf(buff2,"/home/taylor/mirror/data/test/mask/%d_json/label8.png",i);
+            sprintf(buff2,"/home/taylor/Desktop/image/%d_json/label8.png",i);
             //sprintf(buff1,"/media/lj/FA68-10A6/test_drug/disp/disp_%d.png",i);
             //sprintf(buff2,"/media/lj/FA68-10A6/test_drug/disp_8/disp_%d.png",i);
             Mat src;
