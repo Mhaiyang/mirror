@@ -940,11 +940,11 @@ def fpn_classifier_graph(rois, feature_maps, image_meta,
     x = KL.TimeDistributed(KL.Conv2D(4096, (pool_size, pool_size), padding="valid", activation="relu"),
                            name="fusion_class_conv1")(attention)
 
-    shared = KL.TimeDistributed(KL.Conv2D(1024, (1, 1), padding="valid", activation="relu"),
+    x = KL.TimeDistributed(KL.Conv2D(1024, (1, 1), padding="valid", activation="relu"),
                                 name="fusion_class_conv2")(x)
 
     # shape : [batch, num_boxes, 1024]
-    squeezed = KL.Lambda(lambda xx: K.squeeze(K.squeeze(xx, 3), 2), name="pool_squeeze")(shared)
+    squeezed = KL.Lambda(lambda xx: K.squeeze(K.squeeze(xx, 3), 2), name="pool_squeeze")(x)
 
     # Classifier head
     mrcnn_class_logits = KL.TimeDistributed(KL.Dense(num_classes),
@@ -2066,7 +2066,7 @@ class Two():
                 [rpn_rois, mrcnn_class, mrcnn_bbox, input_image_meta])
 
             # Create masks for detections
-            detection_boxes = KL.Lambda(lambda x: x[..., :4])(detections)
+            # detection_boxes = KL.Lambda(lambda x: x[..., :4])(detections)
             # mrcnn_mask = build_fpn_mask_graph(detection_boxes, class_feature_maps,
             #                                   input_image_meta,
             #                                   config.MASK_POOL_SIZE,
