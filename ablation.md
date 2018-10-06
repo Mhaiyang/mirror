@@ -1,0 +1,14 @@
+#**** log_123
+1:decoder_edge
+
+2:context
+
+3:decoder_mask
+
+Baseline: mod, mask rcnn only detection
+
+实验一：context-n2-n5  **c25**
+
+实验二：context-n2-n6  **c26**
+
+实验三：context-n2-n6 + decoder_mask  **c26dm**

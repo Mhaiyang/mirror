@@ -62,6 +62,9 @@
 
 - ad: aggregation for detection and decoder for mask prediction.
 
+# Ablation.md
+Restart try to solve the problem since national day.
+
 9.1
 
 Augmentation test
