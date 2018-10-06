@@ -5,7 +5,7 @@
 
 3:decoder_mask
 
-统一：头部训练25个epoch， 学习率1e-3；全部再训练5个epoch， 学习率1e-4.
+统一：头部训练15个epoch， 学习率1e-3；全部再训练5个epoch， 学习率1e-4.
 
 Baseline: mod, mask rcnn only detection
 
