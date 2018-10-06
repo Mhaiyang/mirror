@@ -17,7 +17,7 @@ import mhy.two as modellib
 ROOT_DIR = os.getcwd()
 
 # Directory to save logs and trained model
-MODEL_DIR = os.path.join(ROOT_DIR, "log", "two")
+MODEL_DIR = os.path.join(ROOT_DIR, "log_123", "two")
 
 # Local path to trained weights file
 COCO_MODEL_PATH = os.path.join(ROOT_DIR, "mask_rcnn_coco.h5")
@@ -80,12 +80,12 @@ elif init_with == "last":
 # ## Training
 
 # 1. Train the head branches
-model.train(dataset_train, dataset_val,
-            learning_rate=config.LEARNING_RATE,
-            epochs=25,
-            layers='heads')
-model_path = os.path.join(MODEL_DIR, "mirror_two_heads.h5")
-model.keras_model.save_weights(model_path)
+# model.train(dataset_train, dataset_val,
+#             learning_rate=config.LEARNING_RATE,
+#             epochs=25,
+#             layers='heads')
+# model_path = os.path.join(MODEL_DIR, "mirror_two_heads.h5")
+# model.keras_model.save_weights(model_path)
 
 # 2. Fine tune all layers
 model.train(dataset_train, dataset_val,
