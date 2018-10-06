@@ -1942,7 +1942,7 @@ class Two():
         # Feature maps for different module.
         rpn_feature_maps = [N2, N3, N4, N5, N6]
         class_feature_maps = [N2, N3, N4, N5, N6]
-        mask_feature_maps = [N2, N3, N4, N5]
+        # mask_feature_maps = [N2, N3, N4, N5]
 
         # Anchors
         if mode == "training":
