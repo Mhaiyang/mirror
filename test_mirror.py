@@ -11,15 +11,15 @@ import mhy.visualize as visualize
 import evaluate
 from mirror import MirrorConfig
 # Important, need change when test different models.
-import mhy.ad as modellib
+import mhy.ad2 as modellib
 
 # Directories of the project
 ROOT_DIR = os.getcwd()
-MODEL_DIR = os.path.join(ROOT_DIR, "log", "ad/mirror20180930T1127")
-MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mirror_0040.h5")
+MODEL_DIR = os.path.join(ROOT_DIR, "log", "ad2/mirror20181003T2215")
+MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mirror_0035.h5")
 IMAGE_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "image")
 MASK_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "mask")
-OUTPUT_PATH = os.path.join(ROOT_DIR, 'augmentation', 'test', "output_ad_40")
+OUTPUT_PATH = os.path.join(ROOT_DIR, 'augmentation', 'test', "output_ad2")
 if not os.path.exists(OUTPUT_PATH):
     os.mkdir(OUTPUT_PATH)
 
@@ -47,7 +47,7 @@ config = InferenceConfig()
 config.display()
 
 # ## Create Model and Load Trained Weights
-model = modellib.Ad(mode="inference", config=config, model_dir=MODEL_DIR)
+model = modellib.Ad2(mode="inference", config=config, model_dir=MODEL_DIR)
 # ## Load weights
 model.load_weights(MIRROR_MODEL_PATH, by_name=True)
 # For fusion_context_guided_decoder.py  p1.py  path_full.py  post_relu.py
@@ -79,7 +79,7 @@ mapping["context_class_conv2_second"] = "context_class_conv2"
 mapping["context_class_conv3_second"] = "context_class_conv3"
 mapping["context_class_conv4_second"] = "context_class_conv4"
 
-mapping["aggregation_conv_second"] = "aggregation_conv"
+# mapping["aggregation_conv_second"] = "aggregation_conv"
 
 for layer in model.keras_model.layers:
     if layer.name in mapping:

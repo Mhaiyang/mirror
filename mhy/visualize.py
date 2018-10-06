@@ -167,7 +167,7 @@ def display_instances_and_save_image(imgname, image, boxes, masks, class_ids, cl
     if auto_show:
         # TaylorMei want to save fig
         if save:
-            plt.savefig(os.path.join(OUTPUT_PATH, str(imgname[:-4]) + "_ad.jpg"), bbox_inches='tight')
+            plt.savefig(os.path.join(OUTPUT_PATH, str(imgname[:-4]) + "_ad2.jpg"), bbox_inches='tight')
         # plt.show()
         plt.close()
 
