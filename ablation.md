@@ -5,6 +5,8 @@
 
 3:decoder_mask
 
+统一：头部训练25个epoch， 学习率1e-3；全部再训练5个epoch， 学习率1e-4.
+
 Baseline: mod, mask rcnn only detection
 
 实验一：context-n2-n5  **c25**
