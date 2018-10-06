@@ -11,13 +11,13 @@
 import os
 import mirror
 # Need modify:
-import mhy.ad2 as modellib
+import mhy.two as modellib
 
 # Root directory of the project
 ROOT_DIR = os.getcwd()
 
 # Directory to save logs and trained model
-MODEL_DIR = os.path.join(ROOT_DIR, "log", "ad2")
+MODEL_DIR = os.path.join(ROOT_DIR, "log", "two")
 
 # Local path to trained weights file
 COCO_MODEL_PATH = os.path.join(ROOT_DIR, "mask_rcnn_coco.h5")
@@ -59,7 +59,7 @@ dataset_val.prepare("validation")
 #     visualize.display_top_masks(image, mask, class_ids, dataset_train.class_names)
 
 ### Create Model  ###
-model = modellib.Ad2(mode="training", config=config, model_dir=MODEL_DIR)
+model = modellib.Two(mode="training", config=config, model_dir=MODEL_DIR)
 
 # Which weights to start with?
 init_with = "coco"  # imagenet, coco, or last
@@ -84,7 +84,7 @@ model.train(dataset_train, dataset_val,
             learning_rate=config.LEARNING_RATE,
             epochs=25,
             layers='heads')
-model_path = os.path.join(MODEL_DIR, "mirror_ad2_heads.h5")
+model_path = os.path.join(MODEL_DIR, "mirror_two_heads.h5")
 model.keras_model.save_weights(model_path)
 
 # 2. Fine tune all layers
@@ -92,5 +92,5 @@ model.train(dataset_train, dataset_val,
             learning_rate=config.LEARNING_RATE / 10,
             epochs=35,
             layers="all", save_model_each_epoch=True)
-model_path = os.path.join(MODEL_DIR, "mirror_ad2_all.h5")
+model_path = os.path.join(MODEL_DIR, "mirror_two_all.h5")
 model.keras_model.save_weights(model_path)

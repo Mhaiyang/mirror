@@ -40,7 +40,7 @@ class MirrorConfig(Config):
     # CLASSIFY_POOL_SIZE = 7
 
     # For three individual version, Mod and Ad.
-    CLASSIFY_POOL_SIZE = [28, 14, 14, 7, 7]
+    # CLASSIFY_POOL_SIZE = [28, 14, 14, 7, 7]
 
     # For model.py, fusion.py
     # MASK_POOL_SIZE = 14
@@ -48,8 +48,14 @@ class MirrorConfig(Config):
 
     # For decoder.py, fusion_decoder.py, fusion_context_guided_decoder.py, path_full.py, post_relu.py,
     # attention.py, attention2.py, attention3.py, and maybe three individual version. and Ad.
+    # MASK_POOL_SIZE = [32, 16, 8, 4]
+    # MASK_SHAPE = [64, 64]
+
+    # For One, Two, Three, and their combination.
+    CLASSIFY_POOL_SIZE = 8
     MASK_POOL_SIZE = [32, 16, 8, 4]
-    MASK_SHAPE = [64, 64]
+    MASK_SHAPE = [32, 32]
+    EDGE_SHAPE = [32, 32]
 
     # For p1.py
     # MASK_POOL_SIZE = [64, 32, 16, 8, 4]
