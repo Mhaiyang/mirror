@@ -1145,7 +1145,7 @@ def fpn_classifier_graph_second(rois, feature_maps, image_meta,
 
     # ################ Aggregation Module #########################
     aggregation = KL.Lambda(lambda a: K.concatenate(a, axis=4),
-                            name="aggregation")([edge_1024, content_1024, context_1024])
+                            name="aggregation_second")([edge_1024, content_1024, context_1024])
     print(aggregation)
     # shared = KL.TimeDistributed(KL.Conv2D(1024, (1, 1), padding="valid", activation="relu"),
     #                             name="aggregation_conv_second")(aggregation)
