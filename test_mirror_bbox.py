@@ -7,7 +7,7 @@
 import os
 import skimage.io
 import mhy.utils as utils
-import mhy.visualize as visualize
+import mhy.visualize_bbox as visualize
 import evaluate
 from mirror import MirrorConfig
 # Important, need change when test different models.
@@ -34,7 +34,7 @@ class InferenceConfig(MirrorConfig):
     IMAGES_PER_GPU = 1
     RPN_ANCHOR_SCALES = (32, 64, 128, 256, 512)
     # These two must be same when test. As we use shared connecting the detection and segmentation.
-    DETECTION_MAX_INSTANCES = 100
+    DETECTION_MAX_INSTANCES = 60
 
     DETECTION_MIN_CONFIDENCE = 0.7
     # Important. If Iou greater than this threshold, this prediction will be considered as true.
