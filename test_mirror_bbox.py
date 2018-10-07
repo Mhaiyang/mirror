@@ -11,16 +11,16 @@ import mhy.visualize as visualize
 import evaluate
 from mirror import MirrorConfig
 # Important, need change when test different models.
-import mhy.mod as modellib
+import mhy.c25 as modellib
 
 # Directories of the project
 ROOT_DIR = os.getcwd()
 print(ROOT_DIR)
-MODEL_DIR = os.path.join(ROOT_DIR, "log", "mod")
-MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mirror_mod_heads.h5")
+MODEL_DIR = os.path.join(ROOT_DIR, "log_123", "c25")
+MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mirror_c25_all.h5")
 IMAGE_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "image")
 MASK_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "mask")
-OUTPUT_PATH = os.path.join(ROOT_DIR, 'augmentation', 'test', "output_mod_bbox")
+OUTPUT_PATH = os.path.join(ROOT_DIR, 'augmentation', 'test', "output_c25_bbox")
 if not os.path.exists(OUTPUT_PATH):
     os.mkdir(OUTPUT_PATH)
 
@@ -47,7 +47,7 @@ config = InferenceConfig()
 config.display()
 
 # ## Create Model and Load Trained Weights
-model = modellib.Mod(mode="inference", config=config, model_dir=MODEL_DIR)
+model = modellib.C25(mode="inference", config=config, model_dir=MODEL_DIR)
 # ## Load weights
 model.load_weights(MIRROR_MODEL_PATH, by_name=True)
 
@@ -74,7 +74,7 @@ for imgname in imglist:
     # and each call detect function only feed one image, r =results[0]
     r = results[0]
     visualize.display_instances_and_save_image(imgname, image, r['rois'], r['class_ids'],
-                                class_names, True, OUTPUT_PATH, r['scores'])
+                                               class_names, True, OUTPUT_PATH, r['scores'])
 
     ###########################################################################
     ################  Quantitative Evaluation for Single Image ################

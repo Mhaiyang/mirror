@@ -128,7 +128,7 @@ def display_instances_and_save_image(imgname, image, boxes, masks, class_ids, cl
             continue
         y1, x1, y2, x2 = boxes[i]
         if show_bbox:
-            p = patches.Rectangle((x1, y1), x2 - x1, y2 - y1, linewidth=5,
+            p = patches.Rectangle((x1, y1), x2 - x1, y2 - y1, linewidth=8,
                                 alpha=0.7, linestyle="dashed",
                                 edgecolor=color, facecolor='none')
             ax.add_patch(p)
