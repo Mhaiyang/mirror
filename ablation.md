@@ -1,4 +1,4 @@
-#**** log_123
+# log_123
 1:decoder_edge
 
 2:context
@@ -16,3 +16,12 @@ Baseline: mod, mask rcnn only detection
 实验三：context-n2-n6 + decoder_mask  **c26dm**
 
 实验四：context-n2-n6 + decoder_edge  **c26de**
+
+# 实验结果
+### c25
+mean_mAP_box_50      0.9283945615197569
+ 
+mean_mAP_box_75      0.8688096524481727 
+
+mean_mAP_box_85      0.7752341076949041
+### c26
