@@ -122,7 +122,7 @@ for imgname in imglist:
     # and each call detect function only feed one image, r =results[0]
     r = results[0]
     visualize.display_instances_and_save_image(imgname, image, r['rois'], r['masks'], r['class_ids'],
-                                class_names, True, OUTPUT_PATH, r['scores'])
+                                class_names, False, OUTPUT_PATH, r['scores'])
 
     ###########################################################################
     ################  Quantitative Evaluation for Single Image ################
@@ -206,7 +206,7 @@ mean_mAP_mask_3 = sum(mAPs_mask_3)/len(mAPs_mask_3)
 mean_mAP_range_mask = sum(mAPs_range_mask)/len(mAPs_range_mask)
 print("For Test Data Set, \n{:20} {} \n{:20} {} \n{:20} {} \n{:20} {} \n{:20} {} \n{:20} {} \n{:20} {}"
       .format("mean_mAP_box_50", mean_mAP_box_1, "mean_mAP_box_75", mean_mAP_box_2, "mean_mAP_box_85", mean_mAP_box_3,
-              "mean_mAP_mask_50", mean_mAP_mask_1, "mean_mAP_mask_75", mean_mAP_mask_2, "mean_mAP_mask_85", mean_mAP_mask_2,
+              "mean_mAP_mask_50", mean_mAP_mask_1, "mean_mAP_mask_75", mean_mAP_mask_2, "mean_mAP_mask_85", mean_mAP_mask_3,
               "mean_mAP_range_mask", mean_mAP_range_mask))
 
 
