@@ -4,6 +4,7 @@ from PIL import Image
 from mhy.config import Config
 import mhy.utils as utils
 import yaml
+import skimage.io
 
 
 ### Configurations
@@ -119,6 +120,7 @@ class MirrorDataset(utils.Dataset):
         for i in range(count):
             filestr = imglist[i].split(".")[0]  # 10.jpg for example
             mask_path = mask_folder + "/" + filestr + "_json/label8.png"
+            edge_path = mask_folder + "/" + filestr + "_json/edge.png"
             yaml_path = mask_folder + "/" + filestr + "_json/info.yaml"
             if not os.path.exists(mask_path):
                 print("{} is incorrect".format(filestr))
@@ -126,7 +128,7 @@ class MirrorDataset(utils.Dataset):
             img = Image.open(mask_path)
             width, height = img.size
             self.add_image("Mirror", image_id=i, path=img_folder + "/" + imglist[i],
-                           width=width, height=height, mask_path=mask_path, yaml_path=yaml_path)
+                           width=width, height=height, mask_path=mask_path, edge_path=edge_path, yaml_path=yaml_path)
 
     def load_mask(self, image_id):
         global iter_num
@@ -148,6 +150,13 @@ class MirrorDataset(utils.Dataset):
                 labels_form.append("mirror")
         class_ids = np.array([self.class_names.index(s) for s in labels_form])
         return mask, class_ids.astype(np.int32)
+
+    def load_edge(self, image_id):
+        info = self.image_info[image_id]
+        edge = skimage.io.imread(info["edge_path"])
+
+        return edge
+
 
 
 

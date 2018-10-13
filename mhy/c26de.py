@@ -465,7 +465,7 @@ def detection_targets_graph(proposals, gt_class_ids, gt_boxes, gt_masks, gt_edge
             Class-specific bbox refinements.
     masks: [TRAIN_ROIS_PER_IMAGE, height, width). Masks cropped to bbox
            boundaries and resized to neural network output size.
-    edge: [height, width). Masks cropped to bbox
+    edge: [TRAIN_ROIS_PER_IMAGE, height, width). Masks cropped to bbox
            boundaries and resized to neural network output size.
 
     Note: Returned arrays might be zero padded if not enough target ROIs.
@@ -570,11 +570,10 @@ def detection_targets_graph(proposals, gt_class_ids, gt_boxes, gt_masks, gt_edge
 
     # Edge
     # [N, h, w, 1]
-    box_ids_for_edge = tf.zeros([tf.shape(roi_masks)[0]])
     gt_edge = tf.expand_dims(gt_edge, 0)
     gt_edge = tf.expand_dims(gt_edge, -1)
     edge = tf.image.crop_and_resize(tf.cast(gt_edge, tf.float32), boxes,
-                                    box_ids_for_edge,
+                                    box_ids,
                                     config.EDGE_SHAPE)
     # Remove the extra dimension from edge.
     edge = tf.squeeze(edge, axis=3)
@@ -617,6 +616,9 @@ class DetectionTargetLayer(KE.Layer):
     target_mask: [batch, TRAIN_ROIS_PER_IMAGE, height, width)
                  Masks cropped to bbox boundaries and resized to neural
                  network output size.
+    target_edge: [batch, TRAIN_ROIS_PER_IMAGE, height, width)
+                 Masks cropped to bbox boundaries and resized to neural
+                 network output size.
 
     Note: Returned arrays might be zero padded if not enough target ROIs.
     """
@@ -654,7 +656,7 @@ class DetectionTargetLayer(KE.Layer):
         ]
 
     def compute_mask(self, inputs, mask=None):
-        return [None, None, None, None]
+        return [None, None, None, None, None]
 
 
 ############################################################
@@ -1041,6 +1043,7 @@ def build_fpn_edge_graph(rois, feature_maps, image_meta,
     train_bn: Boolean. Train or freeze Batch Norm layers
 
     Returns: Masks [batch, roi_count, height, width, num_classes]
+             Edge [batch, roi_count, height, width, 1]
     """
     # Mask branch written by TaylorMei
     # ROI Pooling
@@ -1348,10 +1351,12 @@ def load_image_gt(dataset, config, image_id, augment=False, augmentation=None,
     mask: [height, width, instance_count]. The height and width are those
         of the image unless use_mini_mask is True, in which case they are
         defined in MINI_MASK_SHAPE.
+    edge: [height, width]
     """
     # Load image and mask
     image = dataset.load_image(image_id)
     mask, class_ids = dataset.load_mask(image_id)
+    edge = dataset.load_edge(image_id)
     original_shape = image.shape
     image, window, scale, padding, crop = utils.resize_image(
         image,
@@ -1360,6 +1365,7 @@ def load_image_gt(dataset, config, image_id, augment=False, augmentation=None,
         max_dim=config.IMAGE_MAX_DIM,
         mode=config.IMAGE_RESIZE_MODE)
     mask = utils.resize_mask(mask, scale, padding, crop)
+    edge = utils.resize_mask(edge, scale, padding, crop)
 
     # Random horizontal flips.
     # TODO: will be removed in a future update in favor of augmentation
@@ -1409,19 +1415,6 @@ def load_image_gt(dataset, config, image_id, augment=False, augmentation=None,
     # if the corresponding mask got cropped out.
     # bbox: [num_instances, (y1, x1, y2, x2)]
     bbox = utils.extract_bboxes(mask)
-
-    # Compute edge according to mask
-    # [height, width, instance_count]
-    shape = mask.shape
-    edge = np.zeros([shape[0], shape[1], shape[2]])
-    mask_for_compute_edge = np.pad(mask, [(1, 1), (1, 1), (0, 0)], mode="constant")
-    for y in range(shape[0]):
-        for x in range(shape[1]):
-            left = np.abs(mask_for_compute_edge[y + 1, x + 1, :] - mask_for_compute_edge[y + 1, x, :])
-            top = np.abs(mask_for_compute_edge[y + 1, x + 1, :] - mask_for_compute_edge[y, x + 1, :])
-            right = np.abs(mask_for_compute_edge[y + 1, x + 1, :] - mask_for_compute_edge[y + 1, x + 2, :])
-            bottom = np.abs(mask_for_compute_edge[y + 1, x + 1, :] - mask_for_compute_edge[y + 2, x + 1, :])
-            edge[y, x, :] = (left + top + right + bottom)/4
 
     # Active classes
     # Different datasets have different classes, so track the
@@ -1888,8 +1881,7 @@ def data_generator(dataset, config, shuffle=True, augment=False, augmentation=No
                     (batch_size, gt_masks.shape[0], gt_masks.shape[1],
                      config.MAX_GT_INSTANCES), dtype=gt_masks.dtype)
                 batch_gt_edge = np.zeros(
-                    (batch_size, gt_edge.shape[0], gt_edge.shape[1],
-                     config.MAX_GT_INSTANCES), dtype=gt_edge.dtype)
+                    (batch_size, gt_edge.shape[0], gt_edge.shape[1]), dtype=gt_edge.dtype)
                 if random_rois:
                     batch_rpn_rois = np.zeros(
                         (batch_size, rpn_rois.shape[0], 4), dtype=rpn_rois.dtype)
@@ -1910,7 +1902,7 @@ def data_generator(dataset, config, shuffle=True, augment=False, augmentation=No
                 gt_class_ids = gt_class_ids[ids]
                 gt_boxes = gt_boxes[ids]
                 gt_masks = gt_masks[:, :, ids]
-                gt_edge = gt_masks[:, :, ids]
+                gt_edge = gt_edge[:, :]
 
             # Add to batch
             batch_image_meta[b] = image_meta
@@ -1920,7 +1912,7 @@ def data_generator(dataset, config, shuffle=True, augment=False, augmentation=No
             batch_gt_class_ids[b, :gt_class_ids.shape[0]] = gt_class_ids
             batch_gt_boxes[b, :gt_boxes.shape[0]] = gt_boxes
             batch_gt_masks[b, :, :, :gt_masks.shape[-1]] = gt_masks
-            batch_gt_edge[b, :, :, :gt_masks.shape[-1]] = gt_edge
+            batch_gt_edge[b, :, :] = gt_edge
             if random_rois:
                 batch_rpn_rois[b] = rpn_rois
                 if detection_targets:
@@ -2173,7 +2165,7 @@ class C26DE(object):
             #                                   config.NUM_CLASSES, train_bn=config.TRAIN_BN)
 
             mrcnn_edge = build_fpn_edge_graph(rois, edge_feature_maps, input_image_meta, config.MASK_POOL_SIZE,
-                                              config.NUM_CLASSES, train_bn=config.TRAIN_BN)
+                                              train_bn=config.TRAIN_BN)
 
             # TODO: clean up (use tf.identify if necessary)
             output_rois = KL.Lambda(lambda x: x * 1, name="output_rois")(rois)
@@ -2190,7 +2182,7 @@ class C26DE(object):
             # mask_loss = KL.Lambda(lambda x: mrcnn_mask_loss_graph(*x), name="mrcnn_mask_loss")(
             #     [target_mask, target_class_ids, mrcnn_mask])
             edge_loss = KL.Lambda(lambda x: mrcnn_edge_loss_graph(*x), name="mrcnn_edge_loss")(
-                [target_mask, target_class_ids, mrcnn_edge])
+                [target_edge, target_class_ids, mrcnn_edge])
 
             # Model
             inputs = [input_image, input_image_meta,
