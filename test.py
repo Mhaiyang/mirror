@@ -8,15 +8,12 @@
   @Function: for test code
   
 """
-import tensorflow as tf
+import numpy as np
 
-# 两个矩阵相乘
-x = tf.constant([[[1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]], [[1.0, 2.0, 3.0], [1.0, 2.0, 3.0], [1.0, 2.0, 3.0]]])
-y = tf.constant([[[0, 0, 1.0], [0, 0, 1.0], [0, 0, 1.0]], [[0, 1.0, 0], [0, 1.0, 0], [0, 1.0, 0]]])
-# 注意这里这里x,y要有相同的数据类型，不然就会因为数据类型不匹配而出错
-z = tf.multiply(x, y)
+a = np.ones([3, 3])
+b = np.pad(a, [(1, 1), (0, 0)], mode="constant")
+print(b)
+print(a.shape[0])
 
-with tf.Session() as sess:
-    print(sess.run(x))
-    print(sess.run(y))
-    print(sess.run(z))
+
+
