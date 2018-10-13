@@ -12,13 +12,15 @@ import os
 import numpy as np
 import cv2
 
-DATA_DIR = "/home/taylor/mirror/augmentation/train"
+DATA_DIR = "/home/iccd/mirror/augmentation/train"
 IMAGE_DIR = os.path.join(DATA_DIR, "image")
 
 imglist = os.listdir(IMAGE_DIR)
 print("Total {} masks will be computed!".format(len(imglist)))
 
+i = 0
 for imgname in imglist:
+    i += 1
     img_path = IMAGE_DIR + "/" + imgname
     edge_path = DATA_DIR + "/mask/" + imgname[:-4] + "_json/edge.png"
 
@@ -31,11 +33,11 @@ for imgname in imglist:
     image_padded = np.pad(image, [(1, 1), (1, 1)], mode="edge")
     for y in range(height):
         for x in range(width):
-            left = np.abs(float(image_padded[y + 1, x + 1]) - float(image_padded[y + 1, x]))
-            top = np.abs(float(image_padded[y + 1, x + 1]) - float(image_padded[y, x + 1]))
-            right = np.abs(float(image_padded[y + 1, x + 1]) - float(image_padded[y + 1, x + 2]))
-            bottom = np.abs(float(image_padded[y + 1, x + 1]) - float(image_padded[y + 2, x + 1]))
+            left = abs(float(image_padded[y + 1, x + 1]) - float(image_padded[y + 1, x]))
+            top = abs(float(image_padded[y + 1, x + 1]) - float(image_padded[y, x + 1]))
+            right = abs(float(image_padded[y + 1, x + 1]) - float(image_padded[y + 1, x + 2]))
+            bottom = abs(float(image_padded[y + 1, x + 1]) - float(image_padded[y + 2, x + 1]))
             edge[y, x] = (left + top + right + bottom)/4
 
     cv2.imwrite(edge_path, edge)
-    print(edge_path)
+    print("{}  {}".format(i, edge_path))
