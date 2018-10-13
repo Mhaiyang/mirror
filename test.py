@@ -10,10 +10,9 @@
 """
 import numpy as np
 
-a = np.ones([3, 3])
-b = np.pad(a, [(1, 1), (0, 0)], mode="constant")
-print(b)
-print(a.shape[0])
+a = range(0, 1)
+
+print(a)
 
 
 

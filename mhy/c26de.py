@@ -455,6 +455,7 @@ def detection_targets_graph(proposals, gt_class_ids, gt_boxes, gt_masks, gt_edge
     gt_class_ids: [MAX_GT_INSTANCES] int class IDs
     gt_boxes: [MAX_GT_INSTANCES, (y1, x1, y2, x2)] in normalized coordinates.
     gt_masks: [height, width, MAX_GT_INSTANCES] of boolean type.
+    gt_edge: [height, width] of float32 type.
 
     Returns: Target ROIs and corresponding class IDs, bounding box shifts,
     and masks.
@@ -464,7 +465,7 @@ def detection_targets_graph(proposals, gt_class_ids, gt_boxes, gt_masks, gt_edge
             Class-specific bbox refinements.
     masks: [TRAIN_ROIS_PER_IMAGE, height, width). Masks cropped to bbox
            boundaries and resized to neural network output size.
-    masks: [TRAIN_ROIS_PER_IMAGE, height, width). Masks cropped to bbox
+    edge: [height, width). Masks cropped to bbox
            boundaries and resized to neural network output size.
 
     Note: Returned arrays might be zero padded if not enough target ROIs.
@@ -484,8 +485,6 @@ def detection_targets_graph(proposals, gt_class_ids, gt_boxes, gt_masks, gt_edge
                                    name="trim_gt_class_ids")
     gt_masks = tf.gather(gt_masks, tf.where(non_zeros)[:, 0], axis=2,
                          name="trim_gt_masks")
-    gt_edge = tf.gather(gt_edge, tf.where(non_zeros)[:, 0], axis=2,
-                         name="trim_gt_edge")
 
     # Handle COCO crowds
     # A crowd box in COCO is a bounding box around several instances. Exclude
@@ -494,11 +493,9 @@ def detection_targets_graph(proposals, gt_class_ids, gt_boxes, gt_masks, gt_edge
     non_crowd_ix = tf.where(gt_class_ids > 0)[:, 0]
     crowd_boxes = tf.gather(gt_boxes, crowd_ix)
     crowd_masks = tf.gather(gt_masks, crowd_ix, axis=2)
-    crowd_edge = tf.gather(gt_edge, crowd_ix, axis=2)
     gt_class_ids = tf.gather(gt_class_ids, non_crowd_ix)
     gt_boxes = tf.gather(gt_boxes, non_crowd_ix)
     gt_masks = tf.gather(gt_masks, non_crowd_ix, axis=2)
-    gt_edge = tf.gather(gt_edge, non_crowd_ix, axis=2)
 
     # Compute overlaps matrix [proposals, gt_boxes]
     overlaps = overlaps_graph(proposals, gt_boxes)
@@ -546,12 +543,6 @@ def detection_targets_graph(proposals, gt_class_ids, gt_boxes, gt_masks, gt_edge
     # Pick the right mask for each ROI
     roi_masks = tf.gather(transposed_masks, roi_gt_box_assignment)
 
-    # Assign positive ROIs to GT edge
-    # Permute edge to [N, height, width, 1]
-    transposed_edge = tf.expand_dims(tf.transpose(gt_edge, [2, 0, 1]), -1)
-    # Pick the right mask for each ROI
-    roi_edge = tf.gather(transposed_edge, roi_gt_box_assignment)
-
     # Compute mask targets
     boxes = positive_rois
     if config.USE_MINI_MASK:
@@ -578,8 +569,12 @@ def detection_targets_graph(proposals, gt_class_ids, gt_boxes, gt_masks, gt_edge
     masks = tf.round(masks)
 
     # Edge
-    edge = tf.image.crop_and_resize(tf.cast(roi_edge, tf.float32), boxes,
-                                    box_ids,
+    # [N, h, w, 1]
+    box_ids_for_edge = tf.zeros([tf.shape(roi_masks)[0]])
+    gt_edge = tf.expand_dims(gt_edge, 0)
+    gt_edge = tf.expand_dims(gt_edge, -1)
+    edge = tf.image.crop_and_resize(tf.cast(gt_edge, tf.float32), boxes,
+                                    box_ids_for_edge,
                                     config.EDGE_SHAPE)
     # Remove the extra dimension from edge.
     edge = tf.squeeze(edge, axis=3)
@@ -1033,7 +1028,7 @@ def build_fpn_mask_graph(rois, feature_maps, image_meta,
 
 # Written by TaylorMei
 def build_fpn_edge_graph(rois, feature_maps, image_meta,
-                         pool_size, num_classes, train_bn=True):
+                         pool_size, train_bn=True):
     """Builds the computation graph of the edge head of Feature Pyramid Network.
 
     rois: [batch, num_rois, (y1, x1, y2, x2)] Proposal boxes in normalized
@@ -1105,8 +1100,8 @@ def build_fpn_edge_graph(rois, feature_maps, image_meta,
     x = KL.TimeDistributed(KL.Conv2D(256, (3, 3), padding="same", activation="relu"),
                            name="decoder_edge_n2conv")(x)
     # final mask
-    x = KL.TimeDistributed(KL.Conv2D(num_classes, (3, 3), padding="same", activation="sigmoid"),
-                           name="decoder_edge_32x32x2")(x)
+    x = KL.TimeDistributed(KL.Conv2D(1, (3, 3), padding="same", activation="sigmoid"),
+                           name="decoder_edge_32x32x1")(x)
 
     return x
 
@@ -1293,7 +1288,7 @@ def mrcnn_edge_loss_graph(target_edge, target_class_ids, pred_edge):
     target_edge: [batch, num_rois, height, width].
         A float32 tensor with values from 0 or 1. Uses zero padding to fill array.
     target_class_ids: [batch, num_rois]. Integer class IDs. Zero padded.
-    pred_edge: [batch, proposals, height, width, num_classes] float32 tensor
+    pred_edge: [batch, proposals, height, width, 1] float32 tensor
                 with values from 0 to 1.
     """
     # Reshape for simplicity. Merge first two dimensions into one.
@@ -1303,7 +1298,7 @@ def mrcnn_edge_loss_graph(target_edge, target_class_ids, pred_edge):
     target_edge = K.reshape(target_edge, (-1, edge_shape[2], edge_shape[3]))
     pred_shape = tf.shape(pred_edge)
     pred_edge = K.reshape(pred_edge, (-1, pred_shape[2], pred_shape[3], pred_shape[4]))
-    # Permute predicted masks to [N, num_classes, height, width]
+    # Permute predicted masks to [N, 1, height, width]
     pred_edge = tf.transpose(pred_edge, [0, 3, 1, 2])
 
     # Only positive ROIs contribute to the loss. And only
@@ -1311,7 +1306,7 @@ def mrcnn_edge_loss_graph(target_edge, target_class_ids, pred_edge):
     positive_ix = tf.where(target_class_ids > 0)[:, 0]
     positive_class_ids = tf.cast(
         tf.gather(target_class_ids, positive_ix), tf.int64)
-    indices = tf.stack([positive_ix, positive_class_ids], axis=1)
+    indices = tf.stack([positive_ix, positive_class_ids - 1], axis=1)
 
     # Gather the masks (predicted and true) that contribute to loss
     y_true = tf.gather(target_edge, positive_ix)
@@ -2040,7 +2035,7 @@ class C26DE(object):
                     shape=[config.IMAGE_SHAPE[0], config.IMAGE_SHAPE[1], None],
                     name="input_gt_masks", dtype=bool)
             # 4. GT Edge (zero padded)
-            input_gt_edge = KL.Input(shape=[config.IMAGE_SHAPE[0], config.IMAGE_SHAPE[1], None],
+            input_gt_edge = KL.Input(shape=[config.IMAGE_SHAPE[0], config.IMAGE_SHAPE[1]],
                                      name="input_gt_edge", dtype=tf.float32)
 
         elif mode == "inference":
