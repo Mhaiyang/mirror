@@ -519,6 +519,28 @@ def resize_mask(mask, scale, padding, crop=None):
     return mask
 
 
+def resize_edge(edge, scale, padding, crop=None):
+    """Resizes a mask using the given scale and padding.
+    Typically, you get the scale and padding from resize_image() to
+    ensure both, the image and the mask, are resized consistently.
+
+    scale: mask scaling factor
+    padding: Padding to add to the mask in the form
+            [(top, bottom), (left, right), (0, 0)]
+    """
+    # Suppress warning from scipy 0.13.0, the output shape of zoom() is
+    # calculated with round() instead of int()
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        edge = scipy.ndimage.zoom(edge, zoom=[scale, scale], order=0)
+    if crop is not None:
+        y, x, h, w = crop
+        edge = edge[y:y + h, x:x + w]
+    else:
+        edge = np.pad(edge, padding[:2], mode='constant', constant_values=0)
+    return edge
+
+
 def minimize_mask(bbox, mask, mini_shape):
     """Resize masks to a smaller version to reduce memory load.
     Mini-masks can be resized back to image scale using expand_masks()

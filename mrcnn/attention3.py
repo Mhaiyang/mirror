@@ -425,7 +425,7 @@ class PyramidROIAlign_classify(KE.Layer):
         # feature pyramid. Each is [batch, height, width, channels]
         feature_maps = inputs[2:]
 
-        roi_level = tf.ones([tf.shape(boxes)[0], tf.shape(boxes)[1]])
+        roi_level = tf.ones([K.int_shape(boxes)[0], K.int_shape(boxes)[1]])
         ix = tf.where(tf.equal(roi_level, 1))
         level_boxes = tf.gather_nd(boxes, ix)
         box_indices = tf.cast(ix[:, 0], tf.int32)

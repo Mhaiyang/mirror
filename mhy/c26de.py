@@ -572,8 +572,11 @@ def detection_targets_graph(proposals, gt_class_ids, gt_boxes, gt_masks, gt_edge
     # [N, h, w, 1]
     gt_edge = tf.expand_dims(gt_edge, 0)
     gt_edge = tf.expand_dims(gt_edge, -1)
+    edge_indices = tf.zeros([tf.shape(boxes)[0]], dtype=tf.int32)
+    # edge_shape = [1, 1, 1, tf.shape(roi_masks)[0]]
+    # gt_edge = tf.tile(gt_edge, edge_shape)
     edge = tf.image.crop_and_resize(tf.cast(gt_edge, tf.float32), boxes,
-                                    box_ids,
+                                    edge_indices,
                                     config.EDGE_SHAPE)
     # Remove the extra dimension from edge.
     edge = tf.squeeze(edge, axis=3)
@@ -1365,7 +1368,7 @@ def load_image_gt(dataset, config, image_id, augment=False, augmentation=None,
         max_dim=config.IMAGE_MAX_DIM,
         mode=config.IMAGE_RESIZE_MODE)
     mask = utils.resize_mask(mask, scale, padding, crop)
-    edge = utils.resize_mask(edge, scale, padding, crop)
+    edge = utils.resize_edge(edge, scale, padding, crop)
 
     # Random horizontal flips.
     # TODO: will be removed in a future update in favor of augmentation
