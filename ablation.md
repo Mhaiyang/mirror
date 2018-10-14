@@ -17,6 +17,8 @@ Baseline: mod, mask rcnn only detection
 
 实验四：context-n2-n6 + decoder_edge  **c26de** 在损失函数中，只有识别为镜子的roi的edge才有损失.
 
+实验五：context-n2-n6 + decoder_mask + decoder_edge  **c26dmde**
+
 # 实验结果
 ### c25
 mean_mAP_box_50      0.9283945615197569
