@@ -12,7 +12,7 @@ import os
 import numpy as np
 import cv2
 
-DATA_DIR = "/home/taylor/mirror/augmentation/train"
+DATA_DIR = "/home/taylor/mirror/augmentation/val"
 IMAGE_DIR = os.path.join(DATA_DIR, "image")
 
 imglist = os.listdir(IMAGE_DIR)
