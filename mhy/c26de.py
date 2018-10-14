@@ -2213,8 +2213,8 @@ class C26DE(object):
             # Create masks for detections
             detection_boxes = KL.Lambda(lambda x: x[..., :4])(detections)
 
-            mrcnn_edge = build_fpn_mask_graph(detection_boxes, edge_feature_maps, input_image_meta,
-                                              config.MASK_POOL_SIZE, config.NUM_CLASSES, train_bn=config.TRAIN_BN)
+            mrcnn_edge = build_fpn_edge_graph(detection_boxes, edge_feature_maps, input_image_meta,
+                                              config.MASK_POOL_SIZE, train_bn=config.TRAIN_BN)
 
             model = KM.Model([input_image, input_image_meta, input_anchors],
                              [detections, mrcnn_class, mrcnn_bbox,
