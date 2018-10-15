@@ -11,15 +11,15 @@ import mhy.visualize as visualize
 import evaluate
 from mirror import MirrorConfig
 # Important, need change when test different models.
-import mhy.c26dm as modellib
+import mhy.c26de as modellib
 
 # Directories of the project
 ROOT_DIR = os.getcwd()
-MODEL_DIR = os.path.join(ROOT_DIR, "log_123", "c26dm")
-MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mirror_c26dm_all.h5")
+MODEL_DIR = os.path.join(ROOT_DIR, "log_123", "c26de")
+MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mirror_c26de_all.h5")
 IMAGE_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "image")
 MASK_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "mask")
-OUTPUT_PATH = os.path.join(ROOT_DIR, 'augmentation', 'test', "output_c26dm")
+OUTPUT_PATH = os.path.join(ROOT_DIR, 'augmentation', 'test', "output_c26de")
 if not os.path.exists(OUTPUT_PATH):
     os.mkdir(OUTPUT_PATH)
 
@@ -49,7 +49,7 @@ config = InferenceConfig()
 config.display()
 
 # ## Create Model and Load Trained Weights
-model = modellib.C26DM(mode="inference", config=config, model_dir=MODEL_DIR)
+model = modellib.C26DE(mode="inference", config=config, model_dir=MODEL_DIR)
 # ## Load weights
 model.load_weights(MIRROR_MODEL_PATH, by_name=True)
 # For fusion_context_guided_decoder.py  p1.py  path_full.py  post_relu.py
