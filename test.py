@@ -8,13 +8,17 @@
   @Function: for test code
   
 """
-import tensorflow as tf
+# import tensorflow as tf
+#
+# a = tf.ones([2,2])
+# b = tf.where(tf.equal(a, 1))
+#
+# with tf.Session() as sess:
+#     print(sess.run(b))
+#     print(sess.run(b[:,0]))
 
-a = tf.ones([2,2])
-b = tf.where(tf.equal(a, 1))
+import numpy as np
 
-with tf.Session() as sess:
-    print(sess.run(b))
-    print(sess.run(b[:,0]))
-
+a = np.empty((2, 2) + (0,))
+print((2, 2) + (0,))
 

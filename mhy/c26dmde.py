@@ -2568,7 +2568,7 @@ class C26DMDE(object):
         windows = np.stack(windows)
         return molded_images, image_metas, windows
 
-    def unmold_detections(self, detections, mrcnn_mask, original_image_shape,
+    def unmold_detections(self, detections, mrcnn_mask, mrcnn_edge, original_image_shape,
                           image_shape, window):
         """Reformats the detections of one image from the format of the neural
         network output to a format suitable for use in the rest of the
@@ -2576,6 +2576,7 @@ class C26DMDE(object):
 
         detections: [N, (y1, x1, y2, x2, class_id, score)] in normalized coordinates
         mrcnn_mask: [N, height, width, num_classes]
+        mrcnn_edge: [N, height, width, 1]
         original_image_shape: [H, W, C] Original image shape before resizing
         image_shape: [H, W, C] Shape of the image after resizing and padding
         window: [y1, x1, y2, x2] Pixel coordinates of box in the image where the real
@@ -2597,6 +2598,7 @@ class C26DMDE(object):
         class_ids = detections[:N, 4].astype(np.int32)
         scores = detections[:N, 5]
         masks = mrcnn_mask[np.arange(N), :, :, class_ids]
+        edge = mrcnn_edge[np.arange(N), :, :, 0]
 
         # Translate normalized coordinates in the resized image to pixel
         # coordinates in the original image before resizing
@@ -2620,6 +2622,7 @@ class C26DMDE(object):
             class_ids = np.delete(class_ids, exclude_ix, axis=0)
             scores = np.delete(scores, exclude_ix, axis=0)
             masks = np.delete(masks, exclude_ix, axis=0)
+            edge = np.delete(edge, exclude_ix, axis=0)
             N = class_ids.shape[0]
 
         # Resize masks to original image size and set boundary threshold.
@@ -2631,7 +2634,15 @@ class C26DMDE(object):
         full_masks = np.stack(full_masks, axis=-1) \
             if full_masks else np.empty(masks.shape[1:3] + (0,))
 
-        return boxes, class_ids, scores, full_masks
+        # Resize edge to original image size.
+        full_edges = []
+        for i in range(N):
+            full_edge = utils.unmold_edge(edge[i], boxes[i], original_image_shape)
+            full_edges.append(full_edge)
+        full_edges = np.stack(full_edges, axis=-1) \
+            if full_edges else np.empty(edge.shape[1:3] + (0,))
+
+        return boxes, class_ids, scores, full_masks, full_edges
 
     def detect(self, imgname, images, verbose=0):
         """Runs the detection pipeline.
@@ -2676,13 +2687,13 @@ class C26DMDE(object):
             log("image_metas", image_metas)
             log("anchors", anchors)
         # Run object detection
-        detections, _, _, mrcnn_mask, _, _, _ = \
+        detections, _, _, mrcnn_mask, mrcnn_edge, _, _, _ = \
             self.keras_model.predict([molded_images, image_metas, anchors], verbose=0)
         # Process detections
         results = []
         for i, image in enumerate(images):
-            final_rois, final_class_ids, final_scores, final_masks = \
-                self.unmold_detections(detections[i], mrcnn_mask[i],
+            final_rois, final_class_ids, final_scores, final_masks, final_edges = \
+                self.unmold_detections(detections[i], mrcnn_mask[i], mrcnn_edge[i],
                                        image.shape, molded_images[i].shape,
                                        windows[i])
             results.append({
@@ -2690,6 +2701,7 @@ class C26DMDE(object):
                 "class_ids": final_class_ids,
                 "scores": final_scores,
                 "masks": final_masks,
+                "edges": final_edges,
             })
         return results
 

@@ -6,20 +6,21 @@
 """
 import os
 import skimage.io
+import numpy as np
 import mhy.utils as utils
 import mhy.visualize as visualize
 import evaluate
 from mirror import MirrorConfig
 # Important, need change when test different models.
-import mhy.c26de as modellib
+import mhy.c26dmde as modellib
 
 # Directories of the project
 ROOT_DIR = os.getcwd()
-MODEL_DIR = os.path.join(ROOT_DIR, "log_123", "c26de")
-MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mirror_c26de_all.h5")
+MODEL_DIR = os.path.join(ROOT_DIR, "log_123", "c26dmde")
+MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mirror_c26dmde_all.h5")
 IMAGE_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "image")
 MASK_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "mask")
-OUTPUT_PATH = os.path.join(ROOT_DIR, 'augmentation', 'test', "output_c26de")
+OUTPUT_PATH = os.path.join(ROOT_DIR, 'augmentation', 'test', "output_c26dmde")
 if not os.path.exists(OUTPUT_PATH):
     os.mkdir(OUTPUT_PATH)
 
@@ -49,7 +50,7 @@ config = InferenceConfig()
 config.display()
 
 # ## Create Model and Load Trained Weights
-model = modellib.C26DE(mode="inference", config=config, model_dir=MODEL_DIR)
+model = modellib.C26DMDE(mode="inference", config=config, model_dir=MODEL_DIR)
 # ## Load weights
 model.load_weights(MIRROR_MODEL_PATH, by_name=True)
 # For fusion_context_guided_decoder.py  p1.py  path_full.py  post_relu.py
@@ -123,6 +124,7 @@ for imgname in imglist:
     r = results[0]
     visualize.display_instances_and_save_image(imgname, image, r['rois'], r['masks'], r['class_ids'],
                                 class_names, False, OUTPUT_PATH, r['scores'])
+    skimage.io.imsave(os.path.join(OUTPUT_PATH, str(imgname[:-4] ) + "_c26dmde.jpg"), 255*r['edges'].astype(np.uint8))
 
     ###########################################################################
     ################  Quantitative Evaluation for Single Image ################
