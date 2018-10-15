@@ -123,8 +123,10 @@ for imgname in imglist:
     # and each call detect function only feed one image, r =results[0]
     r = results[0]
     visualize.display_instances_and_save_image(imgname, image, r['rois'], r['masks'], r['class_ids'],
-                                class_names, False, OUTPUT_PATH, r['scores'])
-    skimage.io.imsave(os.path.join(OUTPUT_PATH, str(imgname[:-4] ) + "_c26dmde.jpg"), 255*r['edges'].astype(np.uint8))
+                                class_names, True, OUTPUT_PATH, r['scores'])
+    for j in range(r['edges'].shape[2]):
+        skimage.io.imsave(os.path.join(OUTPUT_PATH, str(imgname[:-4] ) + "_c26dmde" + str(j) + ".jpg"),
+                          255*r['edges'][:, :, j])
 
     ###########################################################################
     ################  Quantitative Evaluation for Single Image ################

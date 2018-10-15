@@ -2587,6 +2587,7 @@ class C26DMDE(object):
         class_ids: [N] Integer class IDs for each bounding box
         scores: [N] Float probability scores of the class_id
         masks: [height, width, num_instances] Instance masks
+        edges: [height, width, num_instances] Instance edges
         """
         # How many detections do we have?
         # Detections array is padded with zeros. Find the first class_id == 0.
@@ -2654,6 +2655,7 @@ class C26DMDE(object):
         class_ids: [N] int class IDs
         scores: [N] float probability scores for the class IDs
         masks: [H, W, N] instance binary masks
+        edges: [H, W, N] instance edges
         """
         assert self.mode == "inference", "Create model in inference mode."
         assert len(

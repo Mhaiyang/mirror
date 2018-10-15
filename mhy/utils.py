@@ -611,14 +611,14 @@ def unmold_edge(edge, bbox, image_shape):
 
     Returns an edge with the same size as the original image.
     """
-    y1, x1, y2, x2 = bbox
-    edge = skimage.transform.resize(edge, (y2 - y1, x2 - x1), order=1, mode="constant")
-    edge = edge.astype(np.float32)
+    # y1, x1, y2, x2 = bbox
+    # edge = skimage.transform.resize(edge, (y2 - y1, x2 - x1), order=1, mode="constant")
+    edge = edge.astype(np.uint8)
 
     # Put the mask in the right location.
-    full_edge = np.zeros(image_shape[:2], dtype=np.float32)
-    full_edge[y1:y2, x1:x2] = edge
-    return full_edge
+    # full_edge = np.zeros(image_shape[:2], dtype=np.uint8)
+    # full_edge[y1:y2, x1:x2] = edge
+    return edge
 
 
 ############################################################

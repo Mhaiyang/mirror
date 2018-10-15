@@ -47,3 +47,18 @@ mean_mAP_mask_75     0.8498109130360899
 mean_mAP_mask_85     0.7408607959795617 
 
 mean_mAP_range_mask  0.7828245993307326
+
+### c26dmde
+mean_mAP_box_50      0.9638183564699042
+ 
+mean_mAP_box_75      0.8939574704489236 
+
+mean_mAP_box_85      0.7607149288753293 
+
+mean_mAP_mask_50     0.9530336455036644 
+
+mean_mAP_mask_75     0.8277837805601578 
+
+mean_mAP_mask_85     0.6785971547018916 
+
+mean_mAP_range_mask  0.7495774056255334
