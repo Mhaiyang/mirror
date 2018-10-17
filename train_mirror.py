@@ -13,8 +13,8 @@ import mirror
 # Need modify:
 import mhy.dual as modellib
 
-os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+# os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+# os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 # Root directory of the project
 ROOT_DIR = os.getcwd()

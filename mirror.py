@@ -18,7 +18,7 @@ class MirrorConfig(Config):
 
     # Train on 1 GPU and 8 images per GPU. We can put multiple images on each
     # GPU because the images are small. Batch size is 8 (GPUs * images/GPU).
-    GPU_COUNT = 1
+    GPU_COUNT = 2
     IMAGES_PER_GPU = 2
 
     # Number of classes (including background)
@@ -66,12 +66,12 @@ class MirrorConfig(Config):
     DETECTION_MAX_INSTANCES = 60
 
     # Use a small epoch since the data is simple
-    # STEPS_PER_EPOCH = 2599
-    STEPS_PER_EPOCH = 5198
+    STEPS_PER_EPOCH = 2599
+    # STEPS_PER_EPOCH = 5198
 
     # use small validation steps since the epoch is small
-    # VALIDATION_STEPS = 186
-    VALIDATION_STEPS = 371
+    VALIDATION_STEPS = 186
+    # VALIDATION_STEPS = 371
 
     # skip detection with <x% confidence
     DETECTION_MIN_CONFIDENCE = 0.7
