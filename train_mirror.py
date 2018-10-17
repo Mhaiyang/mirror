@@ -11,16 +11,16 @@
 import os
 import mirror
 # Need modify:
-import mhy.c26dmde as modellib
+import mhy.dual as modellib
 
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"] = "1"
+os.environ["CUDA_VISIBLE_DEVICES"] = "0"
 
 # Root directory of the project
 ROOT_DIR = os.getcwd()
 
 # Directory to save logs and trained model
-MODEL_DIR = os.path.join(ROOT_DIR, "log_123", "c26dmde")
+MODEL_DIR = os.path.join(ROOT_DIR, "log_123", "dual")
 
 # Local path to trained weights file
 COCO_MODEL_PATH = os.path.join(ROOT_DIR, "mask_rcnn_coco.h5")
@@ -62,7 +62,7 @@ dataset_val.prepare("validation")
 #     visualize.display_top_masks(image, mask, class_ids, dataset_train.class_names)
 
 ### Create Model  ###
-model = modellib.C26DMDE(mode="training", config=config, model_dir=MODEL_DIR)
+model = modellib.DUAL(mode="training", config=config, model_dir=MODEL_DIR)
 
 # Which weights to start with?
 init_with = "coco"  # imagenet, coco, or last
@@ -87,7 +87,7 @@ model.train(dataset_train, dataset_val,
             learning_rate=config.LEARNING_RATE,
             epochs=15,
             layers='heads')
-model_path = os.path.join(MODEL_DIR, "mirror_c26dmde_heads.h5")
+model_path = os.path.join(MODEL_DIR, "mirror_dual_heads.h5")
 model.keras_model.save_weights(model_path)
 
 # 2. Fine tune all layers
@@ -95,5 +95,5 @@ model.train(dataset_train, dataset_val,
             learning_rate=config.LEARNING_RATE / 10,
             epochs=20,
             layers="all", save_model_each_epoch=False)
-model_path = os.path.join(MODEL_DIR, "mirror_c26dmde_all.h5")
+model_path = os.path.join(MODEL_DIR, "mirror_dual_all.h5")
 model.keras_model.save_weights(model_path)
