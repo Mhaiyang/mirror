@@ -55,13 +55,9 @@ class MirrorConfig(Config):
     # For One, Two, Three, and their combination. National Day.
     # EDGE_SHAPE : [h, w]
     CLASSIFY_POOL_SIZE = 7
-    MASK_POOL_SIZE = [32, 16, 8, 4]
-    MASK_SHAPE = [32, 32]
-    EDGE_SHAPE = [32, 32]
-
-    # For p1.py
-    # MASK_POOL_SIZE = [64, 32, 16, 8, 4]
-    # MASK_SHAPE = [64, 64]
+    MASK_POOL_SIZE = [64, 32, 16, 8]
+    MASK_SHAPE = [64, 64]
+    # EDGE_SHAPE = [32, 32]
 
     # Reduce training ROIs per image because the images are small and have
     # few objects. Aim to allow ROI sampling to pick 33% positive ROIs.

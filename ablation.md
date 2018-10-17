@@ -17,7 +17,9 @@ Baseline: mod, mask rcnn only detection
 
 实验四：context-n2-n6 + decoder_edge  **c26de** 在损失函数中，只有识别为镜子的roi的edge才有损失.
 
-实验五：context-n2-n6 + decoder_mask + decoder_edge  **c26dmde**
+实验五：context-n2-n6 + decoder_mask + decoder_edge  **c26dmde** 虽然ap50比较高，但是是因为预测了好多框。加了edge分之反而降低了。
+
+实验六：dual path segmentation  **dual**
 
 # 实验结果
 ### c25
