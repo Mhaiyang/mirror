@@ -12,15 +12,15 @@ import mhy.visualize as visualize
 import evaluate
 from mirror import MirrorConfig
 # Important, need change when test different models.
-import mhy.c26dmde as modellib
+import mhy.dual as modellib
 
 # Directories of the project
 ROOT_DIR = os.getcwd()
-MODEL_DIR = os.path.join(ROOT_DIR, "log_123", "c26dmde")
-MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mirror_c26dmde_all.h5")
+MODEL_DIR = os.path.join(ROOT_DIR, "log_123", "dual")
+MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mirror_0020.h5")
 IMAGE_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "image")
 MASK_DIR = os.path.join(ROOT_DIR, "augmentation", "test", "mask")
-OUTPUT_PATH = os.path.join(ROOT_DIR, 'augmentation', 'test', "output_c26dmde")
+OUTPUT_PATH = os.path.join(ROOT_DIR, 'augmentation', 'test', "output_dual")
 if not os.path.exists(OUTPUT_PATH):
     os.mkdir(OUTPUT_PATH)
 
@@ -50,7 +50,7 @@ config = InferenceConfig()
 config.display()
 
 # ## Create Model and Load Trained Weights
-model = modellib.C26DMDE(mode="inference", config=config, model_dir=MODEL_DIR)
+model = modellib.DUAL(mode="inference", config=config, model_dir=MODEL_DIR)
 # ## Load weights
 model.load_weights(MIRROR_MODEL_PATH, by_name=True)
 # For fusion_context_guided_decoder.py  p1.py  path_full.py  post_relu.py
@@ -124,9 +124,9 @@ for imgname in imglist:
     r = results[0]
     visualize.display_instances_and_save_image(imgname, image, r['rois'], r['masks'], r['class_ids'],
                                 class_names, True, OUTPUT_PATH, r['scores'])
-    for j in range(r['edges'].shape[2]):
-        skimage.io.imsave(os.path.join(OUTPUT_PATH, str(imgname[:-4] ) + "_c26dmde" + str(j) + ".jpg"),
-                          255*r['edges'][:, :, j])
+    # for j in range(r['edges'].shape[2]):
+        # skimage.io.imsave(os.path.join(OUTPUT_PATH, str(imgname[:-4] ) + "_c26dmde" + str(j) + ".jpg"),
+        #                   255*r['edges'][:, :, j])
 
     ###########################################################################
     ################  Quantitative Evaluation for Single Image ################

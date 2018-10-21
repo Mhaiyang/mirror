@@ -1024,9 +1024,9 @@ def build_fpn_mask_graph(rois, feature_maps, image_meta,
     b = KL.Multiply()([b, n5_up])
     high = KL.Add()([b, n5_up])
 
-    # Concat Low and High anc conv to 64
+    # Concat Low and High anc conv to 128
     x = KL.Lambda(lambda z: K.concatenate(z, axis=4), name="decoder_concat")([low, high])
-    x = KL.TimeDistributed(KL.Conv2D(64, (3, 3), padding="same", activation="relu"),
+    x = KL.TimeDistributed(KL.Conv2D(128, (3, 3), padding="same", activation="relu"),
                            name="decoder_mask_64x64x128")(x)
 
     # final mask
