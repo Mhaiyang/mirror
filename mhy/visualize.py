@@ -13,6 +13,7 @@ import itertools
 import colorsys
 
 import skimage
+import skimage.io
 import numpy as np
 from skimage.measure import find_contours
 import matplotlib.pyplot as plt
@@ -69,15 +70,15 @@ def random_colors(N, bright=True):
     return colors
 
 
-def apply_mask(image, mask, color, alpha=0.5):
-    """Apply the given mask to the image.
-    """
-    for c in range(3):
-        image[:, :, c] = np.where(mask == 1,
-                                  image[:, :, c] *
-                                  (1 - alpha) + alpha * color[c] * 255,
-                                  image[:, :, c])
-    return image
+# def apply_mask(image, mask, color, alpha=0.5):
+#     """Apply the given mask to the image.
+#     """
+#     for c in range(3):
+#         image[:, :, c] = np.where(mask == 1,
+#                                   image[:, :, c] *
+#                                   (1 - alpha) + alpha * color[c] * 255,
+#                                   image[:, :, c])
+#     return image
 
 
 def display_instances_and_save_image(imgname, image, boxes, masks, class_ids, class_names,
@@ -170,6 +171,36 @@ def display_instances_and_save_image(imgname, image, boxes, masks, class_ids, cl
             plt.savefig(os.path.join(OUTPUT_PATH, str(imgname[:-4]) + "_c26dmde.jpg"), bbox_inches='tight')
         # plt.show()
         plt.close()
+
+
+def apply_mask(image, mask, color, alpha=0.5):
+    """Apply the given mask to the image.
+    """
+    for c in range(3):
+        image[:, :, c] = np.where(mask == 1,
+                                  (image[:, :, c] * (1 - alpha) + alpha * color[c]),
+                                  image[:, :, c])
+    return image
+
+
+def save_mask_and_masked_image(imgname, image, mask, OUTPUT_PATH=None):
+    """
+    Written by Taylor Mei.
+    """
+    # assert image.shape[:2] == mask.shape[1:3]
+
+    # Generate random colors
+    color = [255.0, 0.0, 0.0]
+
+    masked_image = image.astype(np.float32).copy()
+
+    masked_image = apply_mask(masked_image, mask, color, alpha=0.5)
+
+    # Save mask
+    skimage.io.imsave(os.path.join(OUTPUT_PATH, imgname[:-4]+"_mask.jpg"), 255 * mask.astype(np.uint8))
+
+    # Save masked image
+    skimage.io.imsave(os.path.join(OUTPUT_PATH, imgname[:-4]+"_masked.jpg"), masked_image.astype(np.uint8))
 
 
 def display_differences(image,

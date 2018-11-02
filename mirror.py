@@ -18,8 +18,8 @@ class MirrorConfig(Config):
 
     # Train on 1 GPU and 8 images per GPU. We can put multiple images on each
     # GPU because the images are small. Batch size is 8 (GPUs * images/GPU).
-    GPU_COUNT = 2
-    IMAGES_PER_GPU = 2
+    GPU_COUNT = 1
+    IMAGES_PER_GPU = 1
 
     # Number of classes (including background)
     NUM_CLASSES = 1 + 1  # background + 1 mirror
@@ -38,14 +38,14 @@ class MirrorConfig(Config):
     MINI_MASK_SHAPE = (56, 56)
 
     # For the version before mid-autumn festival.
-    # CLASSIFY_POOL_SIZE = 7
+    CLASSIFY_POOL_SIZE = 7
 
     # For three individual version, Mod and Ad.
     # CLASSIFY_POOL_SIZE = [28, 14, 14, 7, 7]
 
     # For model.py, fusion.py
-    # MASK_POOL_SIZE = 14
-    # MASK_SHAPE = [28, 28]
+    MASK_POOL_SIZE = 14
+    MASK_SHAPE = [28, 28]
 
     # For decoder.py, fusion_decoder.py, fusion_context_guided_decoder.py, path_full.py, post_relu.py,
     # attention.py, attention2.py, attention3.py, and maybe three individual version. and Ad.
@@ -54,9 +54,9 @@ class MirrorConfig(Config):
 
     # For One, Two, Three, and their combination. National Day.
     # EDGE_SHAPE : [h, w]
-    CLASSIFY_POOL_SIZE = 7
-    MASK_POOL_SIZE = [32, 16, 8, 4]
-    MASK_SHAPE = [32, 32]
+    # CLASSIFY_POOL_SIZE = 7
+    # MASK_POOL_SIZE = [32, 16, 8, 4]
+    # MASK_SHAPE = [32, 32]
     # EDGE_SHAPE = [32, 32]
 
     # Reduce training ROIs per image because the images are small and have
