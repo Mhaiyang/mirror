@@ -10,6 +10,7 @@ import numpy as np
 import mhy.utils as utils
 import mhy.visualize as visualize
 import evaluate
+import time
 from mirror import MirrorConfig
 # Important, need change when test different models.
 import mrcnn.model as modellib
@@ -18,9 +19,9 @@ import mrcnn.model as modellib
 ROOT_DIR = os.getcwd()
 MODEL_DIR = os.path.join(ROOT_DIR, "log", "mask_rcnn")
 MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mask_rcnn_mirror_0030.h5")
-IMAGE_DIR = "/home/taylor/Mirror-Segmentation/data_640/test/image"
-MASK_DIR = "/home/taylor/Mirror-Segmentation/data_640/test/mask"
-OUTPUT_PATH = "/home/taylor/Mirror-Segmentation/data_640/test/output_mask_rcnn"
+IMAGE_DIR = "/home/taylor/Mirror-Segmentation/data_640/test2/image"
+MASK_DIR = "/home/taylor/Mirror-Segmentation/data_640/test2/mask"
+OUTPUT_PATH = "/home/taylor/Mirror-Segmentation/data_640/test2/mask_rcnn"
 if not os.path.exists(OUTPUT_PATH):
     os.mkdir(OUTPUT_PATH)
 
@@ -54,6 +55,7 @@ print("Total {} test images".format(len(imglist)))
 IOU = []
 ACC = []
 BER = []
+start = time.time()
 for i, imgname in enumerate(imglist):
 
     print("###############  {}   ###############".format(i+1))
@@ -63,28 +65,28 @@ for i, imgname in enumerate(imglist):
     r = results[0]
     predict_mask = r["masks"]
     N = np.shape(predict_mask)[-1]
+
+    height = np.shape(image)[0]
+    width = np.shape(image)[1]
+    mask = np.zeros([height, width], dtype=np.uint8)
+    print(N)
+    print(mask.shape)
+
     if N != 0:
-        height = np.shape(predict_mask)[0]
-        width = np.shape(predict_mask)[1]
-        mask = np.zeros([height, width], dtype=np.uint8)
         for channel in range(N):
             for y in range(height):
                 for x in range(width):
                     if predict_mask[y, x, channel]:
                         mask[y, x] = 1
 
-        visualize.save_mask_and_masked_image(imgname, image, mask, OUTPUT_PATH)
-        gt_mask = evaluate.get_mask(imgname, MASK_DIR)
+    visualize.save_mask_and_masked_image(imgname, image, mask, OUTPUT_PATH)
+    gt_mask = evaluate.get_mask(imgname, MASK_DIR)
 
-        print(mask.shape)
-        print(gt_mask.shape)
-        iou = evaluate.iou(mask, gt_mask)
-        acc = evaluate.accuracy(mask, gt_mask)
-        ber = evaluate.ber(mask, gt_mask)
-    else:
-        iou = 0
-        acc = 0
-        ber = 0
+    print(gt_mask.shape)
+
+    iou = evaluate.iou(mask, gt_mask)
+    acc = evaluate.accuracy(mask, gt_mask)
+    ber = evaluate.ber(mask, gt_mask)
 
     print("iou : {}".format(iou))
     print("acc : {}".format(acc))
@@ -93,9 +95,16 @@ for i, imgname in enumerate(imglist):
     ACC.append(acc)
     BER.append(ber)
 
+end = time.time()
+
 mean_IOU = 100 * sum(IOU) / len(IOU)
 mean_ACC = 100 * sum(ACC) / len(ACC)
 mean_BER = 100 * sum(BER) / len(BER)
+
+print("Time is : {}".format(end - start))
+print(len(IOU))
+print(len(ACC))
+print(len(BER))
 
 print("For Test Data Set, \n{:20} {:.2f} \n{:20} {:.2f} \n{:20} {:.2f}".
       format("mean_IOU", mean_IOU, "mean_ACC", mean_ACC, "mean_BER", mean_BER))
