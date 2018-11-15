@@ -19,9 +19,9 @@ import mrcnn.model as modellib
 ROOT_DIR = os.getcwd()
 MODEL_DIR = os.path.join(ROOT_DIR, "log", "mask_rcnn")
 MIRROR_MODEL_PATH = os.path.join(MODEL_DIR, "mask_rcnn_mirror_0030.h5")
-IMAGE_DIR = "/home/taylor/Mirror-Segmentation/data_640/test2/image"
-MASK_DIR = "/home/taylor/Mirror-Segmentation/data_640/test2/mask"
-OUTPUT_PATH = "/home/taylor/Mirror-Segmentation/data_640/test2/mask_rcnn"
+IMAGE_DIR = "/home/taylor/Mirror-Segmentation/data_640/test3/image"
+MASK_DIR = "/home/taylor/Mirror-Segmentation/data_640/test3/mask"
+OUTPUT_PATH = "/home/taylor/Mirror-Segmentation/data_640/test3/mask_rcnn"
 if not os.path.exists(OUTPUT_PATH):
     os.mkdir(OUTPUT_PATH)
 
