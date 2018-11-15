@@ -53,7 +53,8 @@ imglist = os.listdir(IMAGE_DIR)
 print("Total {} test images".format(len(imglist)))
 
 IOU = []
-ACC = []
+ACC_all = []
+ACC_mirror = []
 BER = []
 start = time.time()
 for i, imgname in enumerate(imglist):
@@ -85,29 +86,34 @@ for i, imgname in enumerate(imglist):
     print(gt_mask.shape)
 
     iou = evaluate.iou(mask, gt_mask)
-    acc = evaluate.accuracy(mask, gt_mask)
+    acc_all = evaluate.accuracy_all(mask, gt_mask)
+    acc_mirror = evaluate.accuracy_mirror(mask, gt_mask)
     ber = evaluate.ber(mask, gt_mask)
 
     print("iou : {}".format(iou))
-    print("acc : {}".format(acc))
+    print("acc_all : {}".format(acc_all))
+    print("acc_mirror : {}".format(acc_mirror))
     print("ber : {}".format(ber))
     IOU.append(iou)
-    ACC.append(acc)
+    ACC_all.append(acc_all)
+    ACC_mirror.append(acc_mirror)
     BER.append(ber)
 
 end = time.time()
 
 mean_IOU = 100 * sum(IOU) / len(IOU)
-mean_ACC = 100 * sum(ACC) / len(ACC)
+mean_ACC_all = 100 * sum(ACC_all) / len(ACC_all)
+mean_ACC_mirror = 100 * sum(ACC_mirror) / len(ACC_mirror)
 mean_BER = 100 * sum(BER) / len(BER)
 
 print("Time is : {}".format(end - start))
 print(len(IOU))
-print(len(ACC))
+print(len(ACC_all))
+print(len(ACC_mirror))
 print(len(BER))
 
-print("For Test Data Set, \n{:20} {:.2f} \n{:20} {:.2f} \n{:20} {:.2f}".
-      format("mean_IOU", mean_IOU, "mean_ACC", mean_ACC, "mean_BER", mean_BER))
+print("For Test Data Set, \n{:20} {:.2f} \n{:20} {:.2f} \n{:20} {:.2f} \n{:20} {:.2f}".
+      format("mean_IOU", mean_IOU, "mean_ACC_all", mean_ACC_all, "mean_ACC_mirror", mean_ACC_mirror, "mean_BER", mean_BER))
 
 
 

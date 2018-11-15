@@ -78,7 +78,7 @@ def iou(predict_mask, gt_mask):
     return iou_
 
 
-def accuracy(predict_mask, gt_mask):
+def accuracy_all(predict_mask, gt_mask):
     """
     sum_i(n_ii) / sum_i(t_i)
     :param predict_mask:
@@ -97,6 +97,29 @@ def accuracy(predict_mask, gt_mask):
     TN = np.sum(np.logical_and(np.logical_not(predict_mask), np.logical_not(gt_mask)))
 
     accuracy_ = (TP + TN) / (N_p + N_n)
+
+    return accuracy_
+
+
+def accuracy_mirror(predict_mask, gt_mask):
+    """
+    sum_i(n_ii) / sum_i(t_i)
+    :param predict_mask:
+    :param gt_mask:
+    :return:
+    """
+
+    check_size(predict_mask, gt_mask)
+
+    N_p = np.sum(gt_mask)
+    N_n = np.sum(np.logical_not(gt_mask))
+    if N_p + N_n != 640 * 512:
+        raise Exception("Check if mask shape is correct!")
+
+    TP = np.sum(np.logical_and(predict_mask, gt_mask))
+    TN = np.sum(np.logical_and(np.logical_not(predict_mask), np.logical_not(gt_mask)))
+
+    accuracy_ = TP/N_p
 
     return accuracy_
 
