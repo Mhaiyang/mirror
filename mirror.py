@@ -19,7 +19,7 @@ class MirrorConfig(Config):
     # Train on 1 GPU and 8 images per GPU. We can put multiple images on each
     # GPU because the images are small. Batch size is 8 (GPUs * images/GPU).
     GPU_COUNT = 1
-    IMAGES_PER_GPU = 1
+    IMAGES_PER_GPU = 2
 
     # Number of classes (including background)
     NUM_CLASSES = 1 + 1  # background + 1 mirror
@@ -66,11 +66,11 @@ class MirrorConfig(Config):
     DETECTION_MAX_INSTANCES = 60
 
     # Use a small epoch since the data is simple
-    STEPS_PER_EPOCH = 2599
+    STEPS_PER_EPOCH = 1532
     # STEPS_PER_EPOCH = 5198
 
     # use small validation steps since the epoch is small
-    VALIDATION_STEPS = 186
+    VALIDATION_STEPS = 478
     # VALIDATION_STEPS = 371
 
     # skip detection with <x% confidence
@@ -115,7 +115,8 @@ class MirrorDataset(utils.Dataset):
         # self.add_class("Mirror", 2, "reflection")
         for i in range(count):
             filestr = imglist[i].split(".")[0]  # 10.jpg for example
-            mask_path = mask_folder + "/" + filestr + "_json/label8.png"
+            # mask_path = mask_folder + "/" + filestr + "_json/label8.png"
+            mask_path = mask_folder + "/" + filestr + ".png"
             edge_path = mask_folder + "/" + filestr + "_json/edge.png"
             yaml_path = mask_folder + "/" + filestr + "_json/info.yaml"
             if not os.path.exists(mask_path):
@@ -139,7 +140,10 @@ class MirrorDataset(utils.Dataset):
             mask[:, :, i] = mask[:, :, i] * occlusion
             occlusion = np.logical_and(occlusion, np.logical_not(mask[:, :, i]))
         labels = []
-        labels = self.from_yaml_get_class(image_id)
+        labels.append("_background_")
+        for i in range(num_obj):
+            labels.append("mirror")
+        # labels = self.from_yaml_get_class(image_id)
         labels_form = []
         for i in range(len(labels)):
             if labels[i].find("mirror") != -1:

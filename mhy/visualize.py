@@ -197,10 +197,10 @@ def save_mask_and_masked_image(imgname, image, mask, OUTPUT_PATH=None):
     masked_image = apply_mask(masked_image, mask, color, alpha=0.5)
 
     # Save mask
-    skimage.io.imsave(os.path.join(OUTPUT_PATH, imgname[:-4]+"_mask.jpg"), 255 * mask.astype(np.uint8))
+    skimage.io.imsave(os.path.join(OUTPUT_PATH, imgname[:-4]+".png"), 255 * mask.astype(np.uint8))
 
     # Save masked image
-    skimage.io.imsave(os.path.join(OUTPUT_PATH, imgname[:-4]+"_masked.jpg"), masked_image.astype(np.uint8))
+    # skimage.io.imsave(os.path.join(OUTPUT_PATH, imgname[:-4]+"_masked.jpg"), masked_image.astype(np.uint8))
 
 
 def display_differences(image,

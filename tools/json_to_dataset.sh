@@ -1,7 +1,7 @@
 #!/bin/bash
-image="/home/taylor/Desktop/image/"
+image="/home/iccd/data/2019beforetrue/ylt/"
 format=".json"
-for((i=168;i<=168;i++))
+for((i=1;i<=5000;i++))
     do
         num=${i}
         labelme_json_to_dataset ${image}${num}${format}
