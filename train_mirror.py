@@ -54,6 +54,7 @@ dataset_train.prepare("train")
 dataset_val = mirror.MirrorDataset()
 dataset_val.load_mirror(val_count, val_image_folder,
                         val_mask_folder, val_imglist)      # add class and add image
+dataset_val.prepare("val")
 
 # Load and display random samples
 # image_ids = np.random.choice(dataset_train.image_ids, 5)
