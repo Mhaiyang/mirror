@@ -14,7 +14,7 @@ import mirror
 import mhy.model as modellib
 
 # os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 # Root directory of the project
 ROOT_DIR = os.getcwd()
